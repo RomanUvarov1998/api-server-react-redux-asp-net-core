@@ -5,12 +5,16 @@ export const ACTION_START_EDIT_PATIENT = 'ACTION_START_EDIT_PATIENT';
 export const ACTION_EDIT_PATIENT = 'ACTION_EDIT_PATIENT';
 export const ACTION_DELETE_PATIENT = 'ACTION_DELETE_PATIENT';
 export const ACTION_SET_SEARCH_TEMPLATE = 'ACTION_SET_SEARCH_TEMPLATE';
+export const ACTION_UNDO = 'ACTION_UNDO';
+export const ACTION_REDO = 'ACTION_REDO';
 
 export type ActionAddPatient = { type: string };
 export type ActionStartEditingPatient = { type: string, patientId: number };
 export type ActionEditPatient = { type: string, patientId: number, fieldName: FieldName, newValue: FieldValue };
 export type ActionDeletePatient = { type: string, patientId: number };
 export type ActionSetSearchTemplate = { type: string, fieldName: FieldName, newValue: FieldValue };
+export type ActionUndo = { type: string };
+export type ActionRedo = { type: string };
 
 export class MyAction {
     type: string;
@@ -42,10 +46,19 @@ export const onDelete = (patientId: number) => {
     }
 }
 export const onSetSearchTemplate = (fieldName: FieldName, newValue: FieldValue) => {
-    console.log("search action create");
     return {
         type: ACTION_SET_SEARCH_TEMPLATE,
         fieldName,
         newValue,
     }
+}
+export const onUndo = () => {
+    return {
+        type: ACTION_UNDO
+    };
+}
+export const onRedo = () => {
+    return {
+        type: ACTION_REDO
+    };
 }

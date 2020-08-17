@@ -1,43 +1,7 @@
 import { createStore, combineReducers } from 'redux'
 import * as Actions from './actions';
-import { Patient, PatientField } from '../library/patient'
 import * as Reducers from './reducers';
 import { AppState } from '../components/App'
-
-export function createInitialState() {
-    var p1: Patient = new Patient(
-        [
-            { name: "name", value: "vasya" },
-            { name: "surname", value: "petrov" },
-            { name: "patronimyc", value: "m" },
-        ],
-        1
-    );
-    var p2: Patient = new Patient(
-        [
-            { name: "name", value: "misha" },
-            { name: "surname", value: "ivanov" },
-            { name: "patronimyc", value: "p" },
-        ],
-        2
-    );
-    var patientsList: Patient[] = [p1, p2];
-
-    var patientTemplate = new Patient(
-        [
-            new PatientField("name", ""),
-            new PatientField("surname", ""),
-            new PatientField("patronimyc", ""),
-        ],
-        0
-    );
-
-    return {
-        patientsList,
-        patientTemplate,
-        editingId: 0
-    };
-}
 
 export function configureStore(initialState: AppState) {
     const red = (state = initialState, action: Actions.MyAction): AppState => {
@@ -79,8 +43,23 @@ export function configureStore(initialState: AppState) {
         }
     };
 
+    const historyReducer = (state = initialState, action: Actions.MyAction): AppState => {
+        let a;
+        switch (action.type) {
+            case Actions.ACTION_UNDO:
+                a = action as Actions.ActionUndo;
+                return Reducers.onUndo(state);
+            case Actions.ACTION_REDO:
+                a = action as Actions.ActionUndo;
+                return Reducers.onRedo(state);
+            default:
+                return state;
+        }
+    };
+
     const reducers = combineReducers({
         red,
+        historyReducer,
     });
 
     const store = createStore(reducers, {});

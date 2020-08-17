@@ -1,26 +1,23 @@
-// import { Table as T } from 'react-bootstrap'
 import * as React from "react"
+import { Button, ButtonGroup, ButtonToolbar } from 'reactstrap';
 import { TableRaw, RawState } from '../table-raw/table-raw'
 import { Patient, FieldValue, FieldName, filteredList } from "../../library/patient";
 import { SearchBar } from '../search-bar/search-bar'
-import {
-    ActionAddPatient,
-    ActionStartEditingPatient,
-    ActionEditPatient,
-    ActionDeletePatient,
-    ActionSetSearchTemplate
-} from '../../store/actions';
-import { Button, ButtonGroup, ButtonToolbar } from 'reactstrap';
+import * as Actions from '../../store/actions';
+import { History } from '../../library/history'
 
 export type TableProps = {
     patientTemplate: Patient,
     patientsList: Patient[],
     editingId: number,
-    onAdd: () => ActionAddPatient,
-    onStartEditing: (id: number) => ActionStartEditingPatient,
-    onEdit: (id: number, fieldName: FieldName, newValue: FieldValue) => ActionEditPatient,
-    onDelete: (id: number) => ActionDeletePatient,
-    onSetSearchTemplate: (fieldName: FieldName, newValue: FieldValue) => ActionSetSearchTemplate,
+    history: History<Patient>,
+    onAdd: () => Actions.ActionAddPatient,
+    onStartEditing: (id: number) => Actions.ActionStartEditingPatient,
+    onEdit: (id: number, fieldName: FieldName, newValue: FieldValue) => Actions.ActionEditPatient,
+    onDelete: (id: number) => Actions.ActionDeletePatient,
+    onSetSearchTemplate: (fieldName: FieldName, newValue: FieldValue) => Actions.ActionSetSearchTemplate,
+    onUndo: () => Actions.ActionUndo,
+    onRedo: () => Actions.ActionRedo,
 }
 
 export class Table extends React.Component<TableProps, {}, {}> {
@@ -52,6 +49,16 @@ export class Table extends React.Component<TableProps, {}, {}> {
 
         var noPatientsSign = (<div>No patients found</div >);
 
+        // {
+        //     let p = this.props.patientsList[2];
+        //     if (p) {
+        //         let f = p.fields[0];
+        //         if (f) {
+        //             console.log(`{ ${f.name} : ${f.value} }`);
+        //         }
+        //     }
+        // }
+
         return (
             <div>
                 <SearchBar
@@ -62,12 +69,12 @@ export class Table extends React.Component<TableProps, {}, {}> {
                 <ButtonToolbar>
                     <ButtonGroup>
                         <Button
-                            onClick={() => this.props.onAdd()}
-                            disabled={this.props.editingId > 0}
+                            onClick={() => this.props.onUndo()}
+                            disabled={!this.props.history.canUndo()}
                         >Undo</Button>
                         <Button
-                            onClick={() => this.props.onAdd()}
-                            disabled={this.props.editingId > 0}
+                            onClick={() => this.props.onRedo()}
+                            disabled={!this.props.history.canRedo()}
                         >Redo</Button>
                     </ButtonGroup>
                     <ButtonGroup>

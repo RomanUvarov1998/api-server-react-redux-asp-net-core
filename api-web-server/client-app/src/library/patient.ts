@@ -31,6 +31,14 @@ export class Patient {
 
         return new Patient(newFields, this.id);
     } 
+
+    public copy = (): Patient => {
+        return new Patient(
+            this.fields.map(f => new PatientField(f.name, f.value)),
+            this.id
+        );
+    }
+    public equals = (item: Patient): boolean => item.id === this.id;
 }
 
 export function filteredList(patientsList: Patient[], patientTemplate: Patient): Patient[] {

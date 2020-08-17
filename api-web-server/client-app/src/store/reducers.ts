@@ -12,7 +12,7 @@ export const onAdd = (state: AppState): AppState => {
         ],
         state.patientsList.length + 1
     );
-    var patientsList = state.patientsList.concat(newPatient);
+    var patientsList = state.history.add(newPatient);
 
     return ({
         ...state,
@@ -22,10 +22,11 @@ export const onAdd = (state: AppState): AppState => {
 }
 
 export const onEdit = (state: AppState, id: number, fieldName: FieldName, newValue: FieldValue): AppState => {
-    var updatedPatientsList = state.patientsList.map(patient =>
-        id === patient.id ?
-            patient.update(fieldName, newValue) :
-            patient
+    var updatedPatientsList = state.history.edit(
+        patient =>
+            id === patient.id ?
+                patient.update(fieldName, newValue) :
+                patient
     );
 
     return {
@@ -51,9 +52,8 @@ export const onStartEditing = (state: AppState, id: number): AppState => {
 }
 
 export const onDelete = (state: AppState, id: number): AppState => {
-    var patientsList = state.patientsList
-        .filter(patient => patient.id !== id);
-
+    var patientsList = state.history.del(patient => patient.id !== id)
+    
     return ({
         ...state,
         editingId: 0,
@@ -68,4 +68,20 @@ export const onSetSearchTemplate = (state: AppState, newValue: FieldValue, field
         editingId: 0,
         patientTemplate
     });
+}
+
+export const onUndo = (state: AppState): AppState => {
+    let newList = state.history.undo();
+    console.log(newList === state.patientsList);
+    return {
+        ...state,
+        patientsList: newList
+    };
+}
+
+export const onRedo = (state: AppState): AppState => {
+    return {
+        ...state,
+        patientsList: state.history.redo()
+    };
 }
