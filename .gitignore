@@ -1,0 +1,7 @@
+.vscode/
+
+api-web-server/bin/
+api-web-server/obj/
+
+database/bin/
+database/obj/
