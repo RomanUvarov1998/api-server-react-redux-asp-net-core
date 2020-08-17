@@ -32,3 +32,22 @@ export class Patient {
         return new Patient(newFields, this.id);
     } 
 }
+
+export function filteredList(patientsList: Patient[], patientTemplate: Patient): Patient[] {
+    var res = patientsList.filter(p => {
+        var contains = true;
+        patientTemplate.fields.forEach(tf => {
+            if (!tf.value) return;
+
+            var foundField = p.fields.find(f => f.name === tf.name);
+
+            if (foundField === undefined) return;
+            if (!foundField.value.startsWith(tf.value)) {
+                contains = false;
+            }
+        });
+        return contains;
+    });
+
+    return res;
+}

@@ -15,7 +15,10 @@ cd client-app/
 
 # ---------- IN /client-app: -------------
 
-npm install --save redux @types/redux react-redux @types/react-redux
+npm install --save \
+    redux @types/redux \
+    react-redux @types/react-redux \
+    reactstrap @types/reactstrap
 npm install
 npm audit fix
 cd ..

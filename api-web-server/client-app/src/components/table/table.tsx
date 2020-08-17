@@ -1,7 +1,7 @@
 // import { Table as T } from 'react-bootstrap'
 import * as React from "react"
 import { TableRaw, RawState } from '../table-raw/table-raw'
-import { Patient, FieldValue, FieldName } from "../../library/patient";
+import { Patient, FieldValue, FieldName, filteredList } from "../../library/patient";
 import { SearchBar } from '../search-bar/search-bar'
 import {
     ActionAddPatient,
@@ -10,6 +10,7 @@ import {
     ActionDeletePatient,
     ActionSetSearchTemplate
 } from '../../store/actions';
+import { Button, ButtonGroup, ButtonToolbar } from 'reactstrap';
 
 export type TableProps = {
     patientTemplate: Patient,
@@ -23,27 +24,8 @@ export type TableProps = {
 }
 
 export class Table extends React.Component<TableProps, {}, {}> {
-    filteredList(patientsList: Patient[], patientTemplate: Patient): Patient[] {
-        var res = patientsList.filter(p => {
-            var contains = true;
-            patientTemplate.fields.forEach(tf => {
-                if (!tf.value) return;
-
-                var foundField = p.fields.find(f => f.name === tf.name);
-
-                if (foundField === undefined) return;
-                if (!foundField.value.startsWith(tf.value)) {
-                    contains = false;
-                }
-            });
-            return contains;
-        });
-
-        return res;
-    }
-
     render(): React.ReactNode {
-        var tableRaws = this.filteredList(this.props.patientsList, this.props.patientTemplate)
+        var tableRaws = filteredList(this.props.patientsList, this.props.patientTemplate)
             .map((patient, ind) =>
                 (<TableRaw
                     key={ind}
@@ -77,34 +59,24 @@ export class Table extends React.Component<TableProps, {}, {}> {
                     onSetSearchTemplate={this.props.onSetSearchTemplate}
                 />
                 <h1>Patients:</h1>
-                <div className={"container"}>
-                    <div className={"row"}>
-                        <div className={"col-sm-auto"}>
-                            <button
-                                onClick={() => this.props.onAdd()}
-                                disabled={this.props.editingId > 0}
-                            >
-                                Add
-                            </button>
-                        </div>
-                        <div className={"col-sm-auto"}>
-                            <button
-                                onClick={() => this.props.onAdd()}
-                                disabled={this.props.editingId > 0}
-                            >
-                                Undo
-                            </button>
-                        </div>
-                        <div className={"col-sm-auto"}>
-                            <button
-                                onClick={() => this.props.onAdd()}
-                                disabled={this.props.editingId > 0}
-                            >
-                                Redo
-                            </button>
-                        </div>
-                    </div>
-                </div>
+                <ButtonToolbar>
+                    <ButtonGroup>
+                        <Button
+                            onClick={() => this.props.onAdd()}
+                            disabled={this.props.editingId > 0}
+                        >Undo</Button>
+                        <Button
+                            onClick={() => this.props.onAdd()}
+                            disabled={this.props.editingId > 0}
+                        >Redo</Button>
+                    </ButtonGroup>
+                    <ButtonGroup>
+                        <Button
+                            onClick={() => this.props.onAdd()}
+                            disabled={this.props.editingId > 0}
+                        >Add</Button>
+                    </ButtonGroup>
+                </ButtonToolbar>
                 {(this.props.patientsList.length > 0) ? table : noPatientsSign}
             </div >
 
@@ -123,3 +95,4 @@ function getRawState(editingId: number, patientId: number): RawState {
         return RawState.Editing;
     }
 }
+
