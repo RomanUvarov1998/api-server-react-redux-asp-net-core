@@ -19,7 +19,7 @@ export function SearchBar(props: SearchBarProps) {
     });
 
     var searchHeaders = props.patientTemplate.fields
-        .map(field => (<th>{field.name}</th>));
+        .map(field => (<th key={field.name}>{field.name}</th>));
 
     return (
         <div>

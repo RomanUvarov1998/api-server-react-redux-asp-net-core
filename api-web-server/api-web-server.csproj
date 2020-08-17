@@ -9,4 +9,8 @@
     <PackageReference Include="Microsoft.AspNetCore.SpaServices.Extensions" Version="3.1.7" />
   </ItemGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\database\database.csproj" />
+  </ItemGroup>
+
 </Project>

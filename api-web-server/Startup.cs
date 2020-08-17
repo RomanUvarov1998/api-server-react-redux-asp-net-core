@@ -49,6 +49,8 @@ namespace api_web_server
             // app.UseDefaultFiles();
             // app.UseStaticFiles();
 
+            var c = new HomeController();
+
             app.UseEndpoints(endpoints =>
             {
                 endpoints.MapControllerRoute(

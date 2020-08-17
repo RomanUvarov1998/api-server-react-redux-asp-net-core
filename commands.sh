@@ -5,6 +5,7 @@ dotnet new web --name api-web-server
 dotnet new classlib --name database
 dotnet sln add api-web-server/
 dotnet sln add database
+dotnet add api-web-server/api-web-server.csproj reference database/database.csproj
 cd api-web-server/
 
 # ---------- IN /api-web-server: -------------
