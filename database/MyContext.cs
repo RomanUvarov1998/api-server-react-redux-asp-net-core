@@ -1,4 +1,5 @@
-﻿using System;
+﻿using System.ComponentModel.DataAnnotations.Schema;
+using System;
 using Microsoft.EntityFrameworkCore;
 using database.Models;
 using System.Linq;
@@ -14,6 +15,7 @@ namespace database
 
         public MyContext()
         {
+            // Database.EnsureDeleted();
             Database.EnsureCreated();
 
             if (!Patients.Any())
@@ -75,7 +77,7 @@ namespace database
         {
             modelBuilder.Entity<Patient>()
                 .HasMany(p => p.Fields)
-                .WithOne()
+                .WithOne(pf => pf.Patient)
                 .HasForeignKey(p => p.PatientId);
 
             modelBuilder.Entity<PatientField>()
@@ -89,7 +91,7 @@ namespace database
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
-            optionsBuilder.UseSqlite("Filename=/home/roma-uvarov/Documents/ASP.NET_Core/from-empty-react-redux/database/bin/Debug/netstandard2.0/MyDB.db;");
+            optionsBuilder.UseSqlite("Data Source=/home/roma-uvarov/Documents/ASP.NET_Core/from-empty-react-redux/database/bin/Debug/netstandard2.0/MyDB.db;");
         }
     }
 }

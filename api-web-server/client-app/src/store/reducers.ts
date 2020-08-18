@@ -1,6 +1,19 @@
 import { Patient, FieldValue, FieldName } from "../library/patient";
 import { AppState } from '../components/App'
 
+export const onWait = (state: AppState): AppState => {
+    return {
+        ...state,
+    }
+}
+
+export const onRecieve = (state: AppState, patients: Patient[]): AppState => {
+    return {
+        ...state,
+        patientsList: patients
+    }
+}
+
 export const onAdd = (state: AppState): AppState => {
     if (state.editingId) return state;
 

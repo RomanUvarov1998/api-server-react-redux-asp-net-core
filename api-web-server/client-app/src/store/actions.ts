@@ -1,5 +1,7 @@
-import { FieldValue, FieldName } from "../library/patient";
+import { FieldValue, FieldName, Patient } from "../library/patient";
 
+export const ACTION_WAIT_PATIENTS = 'ACTION_WAIT_PATIENTS';
+export const ACTION_RECIEVE_PATIENTS = 'ACTION_RECIEVE_PATIENTS';
 export const ACTION_ADD_PATIENT = 'ACTION_ADD_PATIENT';
 export const ACTION_START_EDIT_PATIENT = 'ACTION_START_EDIT_PATIENT';
 export const ACTION_EDIT_PATIENT = 'ACTION_EDIT_PATIENT';
@@ -8,6 +10,7 @@ export const ACTION_SET_SEARCH_TEMPLATE = 'ACTION_SET_SEARCH_TEMPLATE';
 export const ACTION_UNDO = 'ACTION_UNDO';
 export const ACTION_REDO = 'ACTION_REDO';
 
+export type ActionRecievePatients = { type: string, patients: Patient[] };
 export type ActionAddPatient = { type: string };
 export type ActionStartEditingPatient = { type: string, patientId: number };
 export type ActionEditPatient = { type: string, patientId: number, fieldName: FieldName, newValue: FieldValue };
@@ -16,9 +19,16 @@ export type ActionSetSearchTemplate = { type: string, fieldName: FieldName, newV
 export type ActionUndo = { type: string };
 export type ActionRedo = { type: string };
 
-export class MyAction {
-    type: string;
-    constructor(type: string) { this.type = type; }
+export const onWait = () => {
+    return { 
+        type: ACTION_WAIT_PATIENTS
+    };
+}
+export const onRecieve = (patients: Patient[]) => {
+    return { 
+        type: ACTION_RECIEVE_PATIENTS,
+        patients
+    };
 }
 export const onAdd = () => {
     return { 

@@ -59,3 +59,9 @@ export function filteredList(patientsList: Patient[], patientTemplate: Patient):
 
     return res;
 }
+
+export function from(obj: any): Patient {
+    let fields = obj.fields as PatientField[];
+    let id = obj.id as number;
+    return new Patient(fields, id);
+}

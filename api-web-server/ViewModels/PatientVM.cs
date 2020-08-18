@@ -12,9 +12,13 @@ namespace api_web_server.ViewModels
             Fields = instance.Fields
                 .Select(f => new PatientFieldVM(f))
                 .ToList();
+
+                Id = instance.Id;
         }
 
         public List<PatientFieldVM> Fields { get; set; }
+
+        public int Id { get; set; }
 
         public static List<PatientVM> GetList(List<Patient> instances) =>
             instances.Select(p => new PatientVM(p)).ToList();

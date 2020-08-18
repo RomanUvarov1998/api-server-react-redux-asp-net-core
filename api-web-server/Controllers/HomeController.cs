@@ -4,6 +4,7 @@ using database;
 using database.Models;
 using api_web_server.ViewModels;
 using System.Linq;
+using Microsoft.EntityFrameworkCore;
 
 namespace api_web_server
 {
@@ -19,7 +20,10 @@ namespace api_web_server
         [HttpGet]
         public IEnumerable<PatientVM> Index()
         {
-            List<Patient> ps = dbContext.Patients.ToList();
+            List<Patient> ps = dbContext.Patients
+                .Include(p => p.Fields)
+                .ThenInclude(f => f.Name)
+                .ToList();
             return PatientVM.GetList(ps);
         }
 

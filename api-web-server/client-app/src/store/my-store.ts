@@ -4,9 +4,15 @@ import * as Reducers from './reducers';
 import { AppState } from '../components/App'
 
 export function configureStore(initialState: AppState) {
-    const red = (state = initialState, action: Actions.MyAction): AppState => {
+    const red = (state = initialState, action: { type: string }): AppState => {
         let a;
         switch (action.type) {
+            case Actions.ACTION_RECIEVE_PATIENTS:
+                a = action as Actions.ActionRecievePatients;
+                return Reducers.onRecieve(
+                    state,
+                    a.patients
+                );
             case Actions.ACTION_ADD_PATIENT:
                 return Reducers.onAdd(
                     state
