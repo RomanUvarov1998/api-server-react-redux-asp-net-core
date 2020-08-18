@@ -66,6 +66,8 @@ export class History<Item extends ICopy<Item>> {
         return newList;
     }
 
+    public isEmpty = (): boolean => this.listHistory.length > 0 && this.cursor > 0;
+
     private listHistory: HistoryAction<Item>[];
     private cursor: number;
     private copyList(list: Item[]): Item[] {

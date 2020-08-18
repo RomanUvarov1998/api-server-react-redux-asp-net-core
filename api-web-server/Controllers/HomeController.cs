@@ -40,6 +40,16 @@ namespace api_web_server
             return pvm;
         }
 
+        [HttpPost("home/savechanges")]
+        public PatientVM SaveChanges()
+        {
+            List<FieldName> fns = dbContext.FieldNames.ToList();
+                
+            PatientVM pvm = PatientVM.CreateEmpty(fns);
+
+            return pvm;
+        }
+
         private MyContext dbContext;
     }
 }

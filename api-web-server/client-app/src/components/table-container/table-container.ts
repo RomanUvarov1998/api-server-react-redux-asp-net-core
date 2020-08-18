@@ -27,6 +27,7 @@ const mapStateToProps = (state: TableContainerState): TableProps => {
         onSetSearchTemplate: Actions.setSearchTemplate,
         onUndo: Actions.undo,
         onRedo: Actions.redo,
+        onSave: Actions.save
     }
 };
 

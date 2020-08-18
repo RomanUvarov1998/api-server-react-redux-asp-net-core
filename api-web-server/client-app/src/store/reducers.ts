@@ -1,4 +1,4 @@
-import { Patient, FieldValue, FieldName } from "../library/patient";
+import { Patient, FieldValue, FieldName, PatientField } from "../library/patient";
 import { AppState } from '../components/App'
 
 export const onWait = (state: AppState): AppState => {
@@ -23,6 +23,7 @@ export const onRecievePatientFields = (state: AppState, patientTemplate: Patient
 
 export const onAdd = (state: AppState): AppState => {
     if (state.editingId) return state;
+    if (!state.patientTemplate) return state;
 
     var newLocalId = 1;
     state.patientsList.forEach(p => {
@@ -30,13 +31,11 @@ export const onAdd = (state: AppState): AppState => {
             newLocalId = p.id + 1;
         }
     });
-    
+
     var newPatient = new Patient(
-        [
-            { name: "name", value: "" },
-            { name: "surname", value: "" },
-            { name: "patronimyc", value: "" },
-        ],
+        state.patientTemplate?.fields.map(
+            f => new PatientField(f.name, f.value)
+        ),
         newLocalId
     );
     var patientsList = state.history.add(newPatient, state.patientsList);
@@ -95,7 +94,7 @@ export const onDelete = (state: AppState, id: number): AppState => {
 
 export const onSetSearchTemplate = (state: AppState, newValue: FieldValue, fieldName: FieldName): AppState => {
     if (!state.patientTemplate) return state;
-    
+
     var patientTemplate = state.patientTemplate.update(fieldName, newValue);
     return ({
         ...state,
@@ -117,5 +116,11 @@ export const onRedo = (state: AppState): AppState => {
     return {
         ...state,
         patientsList: newList
+    };
+}
+
+export const onSave = (state: AppState): AppState => {
+    return {
+        ...state
     };
 }

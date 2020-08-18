@@ -9,6 +9,7 @@ export const ACTION_DELETE_PATIENT = 'ACTION_DELETE_PATIENT';
 export const ACTION_SET_SEARCH_TEMPLATE = 'ACTION_SET_SEARCH_TEMPLATE';
 export const ACTION_UNDO = 'ACTION_UNDO';
 export const ACTION_REDO = 'ACTION_REDO';
+export const ACTION_SAVE = 'ACTION_SAVE';
 
 export type ActionRecievePatients = { type: string, patients: Patient[] };
 export type ActionRecievePatientFields = { type: string, patientTemplate: Patient };
@@ -19,6 +20,7 @@ export type ActionDeletePatient = { type: string, patientId: number };
 export type ActionSetSearchTemplate = { type: string, fieldName: FieldName, newValue: FieldValue };
 export type ActionUndo = { type: string };
 export type ActionRedo = { type: string };
+export type ActionSave = { type: string };
 
 export const recievePatients = (patients: Patient[]) => {
     return { 
@@ -72,5 +74,10 @@ export const undo = () => {
 export const redo = () => {
     return {
         type: ACTION_REDO
+    };
+}
+export const save = () => {
+    return {
+        type: ACTION_SAVE
     };
 }
