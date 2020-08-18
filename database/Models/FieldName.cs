@@ -1,4 +1,4 @@
-namespace database
+namespace database.Models
 {
     public class FieldName : ModelBase
     {

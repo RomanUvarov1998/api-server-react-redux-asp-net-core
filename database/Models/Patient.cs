@@ -1,6 +1,6 @@
 using System.Collections.Generic;
 
-namespace database
+namespace database.Models
 {
     public class Patient : ModelBase
     {

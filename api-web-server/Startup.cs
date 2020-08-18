@@ -11,12 +11,13 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.AspNetCore.HttpsPolicy;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.SpaServices.ReactDevelopmentServer;
+using database;
 
 namespace api_web_server
 {
     public class Startup
     {
-        public Startup(IConfiguration configuration) 
+        public Startup(IConfiguration configuration)
         {
             Configuration = configuration;
         }
@@ -31,6 +32,13 @@ namespace api_web_server
             {
                 configuration.RootPath = "client-app/build";
             });
+
+            services.AddEntityFrameworkSqlite().AddDbContext<MyContext>();
+            // services.AddDbContext<MyContext>(
+            //     options => options.UseSqlite(
+            //         Configuration.GetConnectionString("DefaultConnection")
+            //     )
+            // );
         }
         public IConfiguration Configuration { get; }
 
@@ -48,8 +56,6 @@ namespace api_web_server
             // for:
             // app.UseDefaultFiles();
             // app.UseStaticFiles();
-
-            var c = new HomeController();
 
             app.UseEndpoints(endpoints =>
             {
