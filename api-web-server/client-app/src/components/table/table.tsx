@@ -49,15 +49,7 @@ export class Table extends React.Component<TableProps, {}, {}> {
 
         var noPatientsSign = (<div>No patients found</div >);
 
-        // {
-        //     let p = this.props.patientsList[2];
-        //     if (p) {
-        //         let f = p.fields[0];
-        //         if (f) {
-        //             console.log(`{ ${f.name} : ${f.value} }`);
-        //         }
-        //     }
-        // }
+        console.log("render table");
 
         return (
             <div>

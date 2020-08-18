@@ -38,14 +38,6 @@ export function configureStore(initialState: AppState) {
                     a.fieldName,
                     a.newValue
                 );
-            default:
-                return state;
-        }
-    };
-
-    const historyReducer = (state = initialState, action: Actions.MyAction): AppState => {
-        let a;
-        switch (action.type) {
             case Actions.ACTION_UNDO:
                 a = action as Actions.ActionUndo;
                 return Reducers.onUndo(state);
@@ -59,7 +51,6 @@ export function configureStore(initialState: AppState) {
 
     const reducers = combineReducers({
         red,
-        historyReducer,
     });
 
     const store = createStore(reducers, {});

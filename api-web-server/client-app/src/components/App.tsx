@@ -4,7 +4,7 @@ import './App.css';
 import { TableContainer } from './table-container/table-container'
 import { Patient, PatientField } from "../library/patient";
 import { configureStore } from '../store/my-store';
-import { History } from '../library/history'
+import { History } from '../library/history';
 
 type AppProps = {
 
@@ -70,7 +70,7 @@ export class App extends React.Component<AppProps, AppState, {}> {
         patientsList,
         patientTemplate,
         editingId: 0,
-        history: new History<Patient>(patientsList),
+        history: new History<Patient>(),
     };
 }
 }

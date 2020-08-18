@@ -12,7 +12,7 @@ export const onAdd = (state: AppState): AppState => {
         ],
         state.patientsList.length + 1
     );
-    var patientsList = state.history.add(newPatient);
+    var patientsList = state.history.add(newPatient, state.patientsList);
 
     return ({
         ...state,
@@ -22,11 +22,13 @@ export const onAdd = (state: AppState): AppState => {
 }
 
 export const onEdit = (state: AppState, id: number, fieldName: FieldName, newValue: FieldValue): AppState => {
-    var updatedPatientsList = state.history.edit(
-        patient =>
-            id === patient.id ?
-                patient.update(fieldName, newValue) :
-                patient
+    let itemToEdit = state.patientsList.find(p => p.id === id);
+    if (!itemToEdit) throw Error("itemToEdit reducers.ts");
+
+    let updatedPatientsList = state.history.edit(
+        itemToEdit as Patient,
+        p => p.update(fieldName, newValue),
+        state.patientsList
     );
 
     return {
@@ -52,8 +54,11 @@ export const onStartEditing = (state: AppState, id: number): AppState => {
 }
 
 export const onDelete = (state: AppState, id: number): AppState => {
-    var patientsList = state.history.del(patient => patient.id !== id)
-    
+    var patientsList = state.history.del(
+        patient => patient.id !== id,
+        state.patientsList
+    );
+
     return ({
         ...state,
         editingId: 0,
@@ -71,8 +76,7 @@ export const onSetSearchTemplate = (state: AppState, newValue: FieldValue, field
 }
 
 export const onUndo = (state: AppState): AppState => {
-    let newList = state.history.undo();
-    console.log(newList === state.patientsList);
+    let newList = state.history.undo(state.patientsList);
     return {
         ...state,
         patientsList: newList
@@ -80,8 +84,9 @@ export const onUndo = (state: AppState): AppState => {
 }
 
 export const onRedo = (state: AppState): AppState => {
+    let newList = state.history.redo(state.patientsList);
     return {
         ...state,
-        patientsList: state.history.redo()
+        patientsList: newList
     };
 }
