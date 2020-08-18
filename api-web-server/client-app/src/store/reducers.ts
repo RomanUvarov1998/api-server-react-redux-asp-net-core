@@ -7,23 +7,37 @@ export const onWait = (state: AppState): AppState => {
     }
 }
 
-export const onRecieve = (state: AppState, patients: Patient[]): AppState => {
+export const onRecievePatients = (state: AppState, patients: Patient[]): AppState => {
     return {
         ...state,
         patientsList: patients
     }
 }
 
+export const onRecievePatientFields = (state: AppState, patientTemplate: Patient): AppState => {
+    return {
+        ...state,
+        patientTemplate
+    }
+}
+
 export const onAdd = (state: AppState): AppState => {
     if (state.editingId) return state;
 
+    var newLocalId = 1;
+    state.patientsList.forEach(p => {
+        if (p.id >= newLocalId) {
+            newLocalId = p.id + 1;
+        }
+    });
+    
     var newPatient = new Patient(
         [
             { name: "name", value: "" },
             { name: "surname", value: "" },
             { name: "patronimyc", value: "" },
         ],
-        state.patientsList.length + 1
+        newLocalId
     );
     var patientsList = state.history.add(newPatient, state.patientsList);
 
@@ -68,7 +82,7 @@ export const onStartEditing = (state: AppState, id: number): AppState => {
 
 export const onDelete = (state: AppState, id: number): AppState => {
     var patientsList = state.history.del(
-        patient => patient.id !== id,
+        patient => patient.id === id,
         state.patientsList
     );
 
@@ -80,6 +94,8 @@ export const onDelete = (state: AppState, id: number): AppState => {
 }
 
 export const onSetSearchTemplate = (state: AppState, newValue: FieldValue, fieldName: FieldName): AppState => {
+    if (!state.patientTemplate) return state;
+    
     var patientTemplate = state.patientTemplate.update(fieldName, newValue);
     return ({
         ...state,

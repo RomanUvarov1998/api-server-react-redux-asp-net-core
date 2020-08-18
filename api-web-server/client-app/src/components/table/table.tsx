@@ -7,6 +7,8 @@ import * as Actions from '../../store/actions';
 import { History } from '../../library/history'
 
 export type TableProps = {
+    isWaitingPatientsList: boolean,
+    isWaitingPatientFields: boolean,
     patientTemplate: Patient,
     patientsList: Patient[],
     editingId: number,
@@ -20,67 +22,100 @@ export type TableProps = {
     onRedo: () => Actions.ActionRedo,
 }
 
-export class Table extends React.Component<TableProps, {}, {}> {
-    render(): React.ReactNode {
-        var tableRaws = filteredList(this.props.patientsList, this.props.patientTemplate)
+export function Table(props: TableProps): React.ReactNode {
+    var searchBar;
+    var tableHeaderCells;
+    var tableRows;
+    var isLoadingSomething = false;
+
+    if (!props.isWaitingPatientFields) {
+        if (!props.patientTemplate) throw Error("patientTemplate is null");
+
+        tableHeaderCells = [
+            <th key={"btnEdit"}></th>,
+            <th key={"btnDelete"}></th>
+        ];
+        tableHeaderCells.push(...props.patientTemplate.fields.map(
+            tf => (
+                <th key={tf.name}>
+                    {tf.name}
+                </th>
+            )
+        ));
+        searchBar = (
+            <SearchBar
+                frozen={props.editingId > 0}
+                patientTemplate={props.patientTemplate}
+                onSetSearchTemplate={props.onSetSearchTemplate}
+            />
+        );
+    } else {
+        tableHeaderCells = (<th><p>Загрузка полей пациента...</p></th>);
+        searchBar = (<p>Загрузка полей пациента...</p>);
+        isLoadingSomething = true;
+    }
+
+    if (!props.isWaitingPatientsList) {
+        if (!props.patientTemplate) throw Error("patientTemplate is null");
+
+        tableRows = filteredList(
+            props.patientsList,
+            props.patientTemplate,
+            p => p.id === props.editingId
+        )
             .map((patient, ind) =>
                 (<TableRaw
                     key={ind}
+                    patientTemplate={props.patientTemplate}
                     patient={patient}
-                    editState={getRawState(this.props.editingId, patient.id)}
-                    onEdit={this.props.onEdit}
-                    onStartEditing={this.props.onStartEditing}
-                    onDelete={this.props.onDelete}
+                    editState={getRawState(props.editingId, patient.id)}
+                    onEdit={props.onEdit}
+                    onStartEditing={props.onStartEditing}
+                    onDelete={props.onDelete}
                 />)
             );
+    } else {
+        tableRows = (
+            <tr><td><p>Загрузка списка пациентов...</p></td></tr>
+        );
+        isLoadingSomething = true;
+    }
 
-        var table = (
+    return (
+        <div>
+            <h1>Поиск:</h1>
+            {searchBar}
+            <h1>Пациенты:</h1>
+            <ButtonToolbar>
+                <ButtonGroup>
+                    <Button
+                        onClick={() => props.onUndo()}
+                        disabled={isLoadingSomething || !props.history.canUndo()}
+                    >{"<-"}</Button>
+                    <Button
+                        onClick={() => props.onRedo()}
+                        disabled={isLoadingSomething || !props.history.canRedo()}
+                    >{"->"}</Button>
+                </ButtonGroup>
+                <ButtonGroup>
+                    <Button
+                        onClick={() => props.onAdd()}
+                        disabled={isLoadingSomething || props.editingId > 0}
+                    >Добавить</Button>
+                </ButtonGroup>
+            </ButtonToolbar>
             <table className={"table table-responsive table-striped table-bordered table-normal"}>
                 <thead className={"thead-dark"}>
                     <tr>
-                        <th></th><th></th><th>Name:</th><th>Surname:</th><th>Patronimyc:</th>
+                        {tableHeaderCells}
                     </tr>
                 </thead>
                 <tbody>
-                    {tableRaws}
+                    {tableRows}
                 </tbody>
             </table>
-        );
-
-        var noPatientsSign = (<div>No patients found</div >);
-
-        console.log("render table");
-
-        return (
-            <div>
-                <SearchBar
-                    patientTemplate={this.props.patientTemplate}
-                    onSetSearchTemplate={this.props.onSetSearchTemplate}
-                />
-                <h1>Patients:</h1>
-                <ButtonToolbar>
-                    <ButtonGroup>
-                        <Button
-                            onClick={() => this.props.onUndo()}
-                            disabled={!this.props.history.canUndo()}
-                        >Undo</Button>
-                        <Button
-                            onClick={() => this.props.onRedo()}
-                            disabled={!this.props.history.canRedo()}
-                        >Redo</Button>
-                    </ButtonGroup>
-                    <ButtonGroup>
-                        <Button
-                            onClick={() => this.props.onAdd()}
-                            disabled={this.props.editingId > 0}
-                        >Add</Button>
-                    </ButtonGroup>
-                </ButtonToolbar>
-                {(this.props.patientsList.length > 0) ? table : noPatientsSign}
-            </div >
-
-        );
-    }
+        </div >
+    );
 }
 
 function getRawState(editingId: number, patientId: number): RawState {

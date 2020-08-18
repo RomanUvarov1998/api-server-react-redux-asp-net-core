@@ -30,7 +30,7 @@ export class Patient {
         });
 
         return new Patient(newFields, this.id);
-    } 
+    }
 
     public copy = (): Patient => {
         return new Patient(
@@ -41,7 +41,11 @@ export class Patient {
     public equals = (item: Patient): boolean => item.id === this.id;
 }
 
-export function filteredList(patientsList: Patient[], patientTemplate: Patient): Patient[] {
+export function filteredList(
+    patientsList: Patient[],
+    patientTemplate: Patient,
+    additionalFilter: (p: Patient) => boolean
+): Patient[] {
     var res = patientsList.filter(p => {
         var contains = true;
         patientTemplate.fields.forEach(tf => {
@@ -50,7 +54,10 @@ export function filteredList(patientsList: Patient[], patientTemplate: Patient):
             var foundField = p.fields.find(f => f.name === tf.name);
 
             if (foundField === undefined) return;
-            if (!foundField.value.startsWith(tf.value)) {
+            if (
+                !foundField.value.toLowerCase().startsWith(tf.value.toLowerCase())
+                && !additionalFilter(p)
+            ) {
                 contains = false;
             }
         });
@@ -60,8 +67,13 @@ export function filteredList(patientsList: Patient[], patientTemplate: Patient):
     return res;
 }
 
-export function from(obj: any): Patient {
+export function toPatient(obj: any): Patient {
     let fields = obj.fields as PatientField[];
     let id = obj.id as number;
     return new Patient(fields, id);
+}
+export function toPatientField(obj: any): PatientField {
+    let name = obj.name as string;
+    let value = obj.value as string;
+    return new PatientField(name, value);
 }

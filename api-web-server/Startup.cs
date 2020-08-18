@@ -25,7 +25,10 @@ namespace api_web_server
         // For more information on how to configure your application, visit https://go.microsoft.com/fwlink/?LinkID=398940
         public void ConfigureServices(IServiceCollection services)
         {
-            services.AddControllersWithViews();
+            services.AddControllersWithViews(mvcOptions =>
+            {
+                mvcOptions.EnableEndpointRouting = false;
+            });
 
             // In production, the React files will be served from this directory
             services.AddSpaStaticFiles(configuration =>
@@ -61,7 +64,7 @@ namespace api_web_server
             {
                 endpoints.MapControllerRoute(
                     name: "default",
-                    pattern: "{controller}/{action=Index}/{id?}");
+                    pattern: "{controller}/{action}");
             });
 
             app.UseSpa(spa =>

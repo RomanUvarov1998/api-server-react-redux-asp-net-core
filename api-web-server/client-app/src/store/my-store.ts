@@ -9,9 +9,21 @@ export function configureStore(initialState: AppState) {
         switch (action.type) {
             case Actions.ACTION_RECIEVE_PATIENTS:
                 a = action as Actions.ActionRecievePatients;
-                return Reducers.onRecieve(
-                    state,
+                return Reducers.onRecievePatients(
+                    {
+                        ...state,
+                        isWaitingPatientsList: false
+                    },
                     a.patients
+                );
+            case Actions.ACTION_RECIEVE_PATIENT_FIELDS:
+                a = action as Actions.ActionRecievePatientFields;
+                return Reducers.onRecievePatientFields(
+                    {
+                        ...state,
+                        isWaitingPatientFields: false
+                    },
+                    a.patientTemplate
                 );
             case Actions.ACTION_ADD_PATIENT:
                 return Reducers.onAdd(

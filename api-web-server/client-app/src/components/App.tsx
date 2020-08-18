@@ -2,18 +2,19 @@ import React from 'react';
 import { Provider } from 'react-redux';
 import './App.css';
 import { TableContainer } from './table-container/table-container'
-import { Patient, PatientField, from } from "../library/patient";
+import { Patient, PatientField, toPatient, toPatientField } from "../library/patient";
 import { configureStore } from '../store/my-store';
 import { History } from '../library/history';
-import { onRecieve } from '../store/actions';
+import * as Actions from '../store/actions';
 
 type AppProps = {
 
 }
 export type AppState = {
-  isWaiting: boolean,
+  isWaitingPatientsList: boolean,
+  isWaitingPatientFields: boolean,
   patientsList: Patient[],
-  patientTemplate: Patient,
+  patientTemplate: Patient | null,
   editingId: number,
   history: History<Patient>,
 }
@@ -29,7 +30,7 @@ export class App extends React.Component<AppProps, AppState, {}> {
 
     this.store = configureStore(this.state);
 
-    this.loadPatients();
+    this.loadPatientFields();
   }
 
   render(): React.ReactNode {
@@ -42,53 +43,43 @@ export class App extends React.Component<AppProps, AppState, {}> {
     );
   }
 
-  private createInitialState() {
-    var p1: Patient = new Patient(
-      [
-        { name: "name", value: "vasya" },
-        { name: "surname", value: "petrov" },
-        { name: "patronimyc", value: "m" },
-      ],
-      1
-    );
-    var p2: Patient = new Patient(
-      [
-        { name: "name", value: "misha" },
-        { name: "surname", value: "ivanov" },
-        { name: "patronimyc", value: "p" },
-      ],
-      2
-    );
-    var patientsList: Patient[] = [p1, p2];
-
-    var patientTemplate = new Patient(
-      [
-        new PatientField("name", ""),
-        new PatientField("surname", ""),
-        new PatientField("patronimyc", ""),
-      ],
-      0
-    );
-
+  private createInitialState(): AppState {
     return {
-      isWaiting: true,
-      patientsList,
-      patientTemplate,
+      isWaitingPatientsList: true,
+      isWaitingPatientFields: true,
+      patientsList: [],
+      patientTemplate: null,
       editingId: 0,
       history: new History<Patient>(),
     };
   }
 
   private loadPatients() {
-    fetch(`home`)
+    fetch(`home/patients`)
       .then(response => {
         let rj = response.json();
         let rjp = rj as Promise<Patient[]>;
         return rjp;
       })
       .then(data => {
-        let ps = data.map(el => from(el));
-        this.store.dispatch(onRecieve(ps));
+        let ps = data.map(el => toPatient(el));
+        this.store.dispatch(Actions.recievePatients(ps));
+      });
+  }
+
+  private loadPatientFields() {
+    fetch(`home/template`)
+      .then(response => {
+        let rj = response.json();
+        let rjp = rj as Promise<Patient>;
+        return rjp;
+      })
+      .then(data => {
+        let ps = data.fields.map(el => toPatientField(el));
+        let pt = new Patient(ps, 0);
+        this.store.dispatch(Actions.recievePatientFields(pt));
+        
+        this.loadPatients();
       });
   }
 }

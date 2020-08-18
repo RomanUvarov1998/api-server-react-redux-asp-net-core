@@ -15,7 +15,7 @@ namespace database
 
         public MyContext()
         {
-            // Database.EnsureDeleted();
+            //Database.EnsureDeleted();
             Database.EnsureCreated();
 
             if (!Patients.Any())

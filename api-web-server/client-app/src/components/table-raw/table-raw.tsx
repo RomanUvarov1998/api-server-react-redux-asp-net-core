@@ -1,6 +1,6 @@
 import * as React from "react";
 import { RawCell } from "../raw-cell/raw-cell";
-import { Patient, FieldName, FieldValue } from "../../library/patient";
+import { Patient, FieldName, FieldValue, PatientField } from "../../library/patient";
 
 export enum RawState {
     Editing = "Save",
@@ -8,6 +8,7 @@ export enum RawState {
     Frozen = "Frozen"
 }
 export type TableRawProps = {
+    patientTemplate: Patient,
     patient: Patient,
     editState: RawState,
     onEdit: (id: number, fieldName: FieldName, newValue: FieldValue) => void,
@@ -16,13 +17,19 @@ export type TableRawProps = {
 }
 
 export function TableRaw(props: TableRawProps) {
-    var rawCells = props.patient.fields.map(field => {
-        return (<RawCell
-            key={field.name}
-            setEntityValue={newValue => props.onEdit(props.patient.id, field.name, newValue)}
-            value={field.value}
-            isEditing={props.editState === RawState.Editing}
-        />)
+    var rawCells = props.patientTemplate.fields.map(templateField => {
+        var field = props.patient.fields.find(f => f.name === templateField.name);
+
+        return (
+            field ?
+                (<RawCell
+                    key={field.name}
+                    setEntityValue={newValue => props.onEdit(props.patient.id, (field as PatientField).name, newValue)}
+                    value={field.value}
+                    isEditing={props.editState === RawState.Editing}
+                />) :
+                (<div>Не указано</div>)
+        );
     });
 
     return (
@@ -40,7 +47,7 @@ export function TableRaw(props: TableRawProps) {
                     onClick={e => props.onDelete(props.patient.id)}
                     disabled={props.editState === RawState.Frozen}
                 >
-                    Delete
+                    Удалить
                 </button>
             </td>
             {rawCells}
@@ -50,9 +57,9 @@ export function TableRaw(props: TableRawProps) {
 
 function getEditBtnLabel(rawState: RawState) {
     switch (rawState) {
-        case RawState.Editing: return "Save";
-        case RawState.Saved: return "Edit";
-        case RawState.Frozen: return "Edit";
+        case RawState.Editing: return "Сохранить";
+        case RawState.Saved: return "Изменить";
+        case RawState.Frozen: return "Изменить";
         default: console.log("Unknown btn edit state");
     }
 }

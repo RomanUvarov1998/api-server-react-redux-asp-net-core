@@ -7,20 +7,29 @@ namespace api_web_server.ViewModels
 {
     public class PatientVM
     {
+        public PatientVM() { }
         public PatientVM(Patient instance)
         {
             Fields = instance.Fields
                 .Select(f => new PatientFieldVM(f))
                 .ToList();
 
-                Id = instance.Id;
+            Id = instance.Id;
+        }
+        public static PatientVM CreateEmpty(List<FieldName> fieldNames)
+        {
+            PatientVM patient = new PatientVM()
+            {
+                Fields = fieldNames
+                    .Select(fn => PatientFieldVM.CreateEmpty(fn))
+                    .ToList(),
+                Id = 0
+            };
+            return patient;
         }
 
         public List<PatientFieldVM> Fields { get; set; }
 
         public int Id { get; set; }
-
-        public static List<PatientVM> GetList(List<Patient> instances) =>
-            instances.Select(p => new PatientVM(p)).ToList();
     }
 }

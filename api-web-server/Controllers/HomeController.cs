@@ -9,7 +9,7 @@ using Microsoft.EntityFrameworkCore;
 namespace api_web_server
 {
     [ApiController]
-    [Route("[controller]")]
+    // [Route("[controller]")]
     public class HomeController : ControllerBase
     {
         public HomeController(MyContext dbContext)
@@ -17,14 +17,27 @@ namespace api_web_server
             this.dbContext = dbContext;
         }
 
-        [HttpGet]
-        public IEnumerable<PatientVM> Index()
+        [HttpGet("home/patients")]
+        public IEnumerable<PatientVM> GetPatients()
         {
             List<Patient> ps = dbContext.Patients
                 .Include(p => p.Fields)
                 .ThenInclude(f => f.Name)
                 .ToList();
-            return PatientVM.GetList(ps);
+
+            return ps
+                .Select(p => new PatientVM(p))
+                .ToList();
+        }
+
+        [HttpGet("home/template")]
+        public PatientVM GetTemplate()
+        {
+            List<FieldName> fns = dbContext.FieldNames.ToList();
+                
+            PatientVM pvm = PatientVM.CreateEmpty(fns);
+
+            return pvm;
         }
 
         private MyContext dbContext;
