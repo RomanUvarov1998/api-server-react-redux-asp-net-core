@@ -7,21 +7,25 @@ export class PatientField {
         this.value = _value;
     }
 
+    public copy = (): PatientField => new PatientField(this.name, this.value);
+
     public value: FieldValue;
     public name: FieldName;
 }
 
 export class Patient {
-    constructor(fields: PatientField[], id: number) {
+    constructor(fields: PatientField[], databaseId: string, localId: number) {
         this.fields = fields;
-        this.id = id;
+        this.databaseId = databaseId;
+        this.localId = localId;
     }
 
     fields: PatientField[];
-    id: number;
+    databaseId: string;
+    localId: number;
 
-    public update = (fieldName: FieldName, newFieldValue: FieldValue) => {
-        var newFields = this.fields.map((field) => {
+    public updateField = (fieldName: FieldName, newFieldValue: FieldValue) => {
+        var newFields = this.fields.map(field => {
             if (field.name === fieldName) {
                 return new PatientField(fieldName, newFieldValue);
             } else {
@@ -29,22 +33,43 @@ export class Patient {
             }
         });
 
-        return new Patient(newFields, this.id);
+        return new Patient(newFields, this.databaseId, this.localId);
+    }
+
+    public updateWhole = (template: Patient) => {
+        var newFields = template.fields.map(field => field.copy());
+
+        return new Patient(newFields, this.databaseId, this.localId);
     }
 
     public copy = (): Patient => {
         return new Patient(
             this.fields.map(f => new PatientField(f.name, f.value)),
-            this.id
+            this.databaseId,
+            this.localId
         );
     }
-    public equals = (item: Patient): boolean => item.id === this.id;
+    public equals = (item: Patient): boolean => item.localId === this.localId;
+    public equalsByFields = (item: Patient): boolean => {
+        var eq = true;
+
+        this.fields.forEach(field => {
+            if (!eq) return;
+            var itemField = item.fields.find(f => f.name === field.name);
+            if (!itemField || itemField.value !== field.value) {
+                eq = false;
+            }
+        });
+
+        return eq;
+    }
 }
 
-export function filteredList(
+export function filteredSortedList(
     patientsList: Patient[],
     patientTemplate: Patient,
-    additionalFilter: (p: Patient) => boolean
+    additionalFilter: (p: Patient) => boolean,
+    sortBy: (p: Patient) => number
 ): Patient[] {
     var res = patientsList.filter(p => {
         var contains = true;
@@ -64,13 +89,13 @@ export function filteredList(
         return contains;
     });
 
-    return res;
+    return res.sort(sortBy);
 }
 
 export function toPatient(obj: any): Patient {
     let fields = obj.fields as PatientField[];
-    let id = obj.id as number;
-    return new Patient(fields, id);
+    let id = obj.databaseId as number;
+    return new Patient(fields, id.toString(), id);
 }
 export function toPatientField(obj: any): PatientField {
     let name = obj.name as string;

@@ -1,15 +1,17 @@
-export class History<Item extends ICopy<Item>> {
-    constructor() {
+export class History<Item extends ICopy<Item>, TId> {
+    constructor(getId: (item: Item) => TId) {
         this.listHistory = [];
         this.cursor = 0;
+        this.idsToDelete = [];
+        this.getId = getId;
     }
 
     public add(newItem: Item, listBefore: Item[]): Item[] {
         return this.addAndApplyAction(
             listBefore,
             {
-                redo: list => this.copyList(list).concat([newItem]),
-                undo: list => this.copyList(list).filter(it => !it.equals(newItem)),
+                redo: list => copyList(list).concat([newItem]),
+                undo: list => copyList(list).filter(it => !it.equals(newItem)),
             }
         );
     }
@@ -20,7 +22,7 @@ export class History<Item extends ICopy<Item>> {
             listBefore,
             {
                 redo: list => {
-                    let newList = this.copyList(list).map(
+                    let newList = copyList(list).map(
                         el =>
                             el.equals(itemToEdit) ?
                                 editedItem :
@@ -29,7 +31,7 @@ export class History<Item extends ICopy<Item>> {
                     return newList;
                 },
                 undo: list => {
-                    let newList = this.copyList(list).map(
+                    let newList = copyList(list).map(
                         el =>
                             el.equals(itemToEdit) ?
                                 itemToEdit :
@@ -47,8 +49,14 @@ export class History<Item extends ICopy<Item>> {
         return this.addAndApplyAction(
             listBefore,
             {
-                redo: list => this.copyList(list).filter(it => !it.equals(deletedItem as Item)),
-                undo: list => this.copyList(list).concat([deletedItem as Item]),
+                redo: list => {
+                    this.addIdToDelete(this.getId((deletedItem as Item)));
+                    return copyList(list).filter(it => !it.equals(deletedItem as Item))
+                },
+                undo: list => {
+                    this.removeIdToDelete(this.getId((deletedItem as Item)));
+                    return copyList(list).concat([deletedItem as Item])
+                },
             }
         );
     }
@@ -68,15 +76,17 @@ export class History<Item extends ICopy<Item>> {
 
     public isEmpty = (): boolean => this.listHistory.length > 0 && this.cursor > 0;
 
+    public getIdsToDelete(): TId[] {
+        let idsToDelete = this.idsToDelete.slice();  
+        this.listHistory = [];
+        this.idsToDelete = [];
+        this.cursor = 0;      
+        return idsToDelete;
+    }
+
+    private getId: (item: Item) => TId;
     private listHistory: HistoryAction<Item>[];
     private cursor: number;
-    private copyList(list: Item[]): Item[] {
-        if (!list || list.length === 0) {
-            return [];
-        } else {
-            return list.map(el => el.copy());
-        }
-    }
     private addAndApplyAction(list: Item[], action: HistoryAction<Item>): Item[] {
         if (this.cursor < this.listHistory.length - 1) {
             this.listHistory = this.listHistory.slice(0, this.cursor);
@@ -88,6 +98,14 @@ export class History<Item extends ICopy<Item>> {
 
         return newList;
     }
+    private idsToDelete: TId[];
+    private addIdToDelete(idToDelete: TId) {
+        this.removeIdToDelete(idToDelete);
+        this.idsToDelete.push(idToDelete);
+    }
+    private removeIdToDelete(idToDelete: TId) {
+        this.idsToDelete = this.idsToDelete.filter(id => id !== idToDelete);
+    }
 }
 
 type HistoryAction<Item extends ICopy<Item>> = {
@@ -98,4 +116,12 @@ type HistoryAction<Item extends ICopy<Item>> = {
 export interface ICopy<Item> {
     copy: () => Item,
     equals: (item: Item) => boolean,
+}
+
+export function copyList<Item extends ICopy<Item>>(list: Item[]): Item[] {
+    if (!list || list.length === 0) {
+        return [];
+    } else {
+        return list.map(el => el.copy());
+    }
 }

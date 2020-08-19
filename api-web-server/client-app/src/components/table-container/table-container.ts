@@ -10,7 +10,8 @@ type TableContainerState = {
     patientsList: Patient[],
     patientTemplate: Patient,
     editingId: number,
-    history: History<Patient>
+    editingPatient: Patient | null,
+    history: History<Patient, string>
 }
 const mapStateToProps = (state: TableContainerState): TableProps => {
     return {
@@ -19,6 +20,7 @@ const mapStateToProps = (state: TableContainerState): TableProps => {
         patientsList: (state as any).red.patientsList,
         patientTemplate: (state as any).red.patientTemplate,
         editingId: (state as any).red.editingId,
+        editingPatient: (state as any).red.editingPatient,
         history: (state as any).red.history,
         onAdd: Actions.add,
         onStartEditing: Actions.startEditing,
@@ -27,7 +29,6 @@ const mapStateToProps = (state: TableContainerState): TableProps => {
         onSetSearchTemplate: Actions.setSearchTemplate,
         onUndo: Actions.undo,
         onRedo: Actions.redo,
-        onSave: Actions.save
     }
 };
 
@@ -47,10 +48,10 @@ const mergeProps = (stateProps: any, dispatchProps: any, ownProps: any) => {
         ...dispatchProps,
         ...ownProps
     };
-}
+};
 
 export const TableContainer = connect(
     mapStateToProps,
     mapDispatchToProps,
     mergeProps
-)(Table)
+)(Table);

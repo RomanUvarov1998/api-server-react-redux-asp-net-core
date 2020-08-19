@@ -24,7 +24,14 @@ export function TableRaw(props: TableRawProps) {
             field ?
                 (<RawCell
                     key={field.name}
-                    setEntityValue={newValue => props.onEdit(props.patient.id, (field as PatientField).name, newValue)}
+                    setEntityValue={
+                        newValue =>
+                            props.onEdit(
+                                props.patient.localId,
+                                (field as PatientField).name,
+                                newValue
+                            )
+                    }
                     value={field.value}
                     isEditing={props.editState === RawState.Editing}
                 />) :
@@ -36,19 +43,15 @@ export function TableRaw(props: TableRawProps) {
         <tr>
             <td>
                 <button
-                    onClick={e => props.onStartEditing(props.patient.id)}
+                    onClick={e => props.onStartEditing(props.patient.localId)}
                     disabled={props.editState === RawState.Frozen}
-                >
-                    {getEditBtnLabel(props.editState)}
-                </button>
+                >{getEditBtnLabel(props.editState)}</button>
             </td>
             <td>
                 <button
-                    onClick={e => props.onDelete(props.patient.id)}
+                    onClick={e => props.onDelete(props.patient.localId)}
                     disabled={props.editState === RawState.Frozen}
-                >
-                    Удалить
-                </button>
+                >Удалить</button>
             </td>
             {rawCells}
         </tr>

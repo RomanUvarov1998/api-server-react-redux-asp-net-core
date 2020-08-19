@@ -42,6 +42,8 @@ namespace api_web_server
             //         Configuration.GetConnectionString("DefaultConnection")
             //     )
             // );
+
+            services.AddCors();
         }
         public IConfiguration Configuration { get; }
 
@@ -52,6 +54,11 @@ namespace api_web_server
             {
                 app.UseDeveloperExceptionPage();
             }
+            app.UseCors(builder =>
+                builder
+                    .AllowAnyOrigin()
+                    .AllowAnyHeader()
+            );
 
             app.UseRouting();
 

@@ -1,7 +1,7 @@
 import * as React from "react"
 import { Button, ButtonGroup, ButtonToolbar } from 'reactstrap';
 import { TableRaw, RawState } from '../table-raw/table-raw'
-import { Patient, FieldValue, FieldName, filteredList } from "../../library/patient";
+import { Patient, FieldValue, FieldName, filteredSortedList } from "../../library/patient";
 import { SearchBar } from '../search-bar/search-bar'
 import * as Actions from '../../store/actions';
 import { History } from '../../library/history'
@@ -12,15 +12,15 @@ export type TableProps = {
     patientTemplate: Patient,
     patientsList: Patient[],
     editingId: number,
-    history: History<Patient>,
+    editingPatient: Patient | null,
+    history: History<Patient, string>,
     onAdd: () => Actions.ActionAddPatient,
     onStartEditing: (id: number) => Actions.ActionStartEditingPatient,
     onEdit: (id: number, fieldName: FieldName, newValue: FieldValue) => Actions.ActionEditPatient,
     onDelete: (id: number) => Actions.ActionDeletePatient,
     onSetSearchTemplate: (fieldName: FieldName, newValue: FieldValue) => Actions.ActionSetSearchTemplate,
     onUndo: () => Actions.ActionUndo,
-    onRedo: () => Actions.ActionRedo,
-    onSave: () => Actions.ActionSave
+    onRedo: () => Actions.ActionRedo
 }
 
 export class Table extends React.Component<TableProps, {}, {}> {
@@ -29,10 +29,10 @@ export class Table extends React.Component<TableProps, {}, {}> {
         var tableHeaderCells;
         var tableRows;
         var isLoadingSomething = false;
-    
+
         if (!this.props.isWaitingPatientFields) {
             if (!this.props.patientTemplate) throw Error("patientTemplate is null");
-    
+
             tableHeaderCells = [
                 <th key={"btnEdit"}></th>,
                 <th key={"btnDelete"}></th>
@@ -56,21 +56,26 @@ export class Table extends React.Component<TableProps, {}, {}> {
             searchBar = (<p>Загрузка полей пациента...</p>);
             isLoadingSomething = true;
         }
-    
+
         if (!this.props.isWaitingPatientsList) {
             if (!this.props.patientTemplate) throw Error("patientTemplate is null");
-    
-            tableRows = filteredList(
+
+            tableRows = filteredSortedList(
                 this.props.patientsList,
                 this.props.patientTemplate,
-                p => p.id === this.props.editingId
+                p => p.localId === this.props.editingId,
+                p => p.localId
             )
                 .map((patient, ind) =>
                     (<TableRaw
                         key={ind}
                         patientTemplate={this.props.patientTemplate}
-                        patient={patient}
-                        editState={getRawState(this.props.editingId, patient.id)}
+                        patient={
+                            this.props.editingId === patient.localId ?
+                                (this.props.editingPatient as Patient) :
+                                patient
+                        }
+                        editState={getRawState(this.props.editingId, patient.localId)}
                         onEdit={this.props.onEdit}
                         onStartEditing={this.props.onStartEditing}
                         onDelete={this.props.onDelete}
@@ -82,7 +87,7 @@ export class Table extends React.Component<TableProps, {}, {}> {
             );
             isLoadingSomething = true;
         }
-    
+
         return (
             <div>
                 <h1>Поиск:</h1>
@@ -91,8 +96,8 @@ export class Table extends React.Component<TableProps, {}, {}> {
                 <ButtonToolbar>
                     <ButtonGroup>
                         <Button
-                        onClick={this.props.onSave}
-                        disabled={isLoadingSomething || !this.props.history.isEmpty()}
+                            onClick={e => this.savePatients()}
+                            disabled={isLoadingSomething || !this.props.history.isEmpty() || this.props.editingId > 0}
                         >Сохранить изменения</Button>
                     </ButtonGroup>
                     <ButtonGroup>
@@ -124,6 +129,14 @@ export class Table extends React.Component<TableProps, {}, {}> {
                 </table>
             </div >
         );
+    }
+    private savePatients() {
+        let ids = this.props.history.getIdsToDelete();
+        (this.props as any)
+            .savePatients(
+                this.props.patientsList,
+                ids
+            );
     }
 }
 

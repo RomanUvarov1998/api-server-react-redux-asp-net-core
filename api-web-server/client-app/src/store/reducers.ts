@@ -1,12 +1,6 @@
 import { Patient, FieldValue, FieldName, PatientField } from "../library/patient";
 import { AppState } from '../components/App'
 
-export const onWait = (state: AppState): AppState => {
-    return {
-        ...state,
-    }
-}
-
 export const onRecievePatients = (state: AppState, patients: Patient[]): AppState => {
     return {
         ...state,
@@ -25,10 +19,13 @@ export const onAdd = (state: AppState): AppState => {
     if (state.editingId) return state;
     if (!state.patientTemplate) return state;
 
-    var newLocalId = 1;
+    var editingId = 1;
+    var editingPatient;
+    var patientsList;
+
     state.patientsList.forEach(p => {
-        if (p.id >= newLocalId) {
-            newLocalId = p.id + 1;
+        if (p.localId >= editingId) {
+            editingId = p.localId + 1;
         }
     });
 
@@ -36,52 +33,72 @@ export const onAdd = (state: AppState): AppState => {
         state.patientTemplate?.fields.map(
             f => new PatientField(f.name, f.value)
         ),
-        newLocalId
+        "0",
+        editingId
     );
-    var patientsList = state.history.add(newPatient, state.patientsList);
+    patientsList = state.history.add(newPatient, state.patientsList);
+    editingPatient = newPatient.copy();
 
     return ({
         ...state,
-        editingId: newPatient.id,
+        editingId,
+        editingPatient,
         patientsList
     })
 }
 
-export const onEdit = (state: AppState, id: number, fieldName: FieldName, newValue: FieldValue): AppState => {
-    let itemToEdit = state.patientsList.find(p => p.id === id);
-    if (!itemToEdit) throw Error("itemToEdit reducers.ts");
-
-    let updatedPatientsList = state.history.edit(
-        itemToEdit as Patient,
-        p => p.update(fieldName, newValue),
-        state.patientsList
-    );
-
-    return {
-        ...state,
-        patientsList: updatedPatientsList
-    };
-}
-
 export const onStartEditing = (state: AppState, id: number): AppState => {
-    var newId = state.editingId;
+    var editingId;
+    var editingPatient;
+    var patientsList;
 
-    if (state.editingId !== id) {
-        if (state.editingId) return state;
-        newId = id;
-    } else {
-        newId = 0;
+    var patientToEdit = state.patientsList.find(p => p.localId === id);
+    if (!patientToEdit) throw Error("reducers.ts pat");
+
+    if (state.editingId === 0) { // start edit patient
+        editingId = id;
+        editingPatient = patientToEdit.copy();
+        patientsList = state.patientsList;
+    } else { // save patient
+        editingId = 0;
+        if (!state.editingPatient) throw Error("reducers.ts editingPatient");
+
+        if (!(state.editingPatient as Patient).equalsByFields(patientToEdit)) {
+            var template = (state.editingPatient as Patient).copy();
+            patientsList = state.history.edit(
+                patientToEdit,
+                p => p.updateWhole(template),
+                state.patientsList
+            );
+        } else {
+            patientsList = state.patientsList;
+        }
+
+        editingPatient = null;
     }
 
     return ({
         ...state,
-        editingId: newId
+        patientsList,
+        editingId,
+        editingPatient
     });
+}
+
+export const onEdit = (state: AppState, fieldName: FieldName, newValue: FieldValue): AppState => {
+    if (!state.editingPatient) throw Error("editingPatient reducers.ts");
+
+    var editingPatient = (state.editingPatient as Patient).updateField(fieldName, newValue);
+
+    return {
+        ...state,
+        editingPatient
+    };
 }
 
 export const onDelete = (state: AppState, id: number): AppState => {
     var patientsList = state.history.del(
-        patient => patient.id === id,
+        patient => patient.localId === id,
         state.patientsList
     );
 
@@ -95,7 +112,7 @@ export const onDelete = (state: AppState, id: number): AppState => {
 export const onSetSearchTemplate = (state: AppState, newValue: FieldValue, fieldName: FieldName): AppState => {
     if (!state.patientTemplate) return state;
 
-    var patientTemplate = state.patientTemplate.update(fieldName, newValue);
+    var patientTemplate = state.patientTemplate.updateField(fieldName, newValue);
     return ({
         ...state,
         editingId: 0,

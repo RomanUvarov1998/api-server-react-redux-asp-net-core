@@ -7,6 +7,13 @@ export function configureStore(initialState: AppState) {
     const red = (state = initialState, action: { type: string }): AppState => {
         let a;
         switch (action.type) {
+            case Actions.ACTION_START_WAITING:
+                a = action as Actions.ActionStartWaiting;
+                return {
+                    ...state,
+                    isWaitingPatientFields: a.waitPatientFields,
+                    isWaitingPatientsList: a.waitPatients
+                };
             case Actions.ACTION_RECIEVE_PATIENTS:
                 a = action as Actions.ActionRecievePatients;
                 return Reducers.onRecievePatients(
@@ -39,7 +46,6 @@ export function configureStore(initialState: AppState) {
                 a = (action as Actions.ActionEditPatient);
                 return Reducers.onEdit(
                     state,
-                    a.patientId,
                     a.fieldName,
                     a.newValue
                 );
@@ -62,6 +68,9 @@ export function configureStore(initialState: AppState) {
             case Actions.ACTION_REDO:
                 a = action as Actions.ActionUndo;
                 return Reducers.onRedo(state);
+            case Actions.ACTION_SAVE:
+                a = action as Actions.ActionSave;
+                return Reducers.onSave(state);
             default:
                 return state;
         }

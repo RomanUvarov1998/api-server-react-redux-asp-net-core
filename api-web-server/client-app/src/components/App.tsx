@@ -2,10 +2,10 @@ import React from 'react';
 import { Provider } from 'react-redux';
 import './App.css';
 import { TableContainer } from './table-container/table-container'
-import { Patient, PatientField, toPatient, toPatientField } from "../library/patient";
 import { configureStore } from '../store/my-store';
-import { History } from '../library/history';
 import * as Actions from '../store/actions';
+import { History } from '../library/history';
+import { Patient, toPatient, toPatientField } from "../library/patient";
 
 type AppProps = {
 
@@ -16,7 +16,14 @@ export type AppState = {
   patientsList: Patient[],
   patientTemplate: Patient | null,
   editingId: number,
-  history: History<Patient>,
+  editingPatient: Patient | null,
+  history: History<Patient, string>,
+  errorMsg: string
+}
+
+type PatientsChanges = {
+  patientsToSave: Patient[],
+  idsToDelete: number[]
 }
 
 export class App extends React.Component<AppProps, AppState, {}> {
@@ -37,7 +44,7 @@ export class App extends React.Component<AppProps, AppState, {}> {
     return (
       <div>
         <Provider store={this.store}>
-          <TableContainer />
+          <TableContainer savePatients={this.savePatients} />
         </Provider>
       </div>
     );
@@ -50,18 +57,18 @@ export class App extends React.Component<AppProps, AppState, {}> {
       patientsList: [],
       patientTemplate: null,
       editingId: 0,
-      history: new History<Patient>(),
+      editingPatient: null,
+      history: new History<Patient, string>(p => p.databaseId),
+      errorMsg: ""
     };
   }
 
   private loadPatients() {
-    fetch(`home/patients`)
-      .then(response => {
-        let rj = response.json();
-        let rjp = rj as Promise<Patient[]>;
-        return rjp;
-      })
-      .then(data => {
+    myFetch<Patient[]>(
+      `home/patients`,
+      undefined, 
+      undefined,
+      data => {
         let ps = data.map(el => toPatient(el));
         this.store.dispatch(Actions.recievePatients(ps));
       });
@@ -76,12 +83,74 @@ export class App extends React.Component<AppProps, AppState, {}> {
       })
       .then(data => {
         let ps = data.fields.map(el => toPatientField(el));
-        let pt = new Patient(ps, 0);
+        let pt = new Patient(ps, "0", 0);
         this.store.dispatch(Actions.recievePatientFields(pt));
-        
+
         this.loadPatients();
       });
   }
+
+  private savePatients = (listToSave: Patient[], idsToDelete: number[]) => {
+    var editingId = this.store.getState().red.editingId;
+
+    if (editingId) {
+      this.store.dispatch(Actions.startEditing(editingId));
+    }
+
+    this.store.dispatch(Actions.startWaiting(true, false));
+
+    var bodyObj: PatientsChanges = {
+      patientsToSave: listToSave,
+      idsToDelete
+    };
+    var body = JSON.stringify(bodyObj);
+
+    fetch(`home/savechanges`, {
+      method: 'POST',
+      body
+    })
+      .then(response => {
+        let rj = response.json();
+        let rjp = rj as Promise<Patient[]>;
+        return rjp;
+      })
+      .then(data => {
+        let ps = data.map(el => toPatient(el));
+        this.store.dispatch(Actions.recievePatients(ps));
+
+        this.loadPatients();
+      });
+  }
+}
+
+function myFetch<TData>(
+  url: string,
+  method: string | undefined = 'GET',
+  body: string | undefined = undefined,
+  myThen: (data: TData) => void
+) {
+  fetch(url, { method, body })
+    .then(response => {
+      if (!response.ok){
+        console.error(response.statusText);
+      }
+      return response.text();      
+    })
+    .then(text => {
+      try {
+        let data = JSON.parse(text) as TData;
+        myThen(data);
+      } 
+      catch (e) 
+      {
+        let rootElement = document.getElementById("root");
+        if (rootElement) {
+          rootElement.innerHTML = text + e.toString();
+        } else {
+          console.log(text);
+        }
+      }
+    });
 }
 
 export default App;
