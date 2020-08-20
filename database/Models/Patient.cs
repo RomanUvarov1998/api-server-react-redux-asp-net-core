@@ -1,10 +1,12 @@
+using System.Linq;
 using System.Collections.Generic;
+using System;
 
 namespace database.Models
 {
     public class Patient : ModelBase
     {
-        public Patient() 
+        public Patient()
         {
             Fields = new HashSet<PatientField>();
         }

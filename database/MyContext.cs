@@ -13,7 +13,7 @@ namespace database
         public DbSet<PatientField> PatientFields { get; set; }
         public DbSet<FieldName> FieldNames { get; set; }
 
-        public MyContext()
+        public MyContext(DbContextOptions<MyContext> options) : base(options)
         {
             //Database.EnsureDeleted();
             Database.EnsureCreated();
@@ -89,9 +89,9 @@ namespace database
                 .HasForeignKey(p => p.NameId);
         }
 
-        protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
-        {
-            optionsBuilder.UseSqlite("Data Source=/home/roma-uvarov/Documents/ASP.NET_Core/from-empty-react-redux/database/bin/Debug/netstandard2.0/MyDB.db;");
-        }
+        // protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
+        // {
+        //     optionsBuilder.UseSqlite("Data Source=/home/roma-uvarov/Documents/ASP.NET_Core/from-empty-react-redux/database/bin/Debug/netstandard2.0/MyDB.db;");
+        // }
     }
 }

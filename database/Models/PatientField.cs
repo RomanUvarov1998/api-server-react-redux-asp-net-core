@@ -2,6 +2,12 @@ namespace database.Models
 {
     public class PatientField
     {
+        public PatientField() { }
+        public PatientField(FieldName name)
+        {
+            Name = name;
+            Value = string.Empty;
+        }
         public int PatientId { get; set; }
         public int NameId { get; set; }
         public string Value { get; set; }

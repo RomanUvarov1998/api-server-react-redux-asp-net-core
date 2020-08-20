@@ -11,6 +11,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.AspNetCore.HttpsPolicy;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.SpaServices.ReactDevelopmentServer;
+using Microsoft.EntityFrameworkCore;
 using database;
 
 namespace api_web_server
@@ -36,12 +37,34 @@ namespace api_web_server
                 configuration.RootPath = "client-app/build";
             });
 
-            services.AddEntityFrameworkSqlite().AddDbContext<MyContext>();
-            // services.AddDbContext<MyContext>(
-            //     options => options.UseSqlite(
-            //         Configuration.GetConnectionString("DefaultConnection")
-            //     )
-            // );
+            // services.AddEntityFrameworkSqlite().AddDbContext<MyContext>();
+
+            string databaseProvider = Configuration["CustomChosenDB"];
+            switch (databaseProvider)
+            {
+                case "SQLite":
+                    services.AddDbContext<MyContext>(
+                        options => options.UseSqlite(
+                            Configuration.GetConnectionString(databaseProvider)
+                        )
+                    );
+                    break;
+                case "MSSqlServer":
+                    services.AddDbContext<MyContext>(
+                        options => options.UseSqlServer(
+                            Configuration.GetConnectionString(databaseProvider)
+                        )
+                    );
+                    break;
+                default:
+                    throw new Exception("Необходимо установить строку подключения в appsettings.json в поле 'CustomChosenDB'");
+            }
+
+            services.AddDbContext<MyContext>(
+                options => options.UseSqlite(
+                    Configuration.GetConnectionString("DefaultConnection")
+                )
+            );
 
             services.AddCors();
         }
