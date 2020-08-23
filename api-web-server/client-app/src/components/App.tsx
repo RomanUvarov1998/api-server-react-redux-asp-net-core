@@ -44,7 +44,10 @@ export class App extends React.Component<AppProps, AppState, {}> {
     return (
       <div>
         <Provider store={this.store}>
-          <TableContainer savePatients={this.savePatients} />
+          <TableContainer
+            savePatients={this.savePatients}
+            // savePatient={this.savePatient}
+          />
         </Provider>
       </div>
     );
@@ -65,8 +68,8 @@ export class App extends React.Component<AppProps, AppState, {}> {
 
   private loadPatients() {
     myFetch<Patient[]>(
-      `home/patients`,
-      undefined, 
+      'home/patients',
+      undefined,
       undefined,
       data => {
         let ps = data.map(el => toPatient(el));
@@ -75,19 +78,18 @@ export class App extends React.Component<AppProps, AppState, {}> {
   }
 
   private loadPatientFields() {
-    fetch(`home/template`)
-      .then(response => {
-        let rj = response.json();
-        let rjp = rj as Promise<Patient>;
-        return rjp;
-      })
-      .then(data => {
+    myFetch<Patient>(
+      'home/template',
+      'GET',
+      undefined,
+      data => {
         let ps = data.fields.map(el => toPatientField(el));
         let pt = new Patient(ps, "0", 0);
         this.store.dispatch(Actions.recievePatientFields(pt));
 
         this.loadPatients();
-      });
+      }
+    );
   }
 
   private savePatients = (listToSave: Patient[], idsToDelete: number[]) => {
@@ -105,21 +107,17 @@ export class App extends React.Component<AppProps, AppState, {}> {
     };
     var body = JSON.stringify(bodyObj);
 
-    fetch(`home/savechanges`, {
-      method: 'POST',
-      body
-    })
-      .then(response => {
-        let rj = response.json();
-        let rjp = rj as Promise<Patient[]>;
-        return rjp;
-      })
-      .then(data => {
+    myFetch<Patient[]>(
+      'home/savechanges',
+      'POST',
+      body,
+      data => {
         let ps = data.map(el => toPatient(el));
         this.store.dispatch(Actions.recievePatients(ps));
 
         this.loadPatients();
-      });
+      }
+    );
   }
 }
 
@@ -131,18 +129,17 @@ function myFetch<TData>(
 ) {
   fetch(url, { method, body })
     .then(response => {
-      if (!response.ok){
+      if (!response.ok) {
         console.error(response.statusText);
       }
-      return response.text();      
+      return response.text();
     })
     .then(text => {
       try {
         let data = JSON.parse(text) as TData;
         myThen(data);
-      } 
-      catch (e) 
-      {
+      }
+      catch (e) {
         let rootElement = document.getElementById("root");
         if (rootElement) {
           rootElement.innerHTML = text + e.toString();

@@ -7,4 +7,3 @@ database/bin/
 database/obj/
 
 *.db
-api-web-server/MyDB_SQLite.db
