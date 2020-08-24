@@ -60,8 +60,6 @@ namespace api_web_server
             List<FieldName> existingFieldNames;
             Patient patient;
 
-            await Task.Run(() => Thread.Sleep(1000));
-
             switch (patientVM.Status)
             {
                 case Status.Added:
@@ -75,12 +73,18 @@ namespace api_web_server
                     patient = dbContext.Patients
                         .Include(p => p.Fields)
                         .ThenInclude(f => f.Name)
-                        .First(p => p.Id == patientVM.DatabaseId);
+                        .FirstOrDefault(p => p.Id == patientVM.DatabaseId);
+
+                    if (patient == null) return NotFound();
+
                     patientVM.UpdateModel(patient, existingFieldNames);
                     break;
                 case Status.Deleted:
                     patient = dbContext.Patients
-                        .First(p => p.Id == patientVM.DatabaseId);
+                        .FirstOrDefault(p => p.Id == patientVM.DatabaseId);
+
+                    if (patient == null) return NotFound();
+
                     dbContext.Patients.Remove(patient);
                     break;
             }
@@ -90,78 +94,6 @@ namespace api_web_server
             return Ok();
         }
 
-        [HttpPost("home/savechanges")]
-        public async Task<List<PatientVM>> SaveChanges(
-                    // [FromBody] IEnumerable<PatientVM> patientsToSave
-                    )
-        {
-            HttpRequest request = this.Request;
-            StreamReader stream = new StreamReader(request.Body);
-            string json = await stream.ReadToEndAsync();
-
-            PatientListChangesVM changes = JsonConvert
-                .DeserializeObject<PatientListChangesVM>(json);
-
-            IEnumerable<PatientVM> patientsToSave =
-                changes.PatientsToSave
-                ?? throw new Exception("null list");
-            IEnumerable<int> idsToDelete =
-                changes.IdsToDelete
-                ?? throw new Exception("null list");
-
-            List<FieldName> existingFieldNames = dbContext.FieldNames.ToList();
-
-            foreach (PatientVM patientVM in patientsToSave)
-            {
-                List<FieldName> fieldNames = dbContext.FieldNames.ToList();
-
-                Patient existingPatient;
-
-                if (patientVM.DatabaseId > 0)
-                {
-                    existingPatient = dbContext.Patients
-                        .Include(p => p.Fields)
-                        .ThenInclude(f => f.Name)
-                        .FirstOrDefault(p => p.Id == patientVM.DatabaseId);
-
-                    if (existingPatient == null)
-                        throw new Exception($"Couldn't find patient {patientVM.DatabaseId}");
-                }
-                else
-                {
-                    existingPatient = new Patient();
-                    dbContext.Patients.Add(existingPatient);
-                }
-
-                if (patientVM.UpdateModel(existingPatient, existingFieldNames))
-                {
-                    dbContext.SaveChanges();
-                }
-            }
-
-            foreach (int idToDelete in idsToDelete)
-            {
-                Patient patientToDelete = dbContext.Patients
-                        .FirstOrDefault(p => p.Id == idToDelete);
-
-                if (patientToDelete == null)
-                    throw new Exception($"Couldn't find patient {idToDelete} to delete");
-
-                dbContext.Patients.Remove(patientToDelete);
-
-                dbContext.SaveChanges();
-            }
-
-            var refreshedPatients = dbContext.Patients
-                .Include(p => p.Fields)
-                .ThenInclude(f => f.Name)
-                .ToList();
-
-            return refreshedPatients
-                .Select(p => new PatientVM(p))
-                .ToList();
-        }
-
-        private MyContext dbContext;
+        private readonly MyContext dbContext;
     }
 }
