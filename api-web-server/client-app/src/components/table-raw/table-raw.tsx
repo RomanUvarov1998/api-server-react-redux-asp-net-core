@@ -106,7 +106,7 @@ function statusToString(patient: Patient): string {
             case Status.Added: return "Добавлен";
             case Status.Modified: return "Изменен";
             case Status.Deleted: return "Удален";
-            case Status.Untouched: return "Не тронут";
+            case Status.Untouched: return "";
             default: return "unknown ???";
         }
     }
