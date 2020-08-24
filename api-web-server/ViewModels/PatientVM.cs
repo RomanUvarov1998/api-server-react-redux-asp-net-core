@@ -16,6 +16,7 @@ namespace api_web_server.ViewModels
 
             DatabaseId = instance.Id;
             LocalId = instance.Id;
+            Status = Status.Untouched;
         }
         public static PatientVM CreateEmpty(List<FieldName> fieldNames)
         {
@@ -48,7 +49,8 @@ namespace api_web_server.ViewModels
                     model.Fields.Add(modelField);
                 }
 
-                if (!modelField.Value.Equals(templateField.Value)) {
+                if (!modelField.Value.Equals(templateField.Value))
+                {
                     modelField.Value = templateField.Value;
                     updated = true;
                 }
@@ -61,5 +63,13 @@ namespace api_web_server.ViewModels
 
         public int DatabaseId { get; set; }
         public int LocalId { get; set; }
+        public Status Status { get; set; }
+    }
+    public enum Status
+    {
+        Added,
+        Modified,
+        Deleted,
+        Untouched
     }
 }

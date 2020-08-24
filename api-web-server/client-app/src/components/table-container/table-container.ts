@@ -24,6 +24,7 @@ const mapStateToProps = (state: TableContainerState): TableProps => {
         history: (state as any).red.history,
         onAdd: Actions.add,
         onStartEditing: Actions.startEditing,
+        onFinishEditing: Actions.finishEditing,
         onEdit: Actions.edit,
         onDelete: Actions.del,
         onSetSearchTemplate: Actions.setSearchTemplate,
@@ -35,6 +36,7 @@ const mapStateToProps = (state: TableContainerState): TableProps => {
 const mapDispatchToProps = {
     onAdd: Actions.add,
     onStartEditing: Actions.startEditing,
+    onFinishEditing: Actions.finishEditing,
     onEdit: Actions.edit,
     onDelete: Actions.del,
     onSetSearchTemplate: Actions.setSearchTemplate,

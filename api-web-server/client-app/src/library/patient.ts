@@ -1,3 +1,5 @@
+import { Status, IHistoryItem } from './history';
+
 export type FieldName = string;
 export type FieldValue = string;
 
@@ -13,16 +15,26 @@ export class PatientField {
     public name: FieldName;
 }
 
-export class Patient {
-    constructor(fields: PatientField[], databaseId: string, localId: number) {
+export enum SavingStatus {
+    Saved,
+    Saving
+}
+
+export class Patient implements IHistoryItem<Patient> {
+    constructor(fields: PatientField[], databaseId: string, localId: number,
+        status: Status) {
         this.fields = fields;
         this.databaseId = databaseId;
         this.localId = localId;
+        this.status = status;
+        this.savingStatus = SavingStatus.Saved;
     }
 
     fields: PatientField[];
     databaseId: string;
     localId: number;
+    status: Status;
+    savingStatus: SavingStatus;
 
     public updateField = (fieldName: FieldName, newFieldValue: FieldValue) => {
         var newFields = this.fields.map(field => {
@@ -33,20 +45,39 @@ export class Patient {
             }
         });
 
-        return new Patient(newFields, this.databaseId, this.localId);
+        var newStatus;
+        switch (this.status) {
+            case Status.Added: newStatus = Status.Added; break;
+            case Status.Modified: newStatus = Status.Modified; break;
+            case Status.Deleted: throw new Error("Status is deleted");
+            case Status.Untouched: newStatus = Status.Modified; break;
+            default: throw new Error("Unknown status");
+        }
+
+        return new Patient(newFields, this.databaseId, this.localId, newStatus);
     }
 
     public updateWhole = (template: Patient) => {
         var newFields = template.fields.map(field => field.copy());
 
-        return new Patient(newFields, this.databaseId, this.localId);
+        var newStatus;
+        switch (this.status) {
+            case Status.Added: newStatus = Status.Added; break;
+            case Status.Modified: newStatus = Status.Modified; break;
+            case Status.Deleted: throw new Error("Status is deleted");
+            case Status.Untouched: newStatus = Status.Modified; break;
+            default: throw new Error("Unknown status");
+        }
+
+        return new Patient(newFields, this.databaseId, this.localId, newStatus);
     }
 
     public copy = (): Patient => {
         return new Patient(
             this.fields.map(f => new PatientField(f.name, f.value)),
             this.databaseId,
-            this.localId
+            this.localId,
+            this.status
         );
     }
     public equals = (item: Patient): boolean => item.localId === this.localId;
@@ -95,7 +126,8 @@ export function filteredSortedList(
 export function toPatient(obj: any): Patient {
     let fields = obj.fields as PatientField[];
     let id = obj.databaseId as number;
-    return new Patient(fields, id.toString(), id);
+    let status = obj.status;
+    return new Patient(fields, id.toString(), id, status);
 }
 export function toPatientField(obj: any): PatientField {
     let name = obj.name as string;

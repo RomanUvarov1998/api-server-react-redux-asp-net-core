@@ -42,6 +42,12 @@ export function configureStore(initialState: AppState) {
                     state,
                     a.patientId
                 );
+            case Actions.ACTION_FINISH_EDIT_PATIENT:
+                a = action as Actions.ActionFinishEditingPatient;
+                return Reducers.onFinishEditing(
+                    state,
+                    a.save
+                );
             case Actions.ACTION_EDIT_PATIENT:
                 a = (action as Actions.ActionEditPatient);
                 return Reducers.onEdit(
@@ -68,9 +74,12 @@ export function configureStore(initialState: AppState) {
             case Actions.ACTION_REDO:
                 a = action as Actions.ActionUndo;
                 return Reducers.onRedo(state);
-            case Actions.ACTION_SAVE:
-                a = action as Actions.ActionSave;
-                return Reducers.onSave(state);
+            case Actions.ACTION_START_SAVING:
+                a = action as Actions.ActionStartSaving;
+                return Reducers.onStartSaving(state);
+            case Actions.ACTION_SAVED:
+                a = action as Actions.ActionSaved;
+                return Reducers.onSaved(state, a.patient);
             default:
                 return state;
         }

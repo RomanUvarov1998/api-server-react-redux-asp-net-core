@@ -4,6 +4,7 @@ using System.Linq;
 using System;
 using System.IO;
 using System.Threading.Tasks;
+using System.Threading;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Http;
 using database;
@@ -46,10 +47,53 @@ namespace api_web_server
             return pvm;
         }
 
+        [HttpPost("home/savepatientchanges")]
+        public async Task<IActionResult> SavePatientChange()
+        {
+            HttpRequest request = this.Request;
+            StreamReader stream = new StreamReader(request.Body);
+            string json = await stream.ReadToEndAsync();
+
+            PatientVM patientVM = JsonConvert
+                .DeserializeObject<PatientVM>(json);
+
+            List<FieldName> existingFieldNames;
+            Patient patient;
+
+            await Task.Run(() => Thread.Sleep(1000));
+
+            switch (patientVM.Status)
+            {
+                case Status.Added:
+                    existingFieldNames = dbContext.FieldNames.ToList();
+                    patient = new Patient();
+                    patientVM.UpdateModel(patient, existingFieldNames);
+                    dbContext.Patients.Add(patient);
+                    break;
+                case Status.Modified:
+                    existingFieldNames = dbContext.FieldNames.ToList();
+                    patient = dbContext.Patients
+                        .Include(p => p.Fields)
+                        .ThenInclude(f => f.Name)
+                        .First(p => p.Id == patientVM.DatabaseId);
+                    patientVM.UpdateModel(patient, existingFieldNames);
+                    break;
+                case Status.Deleted:
+                    patient = dbContext.Patients
+                        .First(p => p.Id == patientVM.DatabaseId);
+                    dbContext.Patients.Remove(patient);
+                    break;
+            }
+
+            dbContext.SaveChanges();
+
+            return Ok();
+        }
+
         [HttpPost("home/savechanges")]
         public async Task<List<PatientVM>> SaveChanges(
-            // [FromBody] IEnumerable<PatientVM> patientsToSave
-            )
+                    // [FromBody] IEnumerable<PatientVM> patientsToSave
+                    )
         {
             HttpRequest request = this.Request;
             StreamReader stream = new StreamReader(request.Body);
@@ -58,11 +102,11 @@ namespace api_web_server
             PatientListChangesVM changes = JsonConvert
                 .DeserializeObject<PatientListChangesVM>(json);
 
-            IEnumerable<PatientVM> patientsToSave = 
-                changes.PatientsToSave 
+            IEnumerable<PatientVM> patientsToSave =
+                changes.PatientsToSave
                 ?? throw new Exception("null list");
-            IEnumerable<int> idsToDelete = 
-                changes.IdsToDelete 
+            IEnumerable<int> idsToDelete =
+                changes.IdsToDelete
                 ?? throw new Exception("null list");
 
             List<FieldName> existingFieldNames = dbContext.FieldNames.ToList();
@@ -80,7 +124,7 @@ namespace api_web_server
                         .ThenInclude(f => f.Name)
                         .FirstOrDefault(p => p.Id == patientVM.DatabaseId);
 
-                    if (existingPatient == null) 
+                    if (existingPatient == null)
                         throw new Exception($"Couldn't find patient {patientVM.DatabaseId}");
                 }
                 else
@@ -95,11 +139,12 @@ namespace api_web_server
                 }
             }
 
-            foreach (int idToDelete in idsToDelete) {
+            foreach (int idToDelete in idsToDelete)
+            {
                 Patient patientToDelete = dbContext.Patients
                         .FirstOrDefault(p => p.Id == idToDelete);
 
-                if (patientToDelete == null) 
+                if (patientToDelete == null)
                     throw new Exception($"Couldn't find patient {idToDelete} to delete");
 
                 dbContext.Patients.Remove(patientToDelete);

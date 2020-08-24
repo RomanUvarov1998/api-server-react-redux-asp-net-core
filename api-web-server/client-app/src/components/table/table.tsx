@@ -1,8 +1,8 @@
-import * as React from "react"
+import * as React from 'react';
 import { Button, ButtonGroup, ButtonToolbar } from 'reactstrap';
 import { TableRaw, RawState } from '../table-raw/table-raw'
-import { Patient, FieldValue, FieldName, filteredSortedList } from "../../library/patient";
-import { SearchBar } from '../search-bar/search-bar'
+import { Patient, FieldValue, FieldName, filteredSortedList, SavingStatus } from "../../library/patient";
+import { SearchBar } from '../search-bar/search-bar';
 import * as Actions from '../../store/actions';
 import { History } from '../../library/history'
 
@@ -16,6 +16,7 @@ export type TableProps = {
     history: History<Patient, string>,
     onAdd: () => Actions.ActionAddPatient,
     onStartEditing: (id: number) => Actions.ActionStartEditingPatient,
+    onFinishEditing: (save: boolean) => Actions.ActionFinishEditingPatient,
     onEdit: (id: number, fieldName: FieldName, newValue: FieldValue) => Actions.ActionEditPatient,
     onDelete: (id: number) => Actions.ActionDeletePatient,
     onSetSearchTemplate: (fieldName: FieldName, newValue: FieldValue) => Actions.ActionSetSearchTemplate,
@@ -29,6 +30,8 @@ export class Table extends React.Component<TableProps, {}, {}> {
         var tableHeaderCells;
         var tableRows;
         var isLoadingSomething = false;
+        var isSavingSomething = this.props.patientsList
+            .find(p => p.savingStatus === SavingStatus.Saving) !== undefined;
 
         if (!this.props.isWaitingPatientFields) {
             if (!this.props.patientTemplate) throw Error("patientTemplate is null");
@@ -75,9 +78,10 @@ export class Table extends React.Component<TableProps, {}, {}> {
                                 (this.props.editingPatient as Patient) :
                                 patient
                         }
-                        editState={getRawState(this.props.editingId, patient.localId)}
+                        editState={getRawState(this.props.editingId, patient.localId, isSavingSomething)}
                         onEdit={this.props.onEdit}
                         onStartEditing={this.props.onStartEditing}
+                        onFinishEditing={this.props.onFinishEditing}
                         onDelete={this.props.onDelete}
                     />)
                 );
@@ -97,23 +101,40 @@ export class Table extends React.Component<TableProps, {}, {}> {
                     <ButtonGroup>
                         <Button
                             onClick={e => this.savePatients()}
-                            disabled={isLoadingSomething || !this.props.history.isEmpty() || this.props.editingId > 0}
+                            disabled={
+                                isLoadingSomething || 
+                                !this.props.history.isEmpty() || 
+                                this.props.editingId > 0 ||
+                                isSavingSomething
+                            }
                         >Сохранить изменения</Button>
                     </ButtonGroup>
                     <ButtonGroup>
                         <Button
                             onClick={this.props.onUndo}
-                            disabled={isLoadingSomething || !this.props.history.canUndo()}
+                            disabled={
+                                isLoadingSomething || 
+                                !this.props.history.canUndo() ||
+                                isSavingSomething
+                            }
                         >{"<-"}</Button>
                         <Button
                             onClick={() => this.props.onRedo()}
-                            disabled={isLoadingSomething || !this.props.history.canRedo()}
+                            disabled={
+                                isLoadingSomething || 
+                                !this.props.history.canRedo() ||
+                                isSavingSomething
+                            }
                         >{"->"}</Button>
                     </ButtonGroup>
                     <ButtonGroup>
                         <Button
                             onClick={this.props.onAdd}
-                            disabled={isLoadingSomething || this.props.editingId > 0}
+                            disabled={
+                                isLoadingSomething || 
+                                this.props.editingId > 0 ||
+                                isSavingSomething
+                            }
                         >Добавить</Button>
                     </ButtonGroup>
                 </ButtonToolbar>
@@ -131,16 +152,14 @@ export class Table extends React.Component<TableProps, {}, {}> {
         );
     }
     private savePatients() {
-        let ids = this.props.history.getIdsToDelete();
-        (this.props as any)
-            .savePatients(
-                this.props.patientsList,
-                ids
-            );
+        this.props.history.onSave();
+        (this.props as any).savePatients(this.props.patientsList);
     }
 }
 
-function getRawState(editingId: number, patientId: number): RawState {
+function getRawState(editingId: number, patientId: number, isSavingSomething: boolean): RawState {
+    if (isSavingSomething) return RawState.Frozen;
+    
     if (editingId !== patientId) {
         return (
             editingId ?

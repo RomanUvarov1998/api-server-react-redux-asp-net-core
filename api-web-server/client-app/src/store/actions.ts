@@ -5,12 +5,14 @@ export const ACTION_RECIEVE_PATIENTS = 'ACTION_RECIEVE_PATIENTS';
 export const ACTION_RECIEVE_PATIENT_FIELDS = 'ACTION_RECIEVE_PATIENT_FIELDS';
 export const ACTION_ADD_PATIENT = 'ACTION_ADD_PATIENT';
 export const ACTION_START_EDIT_PATIENT = 'ACTION_START_EDIT_PATIENT';
+export const ACTION_FINISH_EDIT_PATIENT = 'ACTION_FINISH_EDIT_PATIENT';
 export const ACTION_EDIT_PATIENT = 'ACTION_EDIT_PATIENT';
 export const ACTION_DELETE_PATIENT = 'ACTION_DELETE_PATIENT';
 export const ACTION_SET_SEARCH_TEMPLATE = 'ACTION_SET_SEARCH_TEMPLATE';
 export const ACTION_UNDO = 'ACTION_UNDO';
 export const ACTION_REDO = 'ACTION_REDO';
-export const ACTION_SAVE = 'ACTION_SAVE';
+export const ACTION_START_SAVING = 'ACTION_START_SAVING';
+export const ACTION_SAVED = 'ACTION_SAVED';
 
 export type MyAction =
     ActionStartWaiting |
@@ -23,19 +25,22 @@ export type MyAction =
     ActionSetSearchTemplate |
     ActionUndo |
     ActionRedo |
-    ActionSave;
+    ActionStartSaving |
+    ActionSaved;
 
 export type ActionStartWaiting = { type: string, waitPatients: boolean, waitPatientFields: boolean };
 export type ActionRecievePatients = { type: string, patients: Patient[] };
 export type ActionRecievePatientFields = { type: string, patientTemplate: Patient };
 export type ActionAddPatient = { type: string };
 export type ActionStartEditingPatient = { type: string, patientId: number };
+export type ActionFinishEditingPatient = { type: string, save: boolean };
 export type ActionEditPatient = { type: string, patientId: number, fieldName: FieldName, newValue: FieldValue };
 export type ActionDeletePatient = { type: string, patientId: number };
 export type ActionSetSearchTemplate = { type: string, fieldName: FieldName, newValue: FieldValue };
 export type ActionUndo = { type: string };
 export type ActionRedo = { type: string };
-export type ActionSave = { type: string };
+export type ActionStartSaving = { type: string };
+export type ActionSaved = { type: string, patient: Patient };
 
 export const startWaiting = (
     waitPatients: boolean,
@@ -70,6 +75,12 @@ export const startEditing = (patientId: number) => {
         patientId
     }
 }
+export const finishEditing = (save: boolean) => {
+    return {
+        type: ACTION_FINISH_EDIT_PATIENT,
+        save
+    }
+}
 export const edit = (patientId: number, fieldName: FieldName, newValue: FieldValue) => {
     return {
         type: ACTION_EDIT_PATIENT,
@@ -101,8 +112,14 @@ export const redo = () => {
         type: ACTION_REDO
     };
 }
-export const save = () => {
+export const startSaving = () => {
     return {
-        type: ACTION_SAVE
+        type: ACTION_START_SAVING
+    };
+}
+export const saved = (patient: Patient) => {
+    return {
+        type: ACTION_SAVED,
+        patient
     };
 }
