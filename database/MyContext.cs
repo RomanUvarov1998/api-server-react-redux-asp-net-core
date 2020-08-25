@@ -1,9 +1,8 @@
-﻿using System.ComponentModel.DataAnnotations.Schema;
-using System;
-using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.EntityFrameworkCore;
 using database.Models;
 using System.Linq;
 using System.Collections.Generic;
+using System;
 
 namespace database
 {
@@ -16,58 +15,31 @@ namespace database
         public MyContext(DbContextOptions<MyContext> options) : base(options)
         {
             //Database.EnsureDeleted();
-            Database.EnsureCreated();
+            if (Database.EnsureCreated()) {
+                Console.WriteLine("No database found, so a new database was created");
+            }
 
-            if (!Patients.Any())
-            {
+            if (!Patients.Any()) {
                 var name = new FieldName() { Value = "Имя" };
                 var surname = new FieldName() { Value = "Фамилия" };
                 var patronimyc = new FieldName() { Value = "Отчество" };
 
-                FieldNames.Add(name);
-                FieldNames.Add(surname);
-                FieldNames.Add(patronimyc);
+                FieldNames.AddRange(name, surname, patronimyc);
 
-                Patients.Add(
-                    new Patient()
-                    {
-                        Fields = new List<PatientField>()
-                        {
-                            new PatientField() {
-                                Name = name,
-                                Value = "Роман"
-                            },
-                            new PatientField() {
-                                Name = surname,
-                                Value = "Уваров"
-                            },
-                            new PatientField() {
-                                Name = patronimyc,
-                                Value = "Сергеевич"
-                            }
-                        }
-                    }
-                );
-                Patients.Add(
-                    new Patient()
-                    {
-                        Fields = new List<PatientField>()
-                        {
-                            new PatientField() {
-                                Name = name,
-                                Value = "Петр"
-                            },
-                            new PatientField() {
-                                Name = surname,
-                                Value = "Иванов"
-                            },
-                            new PatientField() {
-                                Name = patronimyc,
-                                Value = "Михалыч "
-                            }
-                        }
-                    }
-                );
+                SaveChanges();
+
+                var patientsToAdd = new List<Patient>();
+                for (int i = 0; i < 100; i++) {
+                    patientsToAdd.Add(
+                        new Patient(
+                            new PatientField(name, $"Имя {i}"),
+                            new PatientField(surname, $"Фамилия {i}"),
+                            new PatientField(patronimyc, $"Отчество {i}")
+                        )
+                    );
+                }
+
+                Patients.AddRange(patientsToAdd);
 
                 SaveChanges();
             }
@@ -88,10 +60,5 @@ namespace database
                 .WithMany()
                 .HasForeignKey(p => p.NameId);
         }
-
-        // protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
-        // {
-        //     optionsBuilder.UseSqlite("Data Source=/home/roma-uvarov/Documents/ASP.NET_Core/from-empty-react-redux/database/bin/Debug/netstandard2.0/MyDB.db;");
-        // }
     }
 }

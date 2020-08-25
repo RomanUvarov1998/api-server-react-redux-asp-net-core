@@ -16,7 +16,7 @@ using Newtonsoft.Json;
 namespace api_web_server
 {
     [ApiController]
-    // [Route("[controller]")]
+    [Route("home")]
     public class HomeController : ControllerBase
     {
         public HomeController(MyContext dbContext)
@@ -24,12 +24,12 @@ namespace api_web_server
             this.dbContext = dbContext;
         }
 
-        [HttpGet("home/patients")]
+        [HttpGet("patients")]
         public IEnumerable<PatientVM> GetPatients()
         {
-            List<Patient> ps = dbContext.Patients
-                .Include(p => p.Fields)
-                .ThenInclude(f => f.Name)
+            List<Patient> ps = Patient
+                .IncludeFields(dbContext.Patients)
+                .OrderBy(p => p.CreatedDate)
                 .ToList();
 
             return ps
@@ -37,7 +37,7 @@ namespace api_web_server
                 .ToList();
         }
 
-        [HttpGet("home/template")]
+        [HttpGet("template")]
         public PatientVM GetTemplate()
         {
             List<FieldName> fns = dbContext.FieldNames.ToList();
@@ -47,7 +47,7 @@ namespace api_web_server
             return pvm;
         }
 
-        [HttpPost("home/savepatientchanges")]
+        [HttpPost("savepatientchanges")]
         public async Task<IActionResult> SavePatientChange()
         {
             HttpRequest request = this.Request;

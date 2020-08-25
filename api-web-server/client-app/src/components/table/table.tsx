@@ -107,7 +107,9 @@ export class Table extends React.Component<TableProps, {}, {}> {
                                 this.props.editingId > 0 ||
                                 isSavingSomething
                             }
-                        >Сохранить изменения</Button>
+                        >
+                            {isSavingSomething ? 'Идет сохранение...' : 'Сохранить изменения'}
+                        </Button>
                     </ButtonGroup>
                     <ButtonGroup>
                         <Button
