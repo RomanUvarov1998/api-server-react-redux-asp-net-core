@@ -6,6 +6,7 @@ import { configureStore } from '../store/my-store';
 import * as Actions from '../store/actions';
 import { History, Status } from '../library/history';
 import { Patient, toPatient, toPatientField } from "../library/patient";
+import { Store, CombinedState } from 'redux';
 
 type AppProps = {
 
@@ -20,41 +21,16 @@ export type AppState = {
   history: History<Patient, string>,
   errorMsg: string
 }
-
-type PatientsChanges = {
-  patientsToSave: Patient[],
-  idsToDelete: number[]
-}
+type StoreType = Store<CombinedState<{ red: AppState; }>, { type: string; }>;
 
 export class App extends React.Component<AppProps, AppState, {}> {
   state: AppState;
-  store: any;
+  store: StoreType;
 
   constructor(props: AppProps) {
     super(props);
 
-    this.state = this.createInitialState();
-
-    this.store = configureStore(this.state);
-
-    this.loadPatientFields();
-  }
-
-  render(): React.ReactNode {
-    return (
-      <div>
-        <Provider store={this.store}>
-          <TableContainer
-            savePatients={this.savePatients}
-            // savePatient={this.savePatient}
-          />
-        </Provider>
-      </div>
-    );
-  }
-
-  private createInitialState(): AppState {
-    return {
+    this.state = {
       isWaitingPatientsList: true,
       isWaitingPatientFields: true,
       patientsList: [],
@@ -64,71 +40,89 @@ export class App extends React.Component<AppProps, AppState, {}> {
       history: new History<Patient, string>(),
       errorMsg: ""
     };
+
+    this.store = configureStore(this.state);
   }
 
-  private loadPatients() {
-    myFetch(
-      'home/patients',
-      undefined,
-      undefined,
-      value => {
-        let data = JSON.parse(value) as Patient[];
-        let ps = data.map(el => toPatient(el));
-        this.store.dispatch(Actions.recievePatients(ps));
-      });
-  }
-
-  private loadPatientFields() {
-    myFetch(
-      'home/template',
-      'GET',
-      undefined,
-      value => {
-        let data = JSON.parse(value) as Patient;
-        let ps = data.fields.map(el => toPatientField(el));
-        let pt = new Patient(ps, "0", 0, Status.Untouched);
-        this.store.dispatch(Actions.recievePatientFields(pt));
-
-        this.loadPatients();
-      }
+  render(): React.ReactNode {
+    return (
+      <div>
+        <Provider store={this.store}>
+          <TableContainer
+            savePatients={(list: Patient[]) => savePatients(this.store, list)}
+            // onScroll={}
+          />
+        </Provider>
+      </div>
     );
   }
+  
+  componentDidMount() {
+    loadPatientFields(this.store);
+  }
+}
 
-  private savePatients = (listToSave: Patient[]) => {
-    var editingId = this.store.getState().red.editingId;
+function loadPatients(store: StoreType) {
+  myFetch(
+    'home/patients',
+    undefined,
+    undefined,
+    value => {
+      let data = JSON.parse(value) as Patient[];
+      let ps = data.map(el => toPatient(el));
+      store.dispatch(Actions.recievePatients(ps));
+    });
+}
 
-    if (editingId) {
-      this.store.dispatch(Actions.startEditing(editingId));
+function loadPatientFields(store: StoreType) {
+  myFetch(
+    'home/template',
+    'GET',
+    undefined,
+    value => {
+      let data = JSON.parse(value) as Patient;
+      let ps = data.fields.map(el => toPatientField(el));
+      let pt = new Patient(ps, "0", 0, Status.Untouched);
+      store.dispatch(Actions.recievePatientFields(pt));
+
+      loadPatients(store);
     }
+  );
+}
 
-    this.store.dispatch(Actions.startSaving());
-    
-    this.saveNextPatient(listToSave, 0);
+function savePatients(store: StoreType, listToSave: Patient[]) {
+  var editingId = store.getState().red.editingId;
+
+  if (editingId) {
+    store.dispatch(Actions.startEditing(editingId));
   }
 
-  private saveNextPatient(listToSave: Patient[], index: number) {
-    while (index < listToSave.length && listToSave[index].status === Status.Untouched) {
-      console.log(`patient ${listToSave[index].toString()} is untouched, next...`);
-      index += 1;
-    }
+  store.dispatch(Actions.startSaving());
+  
+  saveNextPatient(store, listToSave, 0);
+}
 
-    console.log(`saving ${index} of ${listToSave.length}`);
+function saveNextPatient(store: StoreType, listToSave: Patient[], index: number) {
+  while (index < listToSave.length && listToSave[index].status === Status.Untouched) {
+    console.log(`patient ${listToSave[index].toString()} is untouched, next...`);
+    index += 1;
+  }
 
-    if (index < listToSave.length) {
-      myFetch(
-        'home/savepatientchanges',
-        'POST',
-        JSON.stringify(listToSave[index]),
-        value => {
-          console.log(`saved '${listToSave[index].toString()}'`);
-          this.store.dispatch(Actions.saved(listToSave[index]));
-          this.saveNextPatient(listToSave, index + 1);
-        }
-      );
-    } else {
-      console.log('all saved!');
-      //this.loadPatients();
-    }
+  console.log(`saving ${index} of ${listToSave.length}`);
+
+  if (index < listToSave.length) {
+    myFetch(
+      'home/savepatientchanges',
+      'POST',
+      JSON.stringify(listToSave[index]),
+      () => {
+        console.log(`saved '${listToSave[index].toString()}'`);
+        store.dispatch(Actions.saved(listToSave[index]));
+        saveNextPatient(store, listToSave, index + 1);
+      }
+    );
+  } else {
+    console.log('all saved!');
   }
 }
 

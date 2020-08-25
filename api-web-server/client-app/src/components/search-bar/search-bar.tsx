@@ -1,4 +1,4 @@
-import * as React from "react"
+import * as React from 'react'
 import { Patient, FieldValue, FieldName } from '../../library/patient'
 import { SearchField } from '../search-field/search-field'
 
@@ -9,27 +9,18 @@ export type SearchBarProps = {
 }
 
 export function SearchBar(props: SearchBarProps) {
-    if (props.patientTemplate) {
+    if (props.patientTemplate) { 
         var searchFields = props.patientTemplate.fields.map((field, ind) => {
             return (
                 <SearchField
                     key={ind}
                     frozen={props.frozen}
-                    value={field.value}
+                    field={field}
                     onInput={newValue => props.onSetSearchTemplate(newValue, field.name)}
                 />
             );
         });
-        var searchHeaders = props.patientTemplate.fields
-            .map(field => (<th key={field.name}>{field.name}</th>));
-        return (
-            <div>
-                <table>
-                    <thead><tr>{searchHeaders}</tr></thead>
-                    <tbody><tr>{searchFields}</tr></tbody>
-                </table>
-            </div>
-        );
+        return (<table><thead><tr>{searchFields}</tr></thead></table>);
     } else {
         return (
             <div>

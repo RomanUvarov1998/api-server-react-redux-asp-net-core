@@ -44,7 +44,7 @@ const mapDispatchToProps = {
     onRedo: Actions.redo,
 };
 
-const mergeProps = (stateProps: any, dispatchProps: any, ownProps: any) => {
+const mergeProps = (stateProps: TableProps, dispatchProps: any, ownProps: any) => {
     return {
         ...stateProps,
         ...dispatchProps,

@@ -102,8 +102,8 @@ export class Table extends React.Component<TableProps, {}, {}> {
                         <Button
                             onClick={e => this.savePatients()}
                             disabled={
-                                isLoadingSomething || 
-                                !this.props.history.isEmpty() || 
+                                isLoadingSomething ||
+                                !this.props.history.isEmpty() ||
                                 this.props.editingId > 0 ||
                                 isSavingSomething
                             }
@@ -115,7 +115,7 @@ export class Table extends React.Component<TableProps, {}, {}> {
                         <Button
                             onClick={this.props.onUndo}
                             disabled={
-                                isLoadingSomething || 
+                                isLoadingSomething ||
                                 !this.props.history.canUndo() ||
                                 isSavingSomething
                             }
@@ -123,7 +123,7 @@ export class Table extends React.Component<TableProps, {}, {}> {
                         <Button
                             onClick={() => this.props.onRedo()}
                             disabled={
-                                isLoadingSomething || 
+                                isLoadingSomething ||
                                 !this.props.history.canRedo() ||
                                 isSavingSomething
                             }
@@ -133,35 +133,54 @@ export class Table extends React.Component<TableProps, {}, {}> {
                         <Button
                             onClick={this.props.onAdd}
                             disabled={
-                                isLoadingSomething || 
+                                isLoadingSomething ||
                                 this.props.editingId > 0 ||
                                 isSavingSomething
                             }
                         >Добавить</Button>
                     </ButtonGroup>
                 </ButtonToolbar>
-                <table className={"table table-responsive table-striped table-bordered table-normal"}>
-                    <thead className={"thead-dark"}>
-                        <tr>
-                            {tableHeaderCells}
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {tableRows}
-                    </tbody>
-                </table>
+                <div 
+                    style={{ maxHeight: 300, overflowY: 'auto', padding: 10 }} 
+                    onScroll={this.handleScroll}
+                >
+                    <table className={"table table-responsive table-striped table-bordered table-normal"}>
+                        <thead className={"thead-dark"}>
+                            <tr>
+                                {tableHeaderCells}
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {tableRows}
+                        </tbody>
+                    </table>
+                </div>
+                <Button
+                    onClick={e => window.scrollTo(0, 0)}
+                >Home</Button>
             </div >
         );
     }
+
     private savePatients() {
         this.props.history.onSave();
         (this.props as any).savePatients(this.props.patientsList);
+    }
+
+    private loadedHeight: number = 0;
+    private handleScroll = (e: React.UIEvent<HTMLDivElement, UIEvent>) => {
+        var scrolledHeight = (e.currentTarget as any).scrollTop + (e.currentTarget as any).clientHeight;
+        if (scrolledHeight > this.loadedHeight) {
+            this.loadedHeight = scrolledHeight;
+            console.log(`loaded to ${this.loadedHeight}`);
+        }
+        //console.log(e.currentTarget);
     }
 }
 
 function getRawState(editingId: number, patientId: number, isSavingSomething: boolean): RawState {
     if (isSavingSomething) return RawState.Frozen;
-    
+
     if (editingId !== patientId) {
         return (
             editingId ?
@@ -172,4 +191,3 @@ function getRawState(editingId: number, patientId: number, isSavingSomething: bo
         return RawState.Editing;
     }
 }
-

@@ -1,17 +1,20 @@
-import * as React from "react"
-import { FieldValue } from "../../library/patient";
+import * as React from 'react'
+import { FieldValue, PatientField } from '../../library/patient';
 
 export type SearchFieldProps = {
     frozen: boolean,
-    value: FieldValue,
+    field: PatientField,
     onInput: (newValue: FieldValue) => void
 }
 
 export function SearchField(props: SearchFieldProps) {
+    var id = `searchField${props.field.name}`;
     return (
         <td>
+            <label htmlFor={id} style={{ display: 'block' }}>{props.field.name}</label>
             <input
-                value={props.value}
+                id={id}
+                value={props.field.value}
                 onChange={(e) => onChange(e, props)}
                 disabled={props.frozen}
             />

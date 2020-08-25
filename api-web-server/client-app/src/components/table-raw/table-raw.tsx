@@ -52,7 +52,9 @@ export function TableRaw(props: TableRawProps) {
                 {getBtnDeleteOrCancel(props)}
             </td>
             {rawCells}
-            <td>{statusToString(props.patient)}</td>
+            <td>
+                {statusToString(props.patient)}
+            </td>
         </tr>
     );
 }
