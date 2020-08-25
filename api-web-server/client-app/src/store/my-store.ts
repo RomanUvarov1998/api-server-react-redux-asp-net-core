@@ -4,8 +4,11 @@ import * as Reducers from './reducers';
 import { AppState } from '../components/App'
 
 export function configureStore(initialState: AppState) {
-    const red = (state = initialState, action: { type: string }): AppState => {
-        let a;
+    const red = (state = initialState, action: { type: string })
+    : AppState => 
+    {
+        var a;
+        console.log(action.type);
         switch (action.type) {
             case Actions.ACTION_START_WAITING:
                 a = action as Actions.ActionStartWaiting;
@@ -85,11 +88,7 @@ export function configureStore(initialState: AppState) {
         }
     };
 
-    const reducers = combineReducers({
-        red,
-    });
-
-    const store = createStore(reducers, {});
+    const store = createStore(red);
 
     return store;
 }

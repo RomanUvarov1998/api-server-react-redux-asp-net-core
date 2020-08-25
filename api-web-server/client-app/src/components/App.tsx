@@ -6,7 +6,7 @@ import { configureStore } from '../store/my-store';
 import * as Actions from '../store/actions';
 import { History, Status } from '../library/history';
 import { Patient, toPatient, toPatientField } from "../library/patient";
-import { Store, CombinedState } from 'redux';
+import { Store } from 'redux';
 
 type AppProps = {
 
@@ -21,7 +21,7 @@ export type AppState = {
   history: History<Patient, string>,
   errorMsg: string
 }
-type StoreType = Store<CombinedState<{ red: AppState; }>, { type: string; }>;
+type StoreType = Store<AppState, Actions.MyAction>;
 
 export class App extends React.Component<AppProps, AppState, {}> {
   state: AppState;
@@ -91,7 +91,7 @@ function loadPatientFields(store: StoreType) {
 }
 
 function savePatients(store: StoreType, listToSave: Patient[]) {
-  var editingId = store.getState().red.editingId;
+  var editingId = store.getState().editingId;
 
   if (editingId) {
     store.dispatch(Actions.startEditing(editingId));

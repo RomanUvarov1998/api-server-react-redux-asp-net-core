@@ -15,13 +15,13 @@ type TableContainerState = {
 }
 const mapStateToProps = (state: TableContainerState): TableProps => {
     return {
-        isWaitingPatientsList: (state as any).red.isWaitingPatientsList,
-        isWaitingPatientFields: (state as any).red.isWaitingPatientFields,
-        patientsList: (state as any).red.patientsList,
-        patientTemplate: (state as any).red.patientTemplate,
-        editingId: (state as any).red.editingId,
-        editingPatient: (state as any).red.editingPatient,
-        history: (state as any).red.history,
+        isWaitingPatientsList: state.isWaitingPatientsList,
+        isWaitingPatientFields: state.isWaitingPatientFields,
+        patientsList: state.patientsList,
+        patientTemplate: state.patientTemplate,
+        editingId: state.editingId,
+        editingPatient: state.editingPatient,
+        history: state.history,
         onAdd: Actions.add,
         onStartEditing: Actions.startEditing,
         onFinishEditing: Actions.finishEditing,
