@@ -13,7 +13,7 @@ export type TableProps = {
     patientsList: Patient[],
     editingId: number,
     editingPatient: Patient | null,
-    history: History<Patient, string>,
+    history: History<Patient>,
     onAdd: () => Actions.ActionAddPatient,
     onStartEditing: (id: number) => Actions.ActionStartEditingPatient,
     onFinishEditing: (save: boolean) => Actions.ActionFinishEditingPatient,
@@ -103,7 +103,7 @@ export class Table extends React.Component<TableProps, {}, {}> {
                             onClick={e => this.savePatients()}
                             disabled={
                                 isLoadingSomething ||
-                                !this.props.history.isEmpty() ||
+                                !this.props.history.canSave() ||
                                 this.props.editingId > 0 ||
                                 isSavingSomething
                             }
@@ -141,7 +141,7 @@ export class Table extends React.Component<TableProps, {}, {}> {
                     </ButtonGroup>
                 </ButtonToolbar>
                 <div 
-                    style={{ maxHeight: 300, overflowY: 'auto', padding: 10 }} 
+                    style={{ maxHeight: 300, overflowY: 'auto', margin: 10 }} 
                     onScroll={this.handleScroll}
                 >
                     <table className={"table table-responsive table-striped table-bordered table-normal"}>
@@ -155,9 +155,6 @@ export class Table extends React.Component<TableProps, {}, {}> {
                         </tbody>
                     </table>
                 </div>
-                <Button
-                    onClick={e => window.scrollTo(0, 0)}
-                >Home</Button>
             </div >
         );
     }
@@ -172,7 +169,7 @@ export class Table extends React.Component<TableProps, {}, {}> {
         var scrolledHeight = (e.currentTarget as any).scrollTop + (e.currentTarget as any).clientHeight;
         if (scrolledHeight > this.loadedHeight) {
             this.loadedHeight = scrolledHeight;
-            console.log(`loaded to ${this.loadedHeight}`);
+            //console.log(`loaded to ${this.loadedHeight}`);
         }
         //console.log(e.currentTarget);
     }

@@ -1,5 +1,5 @@
 import { connect } from 'react-redux'
-import { Patient } from '../../library/patient';
+import { Patient, FieldName, FieldValue } from '../../library/patient';
 import { History } from '../../library/history';
 import * as Actions from '../../store/actions';
 import { Table, TableProps } from '../table/table';
@@ -11,8 +11,22 @@ type TableContainerState = {
     patientTemplate: Patient,
     editingId: number,
     editingPatient: Patient | null,
-    history: History<Patient, string>
+    history: History<Patient>
 }
+export type TableContainerDispatchProps = {
+    onAdd: () => Actions.ActionAddPatient,
+    onStartEditing: (id: number) => Actions.ActionStartEditingPatient,
+    onFinishEditing: (save: boolean) => Actions.ActionFinishEditingPatient,
+    onEdit: (id: number, fieldName: FieldName, newValue: FieldValue) => Actions.ActionEditPatient,
+    onDelete: (id: number) => Actions.ActionDeletePatient,
+    onSetSearchTemplate: (fieldName: FieldName, newValue: FieldValue) => Actions.ActionSetSearchTemplate,
+    onUndo: () => Actions.ActionUndo,
+    onRedo: () => Actions.ActionRedo
+}
+export type TableContainerProps = {
+    savePatients: (list: Patient[]) => void
+}
+
 const mapStateToProps = (state: TableContainerState): TableProps => {
     return {
         isWaitingPatientsList: state.isWaitingPatientsList,
@@ -33,7 +47,7 @@ const mapStateToProps = (state: TableContainerState): TableProps => {
     }
 };
 
-const mapDispatchToProps = {
+const mapDispatchToProps: TableContainerDispatchProps = {
     onAdd: Actions.add,
     onStartEditing: Actions.startEditing,
     onFinishEditing: Actions.finishEditing,
@@ -44,7 +58,11 @@ const mapDispatchToProps = {
     onRedo: Actions.redo,
 };
 
-const mergeProps = (stateProps: TableProps, dispatchProps: any, ownProps: any) => {
+function mergeProps(
+    stateProps: TableProps,
+    dispatchProps: TableContainerDispatchProps,
+    ownProps: TableContainerProps
+) {
     return {
         ...stateProps,
         ...dispatchProps,

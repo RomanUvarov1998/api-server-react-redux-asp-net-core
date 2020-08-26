@@ -1,4 +1,4 @@
-import { createStore, combineReducers } from 'redux'
+import { createStore } from 'redux'
 import * as Actions from './actions';
 import * as Reducers from './reducers';
 import { AppState } from '../components/App'
@@ -8,7 +8,6 @@ export function configureStore(initialState: AppState) {
     : AppState => 
     {
         var a;
-        console.log(action.type);
         switch (action.type) {
             case Actions.ACTION_START_WAITING:
                 a = action as Actions.ActionStartWaiting;

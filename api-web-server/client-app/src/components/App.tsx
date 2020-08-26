@@ -18,7 +18,7 @@ export type AppState = {
   patientTemplate: Patient | null,
   editingId: number,
   editingPatient: Patient | null,
-  history: History<Patient, string>,
+  history: History<Patient>,
   errorMsg: string
 }
 type StoreType = Store<AppState, Actions.MyAction>;
@@ -37,7 +37,7 @@ export class App extends React.Component<AppProps, AppState, {}> {
       patientTemplate: null,
       editingId: 0,
       editingPatient: null,
-      history: new History<Patient, string>(),
+      history: new History<Patient>(),
       errorMsg: ""
     };
 

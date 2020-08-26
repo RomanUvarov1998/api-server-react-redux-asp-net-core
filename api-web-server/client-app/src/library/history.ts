@@ -1,20 +1,19 @@
-export enum Status
-{
+export enum Status {
     Added,
     Modified,
     Deleted,
     Untouched
 }
 
-export class History<Item extends IHistoryItem<Item>, TId> {
+export class History<Item extends IHistoryItem<Item>> {
     constructor() {
         this.listHistory = [];
         this.cursor = 0;
-        // this.cursorSaved = 0;
     }
 
     public add(newItem: Item, listBefore: Item[]): Item[] {
         var newItemCopy = newItem.copy();
+        newItemCopy.status = Status.Added;
         return this.addAndApplyAction(
             listBefore,
             {
@@ -24,7 +23,13 @@ export class History<Item extends IHistoryItem<Item>, TId> {
         );
     }
     public edit(itemToEdit: Item, editor: (item: Item) => Item, listBefore: Item[]): Item[] {
-        let editedItem = editor(itemToEdit);
+        var initialItem = itemToEdit.copy();
+        initialItem.status = itemToEdit.status;
+
+        var editedItem = editor(initialItem);
+        if (editedItem.status !== Status.Added) {
+            editedItem.status = Status.Modified;
+        }
 
         return this.addAndApplyAction(
             listBefore,
@@ -32,7 +37,7 @@ export class History<Item extends IHistoryItem<Item>, TId> {
                 redo: list => {
                     let newList = copyList(list).map(
                         el =>
-                            el.equals(itemToEdit) ?
+                            el.equals(initialItem) ?
                                 editedItem :
                                 el
                     );
@@ -41,8 +46,8 @@ export class History<Item extends IHistoryItem<Item>, TId> {
                 undo: list => {
                     let newList = copyList(list).map(
                         el =>
-                            el.equals(itemToEdit) ?
-                                itemToEdit :
+                            el.equals(initialItem) ?
+                                initialItem :
                                 el
                     );
                     return newList;
@@ -65,9 +70,13 @@ export class History<Item extends IHistoryItem<Item>, TId> {
                     return copyList(list);
                 },
                 undo: list => {
-                    let pat = list.find(p => p.equals(deletedItem as Item));
-                    (pat as Item).status = oldStatus;
-                    return copyList(list);
+                    if ((deletedItem as Item).status === Status.Added) {
+                        return copyList(list).concat(deletedItem as Item);
+                    } else {
+                        let pat = list.find(p => p.equals(deletedItem as Item));
+                        (pat as Item).status = oldStatus;
+                        return copyList(list);
+                    }
                 },
             }
         );
@@ -81,22 +90,20 @@ export class History<Item extends IHistoryItem<Item>, TId> {
         return this.listHistory[this.cursor].undo(listBefore);
     }
     public redo(listBefore: Item[]): Item[] {
+        if (this.cursor >= this.listHistory.length) return listBefore;
         let newList = this.listHistory[this.cursor].redo(listBefore);
         if (this.cursor < this.listHistory.length) this.cursor += 1;
         return newList;
     }
 
-    public isEmpty = (): boolean => this.listHistory.length > 0 && this.cursor > 0;
-
+    public canSave = (): boolean => this.listHistory.length > 0 && this.cursor > 0;
     public onSave() {
         this.listHistory = [];
         this.cursor = 0;
-        // this.cursorSaved = this.cursor;
     }
 
     private listHistory: HistoryAction<Item>[];
     private cursor: number;
-    // private cursorSaved: number;
     private addAndApplyAction(list: Item[], action: HistoryAction<Item>): Item[] {
         if (this.cursor < this.listHistory.length) {
             this.listHistory = this.listHistory.slice(0, this.cursor);
