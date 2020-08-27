@@ -64,7 +64,7 @@ export class App extends React.Component<AppProps, AppState, {}> {
 
 function loadPatients(store: StoreType) {
   myFetch(
-    'home/patients',
+    'patients/list',
     undefined,
     undefined,
     value => {
@@ -76,7 +76,7 @@ function loadPatients(store: StoreType) {
 
 function loadPatientFields(store: StoreType) {
   myFetch(
-    'home/template',
+    'patients/template',
     'GET',
     undefined,
     value => {
@@ -112,7 +112,7 @@ function saveNextPatient(store: StoreType, listToSave: Patient[], index: number)
 
   if (index < listToSave.length) {
     myFetch(
-      'home/savepatientchanges',
+      'patients/save',
       'POST',
       JSON.stringify(listToSave[index]),
       () => {

@@ -80,7 +80,7 @@ namespace api_web_server
             {
                 endpoints.MapControllerRoute(
                     name: "default",
-                    pattern: "{controller}/{action}");
+                    pattern: "{controller=Patients}/{action}");
             });
 
             app.UseSpa(spa =>
