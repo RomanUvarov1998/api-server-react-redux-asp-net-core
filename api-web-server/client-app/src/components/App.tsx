@@ -1,6 +1,6 @@
 import React from 'react';
 import { Provider } from 'react-redux';
-import { Button, ButtonGroup } from 'reactstrap';
+import { Nav, NavItem, NavLink, TabContent, TabPane } from 'reactstrap';
 import './App.css';
 import { TableContainer, TableContainerState } from './table-container/table-container';
 import { SearchTable } from './search-table/search-table';
@@ -16,15 +16,9 @@ type AppProps = {
 }
 export type AppState = {
   tableContainerState: TableContainerState,
-  store: StoreType,
-  showingMode: ShowingMode
+  store: StoreType
 }
 type StoreType = Store<TableContainerState, Actions.MyAction>;
-
-enum ShowingMode {
-  Searching,
-  Editing,
-}
 
 export class App extends React.Component<AppProps, AppState, {}> {
   state: AppState;
@@ -43,44 +37,18 @@ export class App extends React.Component<AppProps, AppState, {}> {
     this.state = {
       tableContainerState,
       store: configureStore(tableContainerState),
-      showingMode: ShowingMode.Searching
     };
   }
 
   render(): React.ReactNode {
-    let currentUI = (<p>No UI...</p>);
-
-    switch (this.state.showingMode) {
-      case ShowingMode.Searching:
-        currentUI = (
-          <SearchTable
-            addToEditingList={patient => this.state.store.dispatch(Actions.addPatientToAdd(patient))}
-          />
-        );
-        break;
-      case ShowingMode.Editing:
-        currentUI = (
-          <Provider store={this.state.store}>
-            <TableContainer
-              savePatients={(list: Patient[]) => savePatients(this.state.store, list)}
-              clearList={() => clearList(this.state.store)}
-            />
-          </Provider>
-        );
-        break;
-    }
-
     return (
       <>
-        <ButtonGroup>
-          <Button onClick={() => this.setState({ showingMode: ShowingMode.Searching })}>
-            Поиск
-          </Button>
-          <Button onClick={() => this.setState({ showingMode: ShowingMode.Editing })}>
-            Редактирование
-          </Button>
-        </ButtonGroup>
-        {currentUI}
+        <Provider store={this.state.store}>
+          <TableContainer
+            savePatients={(list: Patient[]) => savePatients(this.state.store, list)}
+            clearList={() => clearList(this.state.store)}
+          />
+        </Provider>
       </>
     );
   }

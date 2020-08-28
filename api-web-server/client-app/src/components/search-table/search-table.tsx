@@ -4,7 +4,7 @@ import { myFetch } from '../../library/fetchHelper';
 import { SearchBar } from '../search-bar/search-bar';
 import { Button } from 'reactstrap';
 
-type SearchTableProps = {
+export type SearchTableProps = {
     addToEditingList: (patient: Patient) => void
 }
 type SearchTableState = {

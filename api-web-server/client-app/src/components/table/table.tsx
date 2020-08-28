@@ -5,6 +5,7 @@ import { Patient, FieldValue, SavingStatus } from "../../library/patient";
 import { SearchBar } from '../search-bar/search-bar';
 import * as Actions from '../../store/actions';
 import { History } from '../../library/history'
+import { SearchTable } from '../search-table/search-table';
 
 export type TableProps = {
     isWaitingPatientFields: boolean,
@@ -26,7 +27,6 @@ export type TableProps = {
 
 export class Table extends React.Component<TableProps, {}, {}> {
     render(): React.ReactNode {
-        let searchBar;
         let tableHeadCells;
         let tableBodyRows;
         const isLoadingSomething =
@@ -48,17 +48,8 @@ export class Table extends React.Component<TableProps, {}, {}> {
                     </th>
                 )
             ));
-            searchBar = (
-                <SearchBar
-                    frozen={this.props.editingPatient !== null || isSavingSomething}
-                    patientTemplate={this.props.patientTemplate}
-                    onSetSearchTemplate={this.props.onSetSearchTemplate}
-                    onClearTemplate={this.props.onClearTemplate}
-                />
-            );
         } else {
             tableHeadCells = (<th><p>Загрузка полей пациента...</p></th>);
-            searchBar = (<p>Загрузка полей пациента...</p>);
         }
 
         if (this.props.patientsList.length > 0) {
@@ -112,9 +103,10 @@ export class Table extends React.Component<TableProps, {}, {}> {
         // let canClearList = this.props.patientsList.some(p => p.status === Status.Untouched);
 
         return (
-            <div>
-                {searchBar}
-                <h1>Пациенты:</h1>
+            <>
+                <SearchTable
+                    addToEditingList={() => {}}
+                />
                 <ButtonToolbar>
                     <ButtonGroup>
                         <Button
@@ -175,7 +167,7 @@ export class Table extends React.Component<TableProps, {}, {}> {
                         </tbody>
                     </table>
                 </div>
-            </div >
+            </>
         );
     }
 
