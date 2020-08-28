@@ -12,17 +12,22 @@ export function configureStore(initialState: TableContainerState) {
                 a = action as Actions.ActionStartWaiting;
                 return {
                     ...state,
-                    isWaitingPatientFields: a.waitPatientFields,
-                    isWaitingPatientsList: a.waitPatients
+                    isWaitingPatientFields: a.waitPatientFields
                 };
-            case Actions.ACTION_RECIEVE_PATIENTS:
-                a = action as Actions.ActionRecievePatients;
-                return Reducers.onRecievePatients(
+            case Actions.ACTION_ADD_PATIENT_TO_ADD:
+                a = action as Actions.ActionAddPatientToAdd;
+                return Reducers.onAddPatientToEditList(
                     {
                         ...state,
-                        isWaitingPatientsList: false
                     },
-                    a.patients
+                    a.patient
+                );
+            case Actions.ACTION_CLEAR_LIST:
+                a = action as Actions.ActionClearList;
+                return Reducers.onClearList(
+                    {
+                        ...state,
+                    }
                 );
             case Actions.ACTION_RECIEVE_PATIENT_FIELDS:
                 a = action as Actions.ActionRecievePatientFields;

@@ -1,7 +1,8 @@
 import { FieldValue, Patient } from "../library/patient";
 
 export const ACTION_START_WAITING = 'ACTION_START_WAITING';
-export const ACTION_RECIEVE_PATIENTS = 'ACTION_RECIEVE_PATIENTS';
+export const ACTION_ADD_PATIENT_TO_ADD = 'ACTION_ADD_PATIENT_TO_ADD';
+export const ACTION_CLEAR_LIST = 'ACTION_CLEAR_LIST';
 export const ACTION_RECIEVE_PATIENT_FIELDS = 'ACTION_RECIEVE_PATIENT_FIELDS';
 export const ACTION_ADD_PATIENT = 'ACTION_ADD_PATIENT';
 export const ACTION_START_EDIT_PATIENT = 'ACTION_START_EDIT_PATIENT';
@@ -19,7 +20,8 @@ export const ACTION_SAVED_DELETED = 'ACTION_SAVED_DELETED';
 
 export type MyAction =
     ActionStartWaiting |
-    ActionRecievePatients |
+    ActionAddPatientToAdd |
+    ActionClearList |
     ActionRecievePatientFields |
     ActionAddPatient |
     ActionStartEditingPatient |
@@ -35,7 +37,8 @@ export type MyAction =
     ActionSavedDeleted;
 
 export type ActionStartWaiting = { type: string, waitPatients: boolean, waitPatientFields: boolean };
-export type ActionRecievePatients = { type: string, patients: Patient[] };
+export type ActionAddPatientToAdd = { type: string, patient: Patient };
+export type ActionClearList = { type: string };
 export type ActionRecievePatientFields = { type: string, patientTemplate: Patient };
 export type ActionAddPatient = { type: string };
 export type ActionStartEditingPatient = { type: string, patientId: number };
@@ -61,10 +64,15 @@ export function startWaiting(
         waitPatientFields
     };
 }
-export function recievePatients(patients: Patient[]): ActionRecievePatients {
+export function addPatientToAdd(patient: Patient): ActionAddPatientToAdd {
     return {
-        type: ACTION_RECIEVE_PATIENTS,
-        patients
+        type: ACTION_ADD_PATIENT_TO_ADD,
+        patient
+    };
+}
+export function clearList(): ActionClearList {
+    return {
+        type: ACTION_CLEAR_LIST,
     };
 }
 export function recievePatientFields(patientTemplate: Patient): ActionRecievePatientFields {

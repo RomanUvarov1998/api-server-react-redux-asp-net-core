@@ -1,11 +1,11 @@
 import React from 'react';
-import { Patient, toPatient, PatientField } from '../../library/patient'
+import { Patient, toPatient } from '../../library/patient'
 import { myFetch } from '../../library/fetchHelper';
 import { SearchBar } from '../search-bar/search-bar';
 import { Button } from 'reactstrap';
 
 type SearchTableProps = {
-
+    addToEditingList: (patient: Patient) => void
 }
 type SearchTableState = {
     isWaitingPatientsList: boolean,
@@ -63,7 +63,15 @@ export class SearchTable extends React.Component<SearchTableProps, SearchTableSt
                 this.state.patientsList.length > 0 ?
                     (
                         this.state.patientsList.map(p => {
-                            const cells = p.fields.map(f => (<td key={f.nameId}>{f.value}</td>));
+                            const cells = p.fields
+                                .map(f => (<td key={f.nameId}>{f.value}</td>))
+                                .concat(
+                                    <td key={'edit'}>
+                                        <Button
+                                            onClick={() => this.props.addToEditingList(p)}
+                                        >Редактировать</Button>
+                                    </td>
+                                );
                             return (<tr key={p.id}>{cells}</tr>)
                         })
                     ) :

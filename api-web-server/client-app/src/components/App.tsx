@@ -53,7 +53,9 @@ export class App extends React.Component<AppProps, AppState, {}> {
     switch (this.state.showingMode) {
       case ShowingMode.Searching:
         currentUI = (
-          <SearchTable />
+          <SearchTable
+            addToEditingList={patient => this.state.store.dispatch(Actions.addPatientToAdd(patient))}
+          />
         );
         break;
       case ShowingMode.Editing:
@@ -61,6 +63,7 @@ export class App extends React.Component<AppProps, AppState, {}> {
           <Provider store={this.state.store}>
             <TableContainer
               savePatients={(list: Patient[]) => savePatients(this.state.store, list)}
+              clearList={() => clearList(this.state.store)}
             />
           </Provider>
         );
@@ -87,16 +90,20 @@ export class App extends React.Component<AppProps, AppState, {}> {
   }
 }
 
-function loadPatients(store: StoreType) {
-  myFetch(
-    'patients/list',
-    'GET',
-    undefined,
-    value => {
-      let data = JSON.parse(value) as Patient[];
-      let ps = data.map(el => toPatient(el));
-      store.dispatch(Actions.recievePatients(ps));
-    });
+// function loadPatients(store: StoreType) {
+//   myFetch(
+//     'patients/list',
+//     'GET',
+//     undefined,
+//     value => {
+//       let data = JSON.parse(value) as Patient[];
+//       let ps = data.map(el => toPatient(el));
+//       // store.dispatch(Actions.addPatientToAdd(ps));
+//     });
+// }
+
+function clearList(store: StoreType) {
+  store.dispatch(Actions.clearList());
 }
 
 function loadPatientFields(store: StoreType) {
@@ -109,7 +116,7 @@ function loadPatientFields(store: StoreType) {
       let patient = toPatient(parsedModel);
       store.dispatch(Actions.recievePatientFields(patient));
 
-      loadPatients(store);
+      // loadPatients(store);
     }
   );
 }

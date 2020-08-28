@@ -7,7 +7,6 @@ import * as Actions from '../../store/actions';
 import { History } from '../../library/history'
 
 export type TableProps = {
-    isWaitingPatientsList: boolean,
     isWaitingPatientFields: boolean,
     patientTemplate: Patient | null,
     patientsList: Patient[],
@@ -21,7 +20,8 @@ export type TableProps = {
     onSetSearchTemplate: (fieldNameId: number, newValue: FieldValue) => Actions.ActionSetSearchTemplate,
     onClearTemplate: () => void,
     onUndo: () => Actions.ActionUndo,
-    onRedo: () => Actions.ActionRedo
+    onRedo: () => Actions.ActionRedo,
+    clearList: () => void
 }
 
 export class Table extends React.Component<TableProps, {}, {}> {
@@ -30,8 +30,7 @@ export class Table extends React.Component<TableProps, {}, {}> {
         let tableHeadCells;
         let tableBodyRows;
         const isLoadingSomething =
-            this.props.isWaitingPatientFields ||
-            this.props.isWaitingPatientsList;
+            this.props.isWaitingPatientFields;
         const isSavingSomething = this.props.patientsList
             .find(p => p.savingStatus === SavingStatus.Saving) !== undefined;
 
@@ -62,7 +61,7 @@ export class Table extends React.Component<TableProps, {}, {}> {
             searchBar = (<p>Загрузка полей пациента...</p>);
         }
 
-        if (!this.props.isWaitingPatientsList) {
+        if (this.props.patientsList.length > 0) {
             if (!this.props.patientTemplate) throw Error("patientTemplate is null");
 
             const editingId: number | undefined = this.props.editingPatient?.id;
@@ -106,9 +105,11 @@ export class Table extends React.Component<TableProps, {}, {}> {
                 );
         } else {
             tableBodyRows = (
-                <tr><td><p>Загрузка списка пациентов...</p></td></tr>
+                <tr><td><p>Список редактирования пуст</p></td></tr>
             );
         }
+
+        // let canClearList = this.props.patientsList.some(p => p.status === Status.Untouched);
 
         return (
             <div>
@@ -117,7 +118,7 @@ export class Table extends React.Component<TableProps, {}, {}> {
                 <ButtonToolbar>
                     <ButtonGroup>
                         <Button
-                            onClick={e => this.savePatients()}
+                            onClick={() => this.savePatients()}
                             disabled={
                                 isLoadingSomething ||
                                 !this.props.history.canSave() ||
@@ -127,6 +128,10 @@ export class Table extends React.Component<TableProps, {}, {}> {
                         >
                             {isSavingSomething ? 'Идет сохранение...' : 'Сохранить изменения'}
                         </Button>
+                        {/* <Button
+                            onClick={() => this.props.clearList()}
+                            disabled={!canClearList}
+                        >Очистить</Button> */}
                     </ButtonGroup>
                     <ButtonGroup>
                         <Button

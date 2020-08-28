@@ -5,7 +5,6 @@ import * as Actions from '../../store/actions';
 import { Table, TableProps } from '../table/table';
 
 export type TableContainerState = {
-    isWaitingPatientsList: boolean,
     isWaitingPatientFields: boolean,
     patientsList: Patient[],
     patientTemplate: Patient | null,
@@ -23,12 +22,12 @@ export type TableContainerDispatchProps = {
     onRedo: () => Actions.ActionRedo
 }
 export type TableContainerProps = {
-    savePatients: (list: Patient[]) => void
+    savePatients: (list: Patient[]) => void,
+    clearList: () => void
 }
 
 const mapStateToProps = (state: TableContainerState): TableProps => {
     return {
-        isWaitingPatientsList: state.isWaitingPatientsList,
         isWaitingPatientFields: state.isWaitingPatientFields,
         patientsList: state.patientsList,
         patientTemplate: state.patientTemplate,
@@ -43,6 +42,7 @@ const mapStateToProps = (state: TableContainerState): TableProps => {
         onClearTemplate: Actions.clearSearchTemplate,
         onUndo: Actions.undo,
         onRedo: Actions.redo,
+        clearList: Actions.clearList
     }
 };
 

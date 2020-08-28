@@ -2,10 +2,27 @@ import { Patient, FieldValue, SavingStatus } from "../library/patient";
 import { Status, copyList } from "../library/history";
 import { TableContainerState } from '../components/table-container/table-container'
 
-export function onRecievePatients(state: TableContainerState, patients: Patient[]): TableContainerState {
+export function onAddPatientToEditList(state: TableContainerState, patient: Patient): TableContainerState {
+    let patientsList;
+
+    if (state.patientsList.some(p => p.equals(patient))) {
+        patientsList = state.patientsList;
+    } else {
+        patientsList = state.patientsList.concat(patient);
+    }
+
     return {
         ...state,
-        patientsList: patients
+        patientsList
+    }
+}
+
+export function onClearList(state: TableContainerState): TableContainerState {
+    let patientsList = state.patientsList.filter(p => p.status !== Status.Untouched);
+
+    return {
+        ...state,
+        patientsList
     }
 }
 
