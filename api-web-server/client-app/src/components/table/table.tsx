@@ -1,7 +1,7 @@
-import * as React from 'react';
+import React from 'react';
 import { Button, ButtonGroup, ButtonToolbar } from 'reactstrap';
 import { TableRaw, RawState } from '../table-raw/table-raw'
-import { Patient, FieldValue, FieldName, filteredSortedList, SavingStatus } from "../../library/patient";
+import { Patient, FieldValue, FieldName, SavingStatus } from "../../library/patient";
 import { SearchBar } from '../search-bar/search-bar';
 import * as Actions from '../../store/actions';
 import { History } from '../../library/history'
@@ -9,9 +9,8 @@ import { History } from '../../library/history'
 export type TableProps = {
     isWaitingPatientsList: boolean,
     isWaitingPatientFields: boolean,
-    patientTemplate: Patient,
+    patientTemplate: Patient | null,
     patientsList: Patient[],
-    editingId: number,
     editingPatient: Patient | null,
     history: History<Patient>,
     onAdd: () => Actions.ActionAddPatient,
@@ -26,11 +25,13 @@ export type TableProps = {
 
 export class Table extends React.Component<TableProps, {}, {}> {
     render(): React.ReactNode {
-        var searchBar;
-        var tableHeaderCells;
-        var tableRows;
-        var isLoadingSomething = false;
-        var isSavingSomething = this.props.patientsList
+        let searchBar;
+        let tableHeaderCells;
+        let tableRows;
+        const isLoadingSomething =
+            this.props.isWaitingPatientFields ||
+            this.props.isWaitingPatientsList;
+        const isSavingSomething = this.props.patientsList
             .find(p => p.savingStatus === SavingStatus.Saving) !== undefined;
 
         if (!this.props.isWaitingPatientFields) {
@@ -49,7 +50,7 @@ export class Table extends React.Component<TableProps, {}, {}> {
             ));
             searchBar = (
                 <SearchBar
-                    frozen={this.props.editingId > 0}
+                    frozen={this.props.editingPatient !== null || isSavingSomething}
                     patientTemplate={this.props.patientTemplate}
                     onSetSearchTemplate={this.props.onSetSearchTemplate}
                 />
@@ -57,39 +58,54 @@ export class Table extends React.Component<TableProps, {}, {}> {
         } else {
             tableHeaderCells = (<th><p>Загрузка полей пациента...</p></th>);
             searchBar = (<p>Загрузка полей пациента...</p>);
-            isLoadingSomething = true;
         }
 
         if (!this.props.isWaitingPatientsList) {
             if (!this.props.patientTemplate) throw Error("patientTemplate is null");
 
+            const editingId: number | undefined = this.props.editingPatient?.id;
+
             tableRows = filteredSortedList(
                 this.props.patientsList,
-                this.props.patientTemplate,
-                p => p.localId === this.props.editingId,
-                p => p.localId
+                this.props.patientTemplate as Patient,
+                this.props.editingPatient,
+                p => p.id
             )
-                .map((patient, ind) =>
-                    (<TableRaw
+                .map((patient, ind) => {
+                    let editingStatus: RawState;
+
+                    if (isSavingSomething) {
+                        editingStatus = RawState.Frozen;
+                    } else if (editingId) {
+                        editingStatus =
+                            (editingId === patient.id) ?
+                                RawState.Editing :
+                                RawState.Frozen;
+                    } else {
+                        editingStatus = RawState.Saved;
+                    }
+
+                    return (<TableRaw
                         key={ind}
-                        patientTemplate={this.props.patientTemplate}
+                        patientTemplate={this.props.patientTemplate as Patient}
                         patient={
-                            this.props.editingId === patient.localId ?
+                            (this.props.editingPatient &&
+                                this.props.editingPatient.id === patient.id) ?
                                 (this.props.editingPatient as Patient) :
                                 patient
                         }
-                        editState={getRawState(this.props.editingId, patient.localId, isSavingSomething)}
+                        editState={editingStatus}
                         onEdit={this.props.onEdit}
                         onStartEditing={this.props.onStartEditing}
                         onFinishEditing={this.props.onFinishEditing}
                         onDelete={this.props.onDelete}
                     />)
+                }
                 );
         } else {
             tableRows = (
                 <tr><td><p>Загрузка списка пациентов...</p></td></tr>
             );
-            isLoadingSomething = true;
         }
 
         return (
@@ -104,7 +120,7 @@ export class Table extends React.Component<TableProps, {}, {}> {
                             disabled={
                                 isLoadingSomething ||
                                 !this.props.history.canSave() ||
-                                this.props.editingId > 0 ||
+                                this.props.editingPatient !== null ||
                                 isSavingSomething
                             }
                         >
@@ -134,14 +150,14 @@ export class Table extends React.Component<TableProps, {}, {}> {
                             onClick={this.props.onAdd}
                             disabled={
                                 isLoadingSomething ||
-                                this.props.editingId > 0 ||
+                                this.props.editingPatient !== null ||
                                 isSavingSomething
                             }
                         >Добавить</Button>
                     </ButtonGroup>
                 </ButtonToolbar>
-                <div 
-                    style={{ maxHeight: 300, overflowY: 'auto', margin: 10 }} 
+                <div
+                    style={{ maxHeight: 300, overflowY: 'auto', margin: 10 }}
                     onScroll={this.handleScroll}
                 >
                     <table className={"table table-responsive table-striped table-bordered table-normal"}>
@@ -166,7 +182,7 @@ export class Table extends React.Component<TableProps, {}, {}> {
 
     private loadedHeight: number = 0;
     private handleScroll = (e: React.UIEvent<HTMLDivElement, UIEvent>) => {
-        var scrolledHeight = (e.currentTarget as any).scrollTop + (e.currentTarget as any).clientHeight;
+        const scrolledHeight = (e.currentTarget as any).scrollTop + (e.currentTarget as any).clientHeight;
         if (scrolledHeight > this.loadedHeight) {
             this.loadedHeight = scrolledHeight;
             //console.log(`loaded to ${this.loadedHeight}`);
@@ -175,16 +191,30 @@ export class Table extends React.Component<TableProps, {}, {}> {
     }
 }
 
-function getRawState(editingId: number, patientId: number, isSavingSomething: boolean): RawState {
-    if (isSavingSomething) return RawState.Frozen;
+function filteredSortedList(
+    patientsList: Patient[],
+    patientTemplate: Patient,
+    editingPatient: Patient | null,
+    sortBy: (p: Patient) => number
+): Patient[] {
+    const res = patientsList.filter(p => {
+        if (editingPatient && editingPatient.equals(p)) return true;
 
-    if (editingId !== patientId) {
-        return (
-            editingId ?
-                RawState.Frozen :
-                RawState.Saved
-        );
-    } else {
-        return RawState.Editing;
-    }
+        let contains = true;
+        patientTemplate.fields.forEach(tf => {
+            if (!tf.value) return;
+
+            let foundField = p.fields.find(f => f.name === tf.name);
+
+            if (foundField === undefined) return;
+            if (
+                !foundField.value.toLowerCase().startsWith(tf.value.toLowerCase())
+            ) {
+                contains = false;
+            }
+        });
+        return contains;
+    });
+
+    return res.sort(sortBy);
 }

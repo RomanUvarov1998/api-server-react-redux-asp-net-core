@@ -4,12 +4,11 @@ import { History } from '../../library/history';
 import * as Actions from '../../store/actions';
 import { Table, TableProps } from '../table/table';
 
-type TableContainerState = {
+export type TableContainerState = {
     isWaitingPatientsList: boolean,
     isWaitingPatientFields: boolean,
     patientsList: Patient[],
-    patientTemplate: Patient,
-    editingId: number,
+    patientTemplate: Patient | null,
     editingPatient: Patient | null,
     history: History<Patient>
 }
@@ -33,7 +32,6 @@ const mapStateToProps = (state: TableContainerState): TableProps => {
         isWaitingPatientFields: state.isWaitingPatientFields,
         patientsList: state.patientsList,
         patientTemplate: state.patientTemplate,
-        editingId: state.editingId,
         editingPatient: state.editingPatient,
         history: state.history,
         onAdd: Actions.add,

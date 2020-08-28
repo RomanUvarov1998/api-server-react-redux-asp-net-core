@@ -1,13 +1,12 @@
 import { createStore } from 'redux'
 import * as Actions from './actions';
 import * as Reducers from './reducers';
-import { AppState } from '../components/App'
+import { TableContainerState } from '../components/table-container/table-container'
 
-export function configureStore(initialState: AppState) {
-    const red = (state = initialState, action: { type: string })
-    : AppState => 
-    {
-        var a;
+export function configureStore(initialState: TableContainerState) {
+    const red = (state = initialState, action: Actions.MyAction)
+        : TableContainerState => {
+        let a;
         switch (action.type) {
             case Actions.ACTION_START_WAITING:
                 a = action as Actions.ActionStartWaiting;
@@ -79,9 +78,15 @@ export function configureStore(initialState: AppState) {
             case Actions.ACTION_START_SAVING:
                 a = action as Actions.ActionStartSaving;
                 return Reducers.onStartSaving(state);
-            case Actions.ACTION_SAVED:
-                a = action as Actions.ActionSaved;
-                return Reducers.onSaved(state, a.patient);
+            case Actions.ACTION_SAVED_ADDED:
+                a = action as Actions.ActionSavedAdded;
+                return Reducers.onPatientSavedAdded(state, a.newPatient, a.oldPatient);
+            case Actions.ACTION_SAVED_UPDATED:
+                a = action as Actions.ActionSavedUpdated;
+                return Reducers.onPatientSavedUpdated(state, a.updatedPatient);
+            case Actions.ACTION_SAVED_DELETED:
+                a = action as Actions.ActionSavedDeleted;
+                return Reducers.onPatientSavedDeleted(state, a.deletedId);
             default:
                 return state;
         }

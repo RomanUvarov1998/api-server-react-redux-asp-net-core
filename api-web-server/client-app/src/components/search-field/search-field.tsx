@@ -1,4 +1,4 @@
-import * as React from 'react'
+import React from 'react'
 import { FieldValue, PatientField } from '../../library/patient';
 
 export type SearchFieldProps = {
@@ -8,7 +8,7 @@ export type SearchFieldProps = {
 }
 
 export function SearchField(props: SearchFieldProps) {
-    var id = `searchField${props.field.name}`;
+    const id = `searchField${props.field.name}`;
     return (
         <td>
             <label htmlFor={id} style={{ display: 'block' }}>{props.field.name}</label>

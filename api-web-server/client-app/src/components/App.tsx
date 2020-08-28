@@ -1,64 +1,78 @@
 import React from 'react';
 import { Provider } from 'react-redux';
 import './App.css';
-import { TableContainer } from './table-container/table-container'
+import { TableContainer, TableContainerState } from './table-container/table-container'
 import { configureStore } from '../store/my-store';
 import * as Actions from '../store/actions';
 import { History, Status } from '../library/history';
-import { Patient, toPatient, toPatientField } from "../library/patient";
+import { Patient, toPatient } from "../library/patient";
 import { Store } from 'redux';
+import { Button, ButtonGroup } from 'reactstrap';
 
 type AppProps = {
 
 }
 export type AppState = {
-  isWaitingPatientsList: boolean,
-  isWaitingPatientFields: boolean,
-  patientsList: Patient[],
-  patientTemplate: Patient | null,
-  editingId: number,
-  editingPatient: Patient | null,
-  history: History<Patient>,
-  errorMsg: string
+  tableContainerState: TableContainerState,
+  store: StoreType,
+  showingMode: ShowingMode
 }
-type StoreType = Store<AppState, Actions.MyAction>;
+type StoreType = Store<TableContainerState, Actions.MyAction>;
+
+enum ShowingMode {
+  Searching,
+  Editing,
+}
 
 export class App extends React.Component<AppProps, AppState, {}> {
   state: AppState;
-  store: StoreType;
 
   constructor(props: AppProps) {
     super(props);
 
-    this.state = {
+    let tableContainerState = {
       isWaitingPatientsList: true,
       isWaitingPatientFields: true,
       patientsList: [],
       patientTemplate: null,
-      editingId: 0,
       editingPatient: null,
-      history: new History<Patient>(),
-      errorMsg: ""
+      history: new History<Patient>()
     };
-
-    this.store = configureStore(this.state);
+    this.state = {
+      tableContainerState,
+      store: configureStore(tableContainerState),
+      showingMode: ShowingMode.Searching
+    };
   }
 
   render(): React.ReactNode {
     return (
-      <div>
-        <Provider store={this.store}>
-          <TableContainer
-            savePatients={(list: Patient[]) => savePatients(this.store, list)}
-            // onScroll={}
-          />
-        </Provider>
-      </div>
+      <>
+        <ButtonGroup>
+          <Button onClick={() => this.setState({ showingMode: ShowingMode.Searching })}>
+            Searching
+          </Button>
+          <Button onClick={() => this.setState({ showingMode: ShowingMode.Editing })}>
+            Editing
+          </Button>
+        </ButtonGroup>
+        {
+          this.state.showingMode === ShowingMode.Searching ?
+            (
+              <Provider store={this.state.store}>
+                <TableContainer
+                  savePatients={(list: Patient[]) => savePatients(this.state.store, list)}
+                />
+              </Provider>
+            ) :
+            (<p>Editing...</p>)
+        }
+      </>
     );
   }
-  
+
   componentDidMount() {
-    loadPatientFields(this.store);
+    loadPatientFields(this.state.store);
   }
 }
 
@@ -80,10 +94,9 @@ function loadPatientFields(store: StoreType) {
     'GET',
     undefined,
     value => {
-      let data = JSON.parse(value) as Patient;
-      let ps = data.fields.map(el => toPatientField(el));
-      let pt = new Patient(ps, "0", 0, Status.Untouched);
-      store.dispatch(Actions.recievePatientFields(pt));
+      let parsedModel = JSON.parse(value) as Patient;
+      let patient = toPatient(parsedModel);
+      store.dispatch(Actions.recievePatientFields(patient));
 
       loadPatients(store);
     }
@@ -91,39 +104,79 @@ function loadPatientFields(store: StoreType) {
 }
 
 function savePatients(store: StoreType, listToSave: Patient[]) {
-  var editingId = store.getState().editingId;
+  const editingPatient = store.getState().editingPatient;
 
-  if (editingId) {
-    store.dispatch(Actions.startEditing(editingId));
+  if (editingPatient) {
+    store.dispatch(Actions.finishEditing(true));
   }
 
   store.dispatch(Actions.startSaving());
-  
+
   saveNextPatient(store, listToSave, 0);
 }
 
 function saveNextPatient(store: StoreType, listToSave: Patient[], index: number) {
-  while (index < listToSave.length && listToSave[index].status === Status.Untouched) {
+  while (
+    index < listToSave.length &&
+    listToSave[index].status === Status.Untouched
+  ) {
     console.log(`patient ${listToSave[index].toString()} is untouched, next...`);
     index += 1;
   }
 
-  console.log(`saving ${index} of ${listToSave.length}`);
-
-  if (index < listToSave.length) {
-    myFetch(
-      'patients/save',
-      'POST',
-      JSON.stringify(listToSave[index]),
-      () => {
-        console.log(`saved '${listToSave[index].toString()}'`);
-        store.dispatch(Actions.saved(listToSave[index]));
-        saveNextPatient(store, listToSave, index + 1);
-      }
-    );
-  } else {
+  if (index >= listToSave.length) {
     console.log('all saved!');
+    return;
   }
+
+  let patient = listToSave[index];
+  let action;
+  let processResponseBody: (value: string) => void;
+  switch (patient.status) {
+    case Status.Added:
+      action = 'add';
+      processResponseBody = (value: string) => {
+        let parsedModel = JSON.parse(value) as Patient;
+        let addedPatient = toPatient(parsedModel);
+
+        console.log(`added '${addedPatient.toString()}'`);
+
+        store.dispatch(Actions.savedAdded(addedPatient, patient));
+      };
+      break;
+    case Status.Modified:
+      action = 'update';
+      processResponseBody = (value: string) => {
+        let parsedModel = JSON.parse(value) as Patient;
+        let updatedPatient = toPatient(parsedModel);
+
+        console.log(`updated '${updatedPatient.toString()}'`);
+
+        store.dispatch(Actions.savedUpdated(updatedPatient));
+      };
+      break;
+    case Status.Deleted:
+      action = 'delete';
+      processResponseBody = (value: string) => {
+        let deletedId = JSON.parse(value) as number;
+
+        console.log(`deleted '${deletedId}'`);
+
+        store.dispatch(Actions.savedDeleted(deletedId));
+      };
+      break;
+    default: throw new Error(`unknown action ${action} on patient ${listToSave[index]}`);
+  }
+
+  myFetch(
+    `patients/${action}`,
+    'POST',
+    JSON.stringify(listToSave[index]),
+    (value: string) => {
+      processResponseBody(value);
+      saveNextPatient(store, listToSave, index + 1);
+    }
+  );
 }
 
 function myFetch(

@@ -21,23 +21,21 @@ export enum SavingStatus {
 }
 
 export class Patient implements IHistoryItem<Patient> {
-    constructor(fields: PatientField[], databaseId: string, localId: number,
+    constructor(fields: PatientField[], id: number,
         status: Status) {
         this.fields = fields;
-        this.databaseId = databaseId;
-        this.localId = localId;
+        this.id = id;
         this.status = status;
         this.savingStatus = SavingStatus.Saved;
     }
 
     fields: PatientField[];
-    databaseId: string;
-    localId: number;
+    id: number;
     status: Status;
     savingStatus: SavingStatus;
 
     public updateField = (fieldName: FieldName, newFieldValue: FieldValue) => {
-        var newFields = this.fields.map(field => {
+        const newFields = this.fields.map(field => {
             if (field.name === fieldName) {
                 return new PatientField(fieldName, newFieldValue);
             } else {
@@ -45,7 +43,7 @@ export class Patient implements IHistoryItem<Patient> {
             }
         });
 
-        var newStatus;
+        let newStatus;
         switch (this.status) {
             case Status.Added: newStatus = Status.Added; break;
             case Status.Modified: newStatus = Status.Modified; break;
@@ -54,13 +52,13 @@ export class Patient implements IHistoryItem<Patient> {
             default: throw new Error("Unknown status");
         }
 
-        return new Patient(newFields, this.databaseId, this.localId, newStatus);
+        return new Patient(newFields, this.id, newStatus);
     }
 
     public updateWhole = (template: Patient) => {
-        var newFields = template.fields.map(field => field.copy());
+        const newFields = template.fields.map(field => field.copy());
 
-        var newStatus;
+        let newStatus;
         switch (this.status) {
             case Status.Added: newStatus = Status.Added; break;
             case Status.Modified: newStatus = Status.Modified; break;
@@ -69,65 +67,37 @@ export class Patient implements IHistoryItem<Patient> {
             default: throw new Error("Unknown status");
         }
 
-        return new Patient(newFields, this.databaseId, this.localId, newStatus);
+        return new Patient(newFields, this.id, newStatus);
     }
 
     public copy = (): Patient => {
         return new Patient(
-            this.fields.map(f => new PatientField(f.name, f.value)),
-            this.databaseId,
-            this.localId,
+            this.fields.map(f => f.copy()),
+            this.id,
             this.status
         );
     }
-    public equals = (item: Patient): boolean => item.localId === this.localId;
-    public equalsByFields = (item: Patient): boolean => {
-        var eq = true;
+    public equals = (item: Patient): boolean => item.id === this.id;
+    public isUpdatedRelativelyTo = (item: Patient): boolean => {
+        let updated = false;
 
         this.fields.forEach(field => {
-            if (!eq) return;
-            var itemField = item.fields.find(f => f.name === field.name);
+            if (updated) return;
+            const itemField = item.fields.find(f => f.name === field.name);
             if (!itemField || itemField.value !== field.value) {
-                eq = false;
+                updated = true;
             }
         });
 
-        return eq;
+        return updated;
     }
 }
 
-export function filteredSortedList(
-    patientsList: Patient[],
-    patientTemplate: Patient,
-    additionalFilter: (p: Patient) => boolean,
-    sortBy: (p: Patient) => number
-): Patient[] {
-    var res = patientsList.filter(p => {
-        var contains = true;
-        patientTemplate.fields.forEach(tf => {
-            if (!tf.value) return;
-
-            var foundField = p.fields.find(f => f.name === tf.name);
-
-            if (foundField === undefined) return;
-            if (
-                !foundField.value.toLowerCase().startsWith(tf.value.toLowerCase())
-                && !additionalFilter(p)
-            ) {
-                contains = false;
-            }
-        });
-        return contains;
-    });
-
-    return res.sort(sortBy);
-}
-
 export function toPatient(obj: any): Patient {
-    let fields = obj.fields as PatientField[];
-    let id = obj.databaseId as number;
+    let fields: PatientField[] = obj.fields.map((f: any) => toPatientField(f));
+    let id = obj.id as number;
     let status = obj.status;
-    return new Patient(fields, id.toString(), id, status);
+    return new Patient(fields, id, status);
 }
 export function toPatientField(obj: any): PatientField {
     let name = obj.name as string;

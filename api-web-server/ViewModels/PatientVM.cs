@@ -14,8 +14,7 @@ namespace api_web_server.ViewModels
                 .Select(f => new PatientFieldVM(f))
                 .ToList();
 
-            DatabaseId = instance.Id;
-            LocalId = instance.Id;
+            Id = instance.Id;
             Status = Status.Untouched;
         }
         public static PatientVM CreateEmpty(List<FieldName> fieldNames)
@@ -25,8 +24,7 @@ namespace api_web_server.ViewModels
                 Fields = fieldNames
                     .Select(fn => PatientFieldVM.CreateEmpty(fn))
                     .ToList(),
-                LocalId = 0,
-                DatabaseId = 0
+                Id = 0
             };
             return patient;
         }
@@ -59,10 +57,14 @@ namespace api_web_server.ViewModels
             return updated;
         }
 
+        public void UpdateDatabaseId(Patient model)
+        {
+            this.Id = model.Id;
+        }
+
         public List<PatientFieldVM> Fields { get; set; }
 
-        public int DatabaseId { get; set; }
-        public int LocalId { get; set; }
+        public int Id { get; set; }
         public Status Status { get; set; }
     }
     public enum Status

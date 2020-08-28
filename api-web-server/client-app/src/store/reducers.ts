@@ -1,77 +1,71 @@
-import { Patient, FieldValue, FieldName, PatientField, SavingStatus } from "../library/patient";
+import { Patient, FieldValue, FieldName, SavingStatus } from "../library/patient";
 import { Status, copyList } from "../library/history";
-import { AppState } from '../components/App'
+import { TableContainerState } from '../components/table-container/table-container'
 
-export const onRecievePatients = (state: AppState, patients: Patient[]): AppState => {
+export function onRecievePatients(state: TableContainerState, patients: Patient[]): TableContainerState {
     return {
         ...state,
         patientsList: patients
     }
 }
 
-export const onRecievePatientFields = (state: AppState, patientTemplate: Patient): AppState => {
+export function onRecievePatientFields(state: TableContainerState, patientTemplate: Patient): TableContainerState {
     return {
         ...state,
         patientTemplate
     }
 }
 
-export const onAdd = (state: AppState): AppState => {
-    if (state.editingId) return state;
+export function onAdd(state: TableContainerState): TableContainerState {
     if (!state.patientTemplate) return state;
+    if (state.editingPatient !== null) return state;
 
-    var editingId = 1;
-    var editingPatient;
-    var patientsList;
+    const newPatient = new Patient(
+        state.patientTemplate.fields.map(f => f.copy()),
+        -1,
+        Status.Added
+    );
 
     state.patientsList.forEach(p => {
-        if (p.localId >= editingId) {
-            editingId = p.localId + 1;
+        if (p.id <= newPatient.id) {
+            newPatient.id = p.id - 1;
         }
     });
 
-    var newPatient = new Patient(
-        state.patientTemplate?.fields.map(
-            f => new PatientField(f.name, f.value)
-        ),
-        "0",
-        editingId,
-        Status.Added
-    );
-    patientsList = state.history.add(newPatient, state.patientsList);
-    editingPatient = newPatient.copy();
+    const patientsList = state.history.add(newPatient, state.patientsList);
+    const editingPatient = newPatient.copy();
 
     return ({
         ...state,
-        editingId,
         editingPatient,
         patientsList
     })
 }
 
-export const onStartEditing = (state: AppState, id: number): AppState => {
-    if (state.editingId && state.editingId !== id) throw Error("reducers.ts already editing");
+export function onStartEditing(state: TableContainerState, id: number): TableContainerState {
+    if (state.editingPatient && state.editingPatient.id !== id)
+        throw Error("reducers.ts already editing");
 
-    var patientToEdit = state.patientsList.find(p => p.localId === id);
+    const patientToEdit = state.patientsList.find(p => p.id === id);
     if (!patientToEdit) throw Error("reducers.ts patientToEdit");
 
     return ({
         ...state,
-        editingId : id,
         editingPatient: patientToEdit.copy()
     });
 }
 
-export function onFinishEditing(state: AppState, save: boolean) {
-    var patientsList;
+export function onFinishEditing(state: TableContainerState, save: boolean): TableContainerState {
+    let patientsList;
 
     if (!state.editingPatient) throw Error("reducers.ts editingPatient");
 
-    var patientToEdit = state.patientsList.find(p => p.localId === state.editingId);
+    const patientToEdit = state.patientsList
+        .find(p => p.id === (state.editingPatient as Patient).id);
     if (!patientToEdit) throw Error("reducers.ts patientToEdit");
 
     if (save) {
-        var template = (state.editingPatient as Patient).copy();
+        const template = (state.editingPatient as Patient).copy();
         patientsList = state.history.edit(
             patientToEdit,
             p => p.updateWhole(template),
@@ -84,15 +78,14 @@ export function onFinishEditing(state: AppState, save: boolean) {
     return ({
         ...state,
         patientsList,
-        editingId: 0,
         editingPatient: null
     });
 }
 
-export const onEdit = (state: AppState, fieldName: FieldName, newValue: FieldValue): AppState => {
+export function onEdit(state: TableContainerState, fieldName: FieldName, newValue: FieldValue): TableContainerState {
     if (!state.editingPatient) throw Error("editingPatient reducers.ts");
 
-    var editingPatient = (state.editingPatient as Patient).updateField(fieldName, newValue);
+    const editingPatient = (state.editingPatient as Patient).updateField(fieldName, newValue);
 
     return {
         ...state,
@@ -100,31 +93,29 @@ export const onEdit = (state: AppState, fieldName: FieldName, newValue: FieldVal
     };
 }
 
-export const onDelete = (state: AppState, id: number): AppState => {
-    var patientsList = state.history.del(
-        patient => patient.localId === id,
+export function onDelete(state: TableContainerState, id: number): TableContainerState {
+    const patientsList = state.history.del(
+        patient => patient.id === id,
         state.patientsList
     );
 
     return ({
         ...state,
-        editingId: 0,
         patientsList
     });
 }
 
-export const onSetSearchTemplate = (state: AppState, newValue: FieldValue, fieldName: FieldName): AppState => {
+export function onSetSearchTemplate(state: TableContainerState, newValue: FieldValue, fieldName: FieldName): TableContainerState {
     if (!state.patientTemplate) return state;
 
-    var patientTemplate = state.patientTemplate.updateField(fieldName, newValue);
+    const patientTemplate = state.patientTemplate.updateField(fieldName, newValue);
     return ({
         ...state,
-        editingId: 0,
         patientTemplate
     });
 }
 
-export const onUndo = (state: AppState): AppState => {
+export function onUndo(state: TableContainerState): TableContainerState {
     let newList = state.history.undo(state.patientsList);
     return {
         ...state,
@@ -132,7 +123,7 @@ export const onUndo = (state: AppState): AppState => {
     };
 }
 
-export const onRedo = (state: AppState): AppState => {
+export function onRedo(state: TableContainerState): TableContainerState {
     let newList = state.history.redo(state.patientsList);
     return {
         ...state,
@@ -140,8 +131,8 @@ export const onRedo = (state: AppState): AppState => {
     };
 }
 
-export const onStartSaving = (state: AppState): AppState => {
-    var patientsList = copyList(state.patientsList)
+export function onStartSaving(state: TableContainerState): TableContainerState {
+    const patientsList = copyList(state.patientsList)
         .map(p => {
             p.savingStatus =
                 p.status === Status.Untouched ?
@@ -155,21 +146,53 @@ export const onStartSaving = (state: AppState): AppState => {
     };
 }
 
-export const onSaved = (state: AppState, patient: Patient): AppState => {
-    var patientsList = state.patientsList
-        .filter(p => p.status !== Status.Deleted)
+export function onPatientSavedAdded(state: TableContainerState, newPatient: Patient, oldPatient: Patient): TableContainerState {
+    const patientsList = state.patientsList
         .map(p => {
-            var newP = p.copy();
+            let newP;
 
-            if (newP.equals(patient)) {
+            if (p.equals(oldPatient)) {
+                newP = newPatient.copy();
                 newP.savingStatus = SavingStatus.Saved;
                 newP.status = Status.Untouched;
             } else {
+                newP = p.copy();
                 newP.savingStatus = p.savingStatus;
             }
 
             return newP;
         });
+    return {
+        ...state,
+        patientsList
+    };
+}
+
+export function onPatientSavedUpdated(state: TableContainerState, updatedPatient: Patient): TableContainerState {
+    const patientsList = state.patientsList
+        .map(p => {
+            let newP;
+
+            if (p.equals(updatedPatient)) {
+                newP = updatedPatient.copy();
+                newP.savingStatus = SavingStatus.Saved;
+                newP.status = Status.Untouched;
+            } else {
+                newP = p.copy();
+                newP.savingStatus = p.savingStatus;
+            }
+
+            return newP;
+        });
+    return {
+        ...state,
+        patientsList
+    };
+}
+
+export function onPatientSavedDeleted(state: TableContainerState, deletedId: number): TableContainerState {
+    const patientsList = state.patientsList
+        .filter(p => p.id !== deletedId);
     return {
         ...state,
         patientsList

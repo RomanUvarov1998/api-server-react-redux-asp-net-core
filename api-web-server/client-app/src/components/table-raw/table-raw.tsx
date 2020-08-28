@@ -1,12 +1,12 @@
-import * as React from "react";
+import React from "react";
 import { RawCell } from "../raw-cell/raw-cell";
 import { Patient, FieldName, FieldValue, PatientField, SavingStatus } from "../../library/patient";
 import { Status } from "../../library/history";
 
 export enum RawState {
-    Editing = "Save",
-    Saved = "Edit",
-    Frozen = "Frozen"
+    Editing,
+    Saved,
+    Frozen
 }
 export type TableRawProps = {
     patientTemplate: Patient,
@@ -19,8 +19,8 @@ export type TableRawProps = {
 }
 
 export function TableRaw(props: TableRawProps) {
-    var rawCells = props.patientTemplate.fields.map(templateField => {
-        var field = props.patient.fields.find(f => f.name === templateField.name);
+    const rawCells = props.patientTemplate.fields.map(templateField => {
+        const field = props.patient.fields.find(f => f.name === templateField.name);
 
         return (
             field ?
@@ -29,7 +29,7 @@ export function TableRaw(props: TableRawProps) {
                     setEntityValue={
                         newValue =>
                             props.onEdit(
-                                props.patient.localId,
+                                props.patient.id,
                                 (field as PatientField).name,
                                 newValue
                             )
@@ -41,7 +41,7 @@ export function TableRaw(props: TableRawProps) {
         );
     });
 
-    var rawStyle = statusToStyle(props.patient.status);
+    const rawStyle = statusToStyle(props.patient.status);
 
     return (
         <tr style={rawStyle}>
@@ -63,13 +63,13 @@ function getBtnEditOrSave(props: TableRawProps) {
     return (
         props.editState === RawState.Editing ?
             (<button
-                onClick={e => props.onFinishEditing(true)}
+                onClick={() => props.onFinishEditing(true)}
                 disabled={
                     props.patient.savingStatus === SavingStatus.Saving
                 }
             >Сохранить</button>) :
             (<button
-                onClick={e => props.onStartEditing(props.patient.localId)}
+                onClick={() => props.onStartEditing(props.patient.id)}
                 disabled={
                     props.editState === RawState.Frozen ||
                     props.patient.status === Status.Deleted ||
@@ -90,7 +90,7 @@ function getBtnDeleteOrCancel(props: TableRawProps): JSX.Element {
                 }
             >Отмена</button>) :
             (<button
-                onClick={e => props.onDelete(props.patient.localId)}
+                onClick={e => props.onDelete(props.patient.id)}
                 disabled={
                     props.editState === RawState.Frozen ||
                     props.patient.status === Status.Deleted ||
@@ -101,17 +101,21 @@ function getBtnDeleteOrCancel(props: TableRawProps): JSX.Element {
 }
 
 function statusToString(patient: Patient): string {
+    let status;
+
     if (patient.savingStatus === SavingStatus.Saving) {
         return "Сохранение...";
     } else {
         switch (patient.status) {
-            case Status.Added: return "Добавлен";
-            case Status.Modified: return "Изменен";
-            case Status.Deleted: return "Удален";
-            case Status.Untouched: return "";
-            default: return "unknown ???";
+            case Status.Added: status = "Добавлен"; break;
+            case Status.Modified: status = "Изменен "; break;
+            case Status.Deleted: status = "Удален  "; break;
+            case Status.Untouched: status = "        "; break;
+            default: status = "unknown ";
         }
     }
+
+    return `${status}`;// id:${patient.id}`;
 }
 
 function statusToStyle(status: Status): {

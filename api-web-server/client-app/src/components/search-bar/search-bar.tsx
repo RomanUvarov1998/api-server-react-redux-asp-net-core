@@ -1,4 +1,4 @@
-import * as React from 'react'
+import React from 'react'
 import { Patient, FieldValue, FieldName } from '../../library/patient'
 import { SearchField } from '../search-field/search-field'
 
@@ -10,7 +10,7 @@ export type SearchBarProps = {
 
 export function SearchBar(props: SearchBarProps) {
     if (props.patientTemplate) { 
-        var searchFields = props.patientTemplate.fields.map((field, ind) => {
+        const searchFields = props.patientTemplate.fields.map((field, ind) => {
             return (
                 <SearchField
                     key={ind}

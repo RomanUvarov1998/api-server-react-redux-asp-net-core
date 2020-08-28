@@ -12,7 +12,7 @@ export class History<Item extends IHistoryItem<Item>> {
     }
 
     public add(newItem: Item, listBefore: Item[]): Item[] {
-        var newItemCopy = newItem.copy();
+        const newItemCopy = newItem.copy();
         newItemCopy.status = Status.Added;
         return this.addAndApplyAction(
             listBefore,
@@ -23,13 +23,15 @@ export class History<Item extends IHistoryItem<Item>> {
         );
     }
     public edit(itemToEdit: Item, editor: (item: Item) => Item, listBefore: Item[]): Item[] {
-        var initialItem = itemToEdit.copy();
+        const initialItem = itemToEdit.copy();
         initialItem.status = itemToEdit.status;
 
-        var editedItem = editor(initialItem);
+        const editedItem = editor(initialItem);
         if (editedItem.status !== Status.Added) {
             editedItem.status = Status.Modified;
         }
+
+        if (!itemToEdit.isUpdatedRelativelyTo(editedItem)) return listBefore;
 
         return this.addAndApplyAction(
             listBefore,
@@ -58,8 +60,8 @@ export class History<Item extends IHistoryItem<Item>> {
     public del(predicate: (item: Item) => boolean, listBefore: Item[]): Item[] {
         let deletedItem = listBefore.find(predicate);
         if (!deletedItem) throw Error("deletedItem history.ts");
-        var delItem = deletedItem as Item;
-        var oldStatus = delItem.status;
+        const delItem = deletedItem as Item;
+        const oldStatus = delItem.status;
 
         return this.addAndApplyAction(
             listBefore,
@@ -125,6 +127,7 @@ type HistoryAction<Item extends IHistoryItem<Item>> = {
 export interface IHistoryItem<Item> {
     copy: () => Item,
     equals: (item: Item) => boolean,
+    isUpdatedRelativelyTo: (item: Item) => boolean,
     status: Status,
 }
 

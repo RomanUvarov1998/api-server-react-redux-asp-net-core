@@ -12,7 +12,9 @@ export const ACTION_SET_SEARCH_TEMPLATE = 'ACTION_SET_SEARCH_TEMPLATE';
 export const ACTION_UNDO = 'ACTION_UNDO';
 export const ACTION_REDO = 'ACTION_REDO';
 export const ACTION_START_SAVING = 'ACTION_START_SAVING';
-export const ACTION_SAVED = 'ACTION_SAVED';
+export const ACTION_SAVED_ADDED = 'ACTION_SAVED_ADDED';
+export const ACTION_SAVED_UPDATED = 'ACTION_SAVED_UPDATED';
+export const ACTION_SAVED_DELETED = 'ACTION_SAVED_DELETED';
 
 export type MyAction =
     ActionStartWaiting |
@@ -26,7 +28,9 @@ export type MyAction =
     ActionUndo |
     ActionRedo |
     ActionStartSaving |
-    ActionSaved;
+    ActionSavedAdded |
+    ActionSavedUpdated |
+    ActionSavedDeleted;
 
 export type ActionStartWaiting = { type: string, waitPatients: boolean, waitPatientFields: boolean };
 export type ActionRecievePatients = { type: string, patients: Patient[] };
@@ -40,48 +44,50 @@ export type ActionSetSearchTemplate = { type: string, fieldName: FieldName, newV
 export type ActionUndo = { type: string };
 export type ActionRedo = { type: string };
 export type ActionStartSaving = { type: string };
-export type ActionSaved = { type: string, patient: Patient };
+export type ActionSavedAdded = { type: string, newPatient: Patient, oldPatient: Patient };
+export type ActionSavedUpdated = { type: string, updatedPatient: Patient };
+export type ActionSavedDeleted = { type: string, deletedId: number };
 
-export const startWaiting = (
+export function startWaiting(
     waitPatients: boolean,
     waitPatientFields: boolean
-) => {
+): ActionStartWaiting {
     return {
         type: ACTION_START_WAITING,
         waitPatients,
         waitPatientFields
     };
 }
-export const recievePatients = (patients: Patient[]) => {
+export function recievePatients(patients: Patient[]): ActionRecievePatients {
     return {
         type: ACTION_RECIEVE_PATIENTS,
         patients
     };
 }
-export const recievePatientFields = (patientTemplate: Patient) => {
+export function recievePatientFields(patientTemplate: Patient): ActionRecievePatientFields {
     return {
         type: ACTION_RECIEVE_PATIENT_FIELDS,
         patientTemplate
     };
 }
-export const add = () => {
+export function add(): ActionAddPatient {
     return {
         type: ACTION_ADD_PATIENT
     };
 }
-export const startEditing = (patientId: number) => {
+export function startEditing(patientId: number): ActionStartEditingPatient {
     return {
         type: ACTION_START_EDIT_PATIENT,
         patientId
     }
 }
-export const finishEditing = (save: boolean) => {
+export function finishEditing(save: boolean): ActionFinishEditingPatient {
     return {
         type: ACTION_FINISH_EDIT_PATIENT,
         save
     }
 }
-export const edit = (patientId: number, fieldName: FieldName, newValue: FieldValue) => {
+export function edit(patientId: number, fieldName: FieldName, newValue: FieldValue): ActionEditPatient {
     return {
         type: ACTION_EDIT_PATIENT,
         patientId,
@@ -89,37 +95,50 @@ export const edit = (patientId: number, fieldName: FieldName, newValue: FieldVal
         newValue,
     }
 }
-export const del = (patientId: number) => {
+export function del(patientId: number): ActionDeletePatient {
     return {
         type: ACTION_DELETE_PATIENT,
         patientId,
     }
 }
-export const setSearchTemplate = (fieldName: FieldName, newValue: FieldValue) => {
+export function setSearchTemplate(fieldName: FieldName, newValue: FieldValue): ActionSetSearchTemplate {
     return {
         type: ACTION_SET_SEARCH_TEMPLATE,
         fieldName,
         newValue,
     }
 }
-export const undo = () => {
+export function undo(): ActionUndo {
     return {
         type: ACTION_UNDO
     };
 }
-export const redo = () => {
+export function redo(): ActionRedo {
     return {
         type: ACTION_REDO
     };
 }
-export const startSaving = () => {
+export function startSaving(): ActionStartSaving {
     return {
         type: ACTION_START_SAVING
     };
 }
-export const saved = (patient: Patient) => {
+export function savedAdded(newPatient: Patient, oldPatient: Patient): ActionSavedAdded {
     return {
-        type: ACTION_SAVED,
-        patient
+        type: ACTION_SAVED_ADDED,
+        newPatient,
+        oldPatient
+    };
+}
+export function savedUpdated(updatedPatient: Patient): ActionSavedUpdated {
+    return {
+        type: ACTION_SAVED_UPDATED,
+        updatedPatient
+    };
+}
+export function savedDeleted(deletedId: number): ActionSavedDeleted {
+    return {
+        type: ACTION_SAVED_DELETED,
+        deletedId
     };
 }
