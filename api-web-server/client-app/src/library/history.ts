@@ -60,23 +60,22 @@ export class History<Item extends IHistoryItem<Item>> {
     public del(predicate: (item: Item) => boolean, listBefore: Item[]): Item[] {
         let deletedItem = listBefore.find(predicate);
         if (!deletedItem) throw Error("deletedItem history.ts");
-        const delItem = deletedItem as Item;
-        const oldStatus = delItem.status;
+        const deletedItemCopy = deletedItem!.copy();
 
         return this.addAndApplyAction(
             listBefore,
             {
                 redo: list => {
-                    let pat = list.find(p => p.equals(deletedItem as Item));
-                    (pat as Item).status = Status.Deleted;
+                    let pat = list.find(p => p.equals(deletedItemCopy));
+                    pat!.status = Status.Deleted;
                     return copyList(list);
                 },
                 undo: list => {
-                    if ((deletedItem as Item).status === Status.Added) {
-                        return copyList(list).concat(deletedItem as Item);
+                    if (deletedItemCopy.status === Status.Added) {
+                        return copyList(list).concat(deletedItemCopy);
                     } else {
-                        let pat = list.find(p => p.equals(deletedItem as Item));
-                        (pat as Item).status = oldStatus;
+                        let pat = list.find(p => p.equals(deletedItemCopy));
+                        pat!.status = deletedItemCopy.status;
                         return copyList(list);
                     }
                 },

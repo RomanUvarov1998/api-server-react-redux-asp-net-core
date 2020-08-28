@@ -1,13 +1,15 @@
 import React from 'react';
 import { Provider } from 'react-redux';
+import { Button, ButtonGroup } from 'reactstrap';
 import './App.css';
-import { TableContainer, TableContainerState } from './table-container/table-container'
+import { TableContainer, TableContainerState } from './table-container/table-container';
+import { SearchTable } from './search-table/search-table';
 import { configureStore } from '../store/my-store';
 import * as Actions from '../store/actions';
 import { History, Status } from '../library/history';
 import { Patient, toPatient } from "../library/patient";
+import { myFetch } from '../library/fetchHelper';
 import { Store } from 'redux';
-import { Button, ButtonGroup } from 'reactstrap';
 
 type AppProps = {
 
@@ -46,27 +48,36 @@ export class App extends React.Component<AppProps, AppState, {}> {
   }
 
   render(): React.ReactNode {
+    let currentUI = (<p>No UI...</p>);
+
+    switch (this.state.showingMode) {
+      case ShowingMode.Searching:
+        currentUI = (
+          <SearchTable />
+        );
+        break;
+      case ShowingMode.Editing:
+        currentUI = (
+          <Provider store={this.state.store}>
+            <TableContainer
+              savePatients={(list: Patient[]) => savePatients(this.state.store, list)}
+            />
+          </Provider>
+        );
+        break;
+    }
+
     return (
       <>
         <ButtonGroup>
           <Button onClick={() => this.setState({ showingMode: ShowingMode.Searching })}>
-            Searching
+            Поиск
           </Button>
           <Button onClick={() => this.setState({ showingMode: ShowingMode.Editing })}>
-            Editing
+            Редактирование
           </Button>
         </ButtonGroup>
-        {
-          this.state.showingMode === ShowingMode.Searching ?
-            (
-              <Provider store={this.state.store}>
-                <TableContainer
-                  savePatients={(list: Patient[]) => savePatients(this.state.store, list)}
-                />
-              </Provider>
-            ) :
-            (<p>Editing...</p>)
-        }
+        {currentUI}
       </>
     );
   }
@@ -79,7 +90,7 @@ export class App extends React.Component<AppProps, AppState, {}> {
 function loadPatients(store: StoreType) {
   myFetch(
     'patients/list',
-    undefined,
+    'GET',
     undefined,
     value => {
       let data = JSON.parse(value) as Patient[];
@@ -177,34 +188,6 @@ function saveNextPatient(store: StoreType, listToSave: Patient[], index: number)
       saveNextPatient(store, listToSave, index + 1);
     }
   );
-}
-
-function myFetch(
-  url: string,
-  method: string | undefined = 'GET',
-  body: string | undefined = undefined,
-  myThen: (value: string) => void | null
-) {
-  fetch(url, { method, body })
-    .then(response => {
-      if (!response.ok) {
-        console.error(response.statusText);
-      }
-      return response.text();
-    })
-    .then(text => {
-      try {
-        myThen(text);
-      }
-      catch (e) {
-        let rootElement = document.getElementById("root");
-        if (rootElement) {
-          rootElement.innerHTML = `text:\n${text}\n\ne:\n${e.toString()}`;
-        } else {
-          console.log(text);
-        }
-      }
-    });
 }
 
 export default App;

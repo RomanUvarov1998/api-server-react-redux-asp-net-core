@@ -1,6 +1,6 @@
 import React from "react";
 import { RawCell } from "../raw-cell/raw-cell";
-import { Patient, FieldName, FieldValue, PatientField, SavingStatus } from "../../library/patient";
+import { Patient, FieldValue, PatientField, SavingStatus } from "../../library/patient";
 import { Status } from "../../library/history";
 
 export enum RawState {
@@ -12,7 +12,7 @@ export type TableRawProps = {
     patientTemplate: Patient,
     patient: Patient,
     editState: RawState,
-    onEdit: (id: number, fieldName: FieldName, newValue: FieldValue) => void,
+    onEdit: (id: number, fieldNameId: number, newValue: FieldValue) => void,
     onStartEditing: (id: number) => void,
     onFinishEditing: (save: boolean) => void,
     onDelete: (id: number) => void,
@@ -20,7 +20,7 @@ export type TableRawProps = {
 
 export function TableRaw(props: TableRawProps) {
     const rawCells = props.patientTemplate.fields.map(templateField => {
-        const field = props.patient.fields.find(f => f.name === templateField.name);
+        const field = props.patient.fields.find(f => f.nameId === templateField.nameId);
 
         return (
             field ?
@@ -30,7 +30,7 @@ export function TableRaw(props: TableRawProps) {
                         newValue =>
                             props.onEdit(
                                 props.patient.id,
-                                (field as PatientField).name,
+                                (field as PatientField).nameId,
                                 newValue
                             )
                     }

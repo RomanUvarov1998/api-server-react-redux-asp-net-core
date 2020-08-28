@@ -53,7 +53,7 @@ export function configureStore(initialState: TableContainerState) {
                 a = (action as Actions.ActionEditPatient);
                 return Reducers.onEdit(
                     state,
-                    a.fieldName,
+                    a.fieldNameId,
                     a.newValue
                 );
             case Actions.ACTION_DELETE_PATIENT:
@@ -66,8 +66,13 @@ export function configureStore(initialState: TableContainerState) {
                 a = (action as Actions.ActionSetSearchTemplate);
                 return Reducers.onSetSearchTemplate(
                     state,
-                    a.fieldName,
-                    a.newValue
+                    a.newValue,
+                    a.fieldNameId
+                );
+            case Actions.ACTION_CLEAR_SEARCH_TEMPLATE:
+                a = (action as Actions.ActionSetSearchTemplate);
+                return Reducers.onClearSearchTemplate(
+                    state
                 );
             case Actions.ACTION_UNDO:
                 a = action as Actions.ActionUndo;

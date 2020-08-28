@@ -1,7 +1,7 @@
 import React from 'react';
 import { Button, ButtonGroup, ButtonToolbar } from 'reactstrap';
 import { TableRaw, RawState } from '../table-raw/table-raw'
-import { Patient, FieldValue, FieldName, SavingStatus } from "../../library/patient";
+import { Patient, FieldValue, SavingStatus } from "../../library/patient";
 import { SearchBar } from '../search-bar/search-bar';
 import * as Actions from '../../store/actions';
 import { History } from '../../library/history'
@@ -16,9 +16,10 @@ export type TableProps = {
     onAdd: () => Actions.ActionAddPatient,
     onStartEditing: (id: number) => Actions.ActionStartEditingPatient,
     onFinishEditing: (save: boolean) => Actions.ActionFinishEditingPatient,
-    onEdit: (id: number, fieldName: FieldName, newValue: FieldValue) => Actions.ActionEditPatient,
+    onEdit: (id: number, fieldNameId: number, newValue: FieldValue) => Actions.ActionEditPatient,
     onDelete: (id: number) => Actions.ActionDeletePatient,
-    onSetSearchTemplate: (fieldName: FieldName, newValue: FieldValue) => Actions.ActionSetSearchTemplate,
+    onSetSearchTemplate: (fieldNameId: number, newValue: FieldValue) => Actions.ActionSetSearchTemplate,
+    onClearTemplate: () => void,
     onUndo: () => Actions.ActionUndo,
     onRedo: () => Actions.ActionRedo
 }
@@ -26,8 +27,8 @@ export type TableProps = {
 export class Table extends React.Component<TableProps, {}, {}> {
     render(): React.ReactNode {
         let searchBar;
-        let tableHeaderCells;
-        let tableRows;
+        let tableHeadCells;
+        let tableBodyRows;
         const isLoadingSomething =
             this.props.isWaitingPatientFields ||
             this.props.isWaitingPatientsList;
@@ -37,13 +38,13 @@ export class Table extends React.Component<TableProps, {}, {}> {
         if (!this.props.isWaitingPatientFields) {
             if (!this.props.patientTemplate) throw Error("patientTemplate is null");
 
-            tableHeaderCells = [
+            tableHeadCells = [
                 <th key={"btnEdit"}></th>,
                 <th key={"btnDelete"}></th>
             ];
-            tableHeaderCells.push(...this.props.patientTemplate.fields.map(
+            tableHeadCells.push(...this.props.patientTemplate.fields.map(
                 tf => (
-                    <th key={tf.name}>
+                    <th key={tf.nameId}>
                         {tf.name}
                     </th>
                 )
@@ -53,10 +54,11 @@ export class Table extends React.Component<TableProps, {}, {}> {
                     frozen={this.props.editingPatient !== null || isSavingSomething}
                     patientTemplate={this.props.patientTemplate}
                     onSetSearchTemplate={this.props.onSetSearchTemplate}
+                    onClearTemplate={this.props.onClearTemplate}
                 />
             );
         } else {
-            tableHeaderCells = (<th><p>Загрузка полей пациента...</p></th>);
+            tableHeadCells = (<th><p>Загрузка полей пациента...</p></th>);
             searchBar = (<p>Загрузка полей пациента...</p>);
         }
 
@@ -65,7 +67,7 @@ export class Table extends React.Component<TableProps, {}, {}> {
 
             const editingId: number | undefined = this.props.editingPatient?.id;
 
-            tableRows = filteredSortedList(
+            tableBodyRows = filteredSortedList(
                 this.props.patientsList,
                 this.props.patientTemplate as Patient,
                 this.props.editingPatient,
@@ -87,11 +89,11 @@ export class Table extends React.Component<TableProps, {}, {}> {
 
                     return (<TableRaw
                         key={ind}
-                        patientTemplate={this.props.patientTemplate as Patient}
+                        patientTemplate={this.props.patientTemplate!}
                         patient={
                             (this.props.editingPatient &&
                                 this.props.editingPatient.id === patient.id) ?
-                                (this.props.editingPatient as Patient) :
+                                (this.props.editingPatient!) :
                                 patient
                         }
                         editState={editingStatus}
@@ -103,14 +105,13 @@ export class Table extends React.Component<TableProps, {}, {}> {
                 }
                 );
         } else {
-            tableRows = (
+            tableBodyRows = (
                 <tr><td><p>Загрузка списка пациентов...</p></td></tr>
             );
         }
 
         return (
             <div>
-                <h1>Поиск:</h1>
                 {searchBar}
                 <h1>Пациенты:</h1>
                 <ButtonToolbar>
@@ -162,12 +163,10 @@ export class Table extends React.Component<TableProps, {}, {}> {
                 >
                     <table className={"table table-responsive table-striped table-bordered table-normal"}>
                         <thead className={"thead-dark"}>
-                            <tr>
-                                {tableHeaderCells}
-                            </tr>
+                            <tr>{tableHeadCells}</tr>
                         </thead>
                         <tbody>
-                            {tableRows}
+                            {tableBodyRows}
                         </tbody>
                     </table>
                 </div>
@@ -204,7 +203,7 @@ function filteredSortedList(
         patientTemplate.fields.forEach(tf => {
             if (!tf.value) return;
 
-            let foundField = p.fields.find(f => f.name === tf.name);
+            let foundField = p.fields.find(f => f.nameId === tf.nameId);
 
             if (foundField === undefined) return;
             if (

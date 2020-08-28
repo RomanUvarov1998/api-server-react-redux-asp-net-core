@@ -1,32 +1,42 @@
 import React from 'react'
-import { Patient, FieldValue, FieldName } from '../../library/patient'
+import { Patient, FieldValue, PatientField } from '../../library/patient'
 import { SearchField } from '../search-field/search-field'
+import { Button } from 'reactstrap';
 
 export type SearchBarProps = {
     frozen: boolean,
     patientTemplate: Patient,
-    onSetSearchTemplate: (newValue: FieldValue, fieldName: FieldName) => void
+    onSetSearchTemplate: (fieldNameId: number, newValue: FieldValue) => void,
+    onClearTemplate: () => void
 }
 
 export function SearchBar(props: SearchBarProps) {
-    if (props.patientTemplate) { 
-        const searchFields = props.patientTemplate.fields.map((field, ind) => {
-            return (
-                <SearchField
-                    key={ind}
-                    frozen={props.frozen}
-                    field={field}
-                    onInput={newValue => props.onSetSearchTemplate(newValue, field.name)}
-                />
-            );
-        });
-        return (<table><thead><tr>{searchFields}</tr></thead></table>);
-    } else {
+    const searchFields = props.patientTemplate.fields.map((field, ind) => {
         return (
-            <div>
-                <h1>Поиск:</h1>
-                <p>Загрузка списка полей пациента...</p>
-            </div>
+            <SearchField
+                key={ind}
+                frozen={props.frozen}
+                field={field}
+                onInput={newValue => props.onSetSearchTemplate(field.nameId, newValue)}
+            />
         );
-    }
+    });
+    return (
+        <>
+            <h1>Поиск</h1>
+            <table><thead><tr>{searchFields}</tr></thead></table>
+            <Button onClick={() => clearTemplateHandler(props)}>Очистить фильтр</Button>
+        </>
+    );
+}
+
+function clearTemplateHandler(props: SearchBarProps) {
+    if (props.patientTemplate.fields.reduce(
+        (previousValue: boolean, currentValue: PatientField) => {
+            return previousValue && currentValue.value === '';
+        },
+        true)
+    ) return;
+
+    props.onClearTemplate();
 }

@@ -36,12 +36,12 @@ namespace api_web_server.ViewModels
             foreach (PatientFieldVM templateField in this.Fields)
             {
                 PatientField modelField = model.Fields
-                    .FirstOrDefault(f => f.Name.Value.Equals(templateField.Name));
+                    .FirstOrDefault(f => f.Name.Id == templateField.NameId);
 
                 if (modelField == null)
                 {
                     FieldName nameForField = existingFieldNames.First(
-                        f => f.Value.Equals(templateField.Name)
+                        f => f.Id == templateField.NameId
                     );
                     modelField = new PatientField(nameForField);
                     model.Fields.Add(modelField);

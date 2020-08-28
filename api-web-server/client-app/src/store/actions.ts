@@ -1,4 +1,4 @@
-import { FieldValue, FieldName, Patient } from "../library/patient";
+import { FieldValue, Patient } from "../library/patient";
 
 export const ACTION_START_WAITING = 'ACTION_START_WAITING';
 export const ACTION_RECIEVE_PATIENTS = 'ACTION_RECIEVE_PATIENTS';
@@ -9,6 +9,7 @@ export const ACTION_FINISH_EDIT_PATIENT = 'ACTION_FINISH_EDIT_PATIENT';
 export const ACTION_EDIT_PATIENT = 'ACTION_EDIT_PATIENT';
 export const ACTION_DELETE_PATIENT = 'ACTION_DELETE_PATIENT';
 export const ACTION_SET_SEARCH_TEMPLATE = 'ACTION_SET_SEARCH_TEMPLATE';
+export const ACTION_CLEAR_SEARCH_TEMPLATE = 'ACTION_CLEAR_SEARCH_TEMPLATE';
 export const ACTION_UNDO = 'ACTION_UNDO';
 export const ACTION_REDO = 'ACTION_REDO';
 export const ACTION_START_SAVING = 'ACTION_START_SAVING';
@@ -25,6 +26,7 @@ export type MyAction =
     ActionEditPatient |
     ActionDeletePatient |
     ActionSetSearchTemplate |
+    ActionClearSearchTemplate |
     ActionUndo |
     ActionRedo |
     ActionStartSaving |
@@ -38,9 +40,10 @@ export type ActionRecievePatientFields = { type: string, patientTemplate: Patien
 export type ActionAddPatient = { type: string };
 export type ActionStartEditingPatient = { type: string, patientId: number };
 export type ActionFinishEditingPatient = { type: string, save: boolean };
-export type ActionEditPatient = { type: string, patientId: number, fieldName: FieldName, newValue: FieldValue };
+export type ActionEditPatient = { type: string, patientId: number, fieldNameId: number, newValue: FieldValue };
 export type ActionDeletePatient = { type: string, patientId: number };
-export type ActionSetSearchTemplate = { type: string, fieldName: FieldName, newValue: FieldValue };
+export type ActionSetSearchTemplate = { type: string, fieldNameId: number, newValue: FieldValue };
+export type ActionClearSearchTemplate = { type: string };
 export type ActionUndo = { type: string };
 export type ActionRedo = { type: string };
 export type ActionStartSaving = { type: string };
@@ -87,11 +90,11 @@ export function finishEditing(save: boolean): ActionFinishEditingPatient {
         save
     }
 }
-export function edit(patientId: number, fieldName: FieldName, newValue: FieldValue): ActionEditPatient {
+export function edit(patientId: number, fieldNameId: number, newValue: FieldValue): ActionEditPatient {
     return {
         type: ACTION_EDIT_PATIENT,
         patientId,
-        fieldName,
+        fieldNameId,
         newValue,
     }
 }
@@ -101,11 +104,16 @@ export function del(patientId: number): ActionDeletePatient {
         patientId,
     }
 }
-export function setSearchTemplate(fieldName: FieldName, newValue: FieldValue): ActionSetSearchTemplate {
+export function setSearchTemplate(fieldNameId: number, newValue: FieldValue): ActionSetSearchTemplate {
     return {
         type: ACTION_SET_SEARCH_TEMPLATE,
-        fieldName,
+        fieldNameId,
         newValue,
+    }
+}
+export function clearSearchTemplate(): ActionClearSearchTemplate {
+    return {
+        type: ACTION_CLEAR_SEARCH_TEMPLATE
     }
 }
 export function undo(): ActionUndo {

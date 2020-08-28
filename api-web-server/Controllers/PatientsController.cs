@@ -1,10 +1,7 @@
-using System.Net.Cache;
 using System.Collections.Generic;
 using System.Linq;
-using System;
 using System.IO;
 using System.Threading.Tasks;
-using System.Threading;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Http;
 using database;
@@ -105,6 +102,66 @@ namespace api_web_server
             dbContext.SaveChanges();
 
             return Ok(patient.Id);
+        }
+
+        [HttpPost("list")]
+        public async Task<IActionResult> Some(int skip, int take)
+        {
+            if (skip < 0) return BadRequest("skip must be >= 0");
+            if (take < 0) return BadRequest("take must be >= 0");
+
+            var template = await TryReadPatient();
+
+            var query = Patient
+                .IncludeFields(dbContext.Patients);
+
+            foreach (var field in template.Fields)
+            {
+                string trimmedValue = field.Value.Trim();
+
+                if (string.IsNullOrEmpty(trimmedValue)) continue;
+
+                query = query
+                    .Where(p => p.Fields.Any(
+                        f => 
+                            f.Name.Id == field.NameId &&
+                            f.Value.ToLower().StartsWith(trimmedValue.ToLower())
+                    ));
+            }
+
+            var patients = query
+                .OrderBy(p => p.CreatedDate)
+                .Skip(skip)
+                .Take(take)
+                .ToList();
+
+            // string filter = template.Fields[0].Value.ToLower();
+
+            // var patientIds = dbContext.PatientFields
+            //     .Where(f =>
+            //         f.NameId == 1 &&
+            //         f.Value.ToLower().StartsWith(filter)
+            //     ).Select(f => f.PatientId)
+            //     .Distinct()
+            //     .OrderBy(id => id)
+            //     .Skip(skip)
+            //     .Take(take)
+            //     .ToArray();
+
+            // var patients = new List<Patient>();
+            // foreach (var id in patientIds) {
+            //     patients.Add(
+            //         Patient
+            //             .IncludeFields(dbContext.Patients)
+            //             .First(p => p.Id == id)
+            //     );
+            // }
+
+            var patientsVM = patients
+                .Select(p => new PatientVM(p))
+                .ToList();
+
+            return Ok(patientsVM);
         }
 
         private async Task<PatientVM> TryReadPatient()

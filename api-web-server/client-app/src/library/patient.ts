@@ -4,15 +4,17 @@ export type FieldName = string;
 export type FieldValue = string;
 
 export class PatientField {
-    constructor(_name: FieldName, _value: FieldValue) {
+    constructor(_name: FieldName, _value: FieldValue, _nameId: number) {
         this.name = _name;
         this.value = _value;
+        this.nameId = _nameId;
     }
 
-    public copy = (): PatientField => new PatientField(this.name, this.value);
+    public copy = (): PatientField => new PatientField(this.name, this.value, this.nameId);
 
     public value: FieldValue;
     public name: FieldName;
+    public nameId: number;
 }
 
 export enum SavingStatus {
@@ -34,10 +36,10 @@ export class Patient implements IHistoryItem<Patient> {
     status: Status;
     savingStatus: SavingStatus;
 
-    public updateField = (fieldName: FieldName, newFieldValue: FieldValue) => {
+    public updateField = (fieldNameId: number, newFieldValue: FieldValue) => {
         const newFields = this.fields.map(field => {
-            if (field.name === fieldName) {
-                return new PatientField(fieldName, newFieldValue);
+            if (field.nameId === fieldNameId) {
+                return new PatientField(field.name, newFieldValue, field.nameId);
             } else {
                 return field;
             }
@@ -83,7 +85,7 @@ export class Patient implements IHistoryItem<Patient> {
 
         this.fields.forEach(field => {
             if (updated) return;
-            const itemField = item.fields.find(f => f.name === field.name);
+            const itemField = item.fields.find(f => f.nameId === field.nameId);
             if (!itemField || itemField.value !== field.value) {
                 updated = true;
             }
@@ -91,16 +93,24 @@ export class Patient implements IHistoryItem<Patient> {
 
         return updated;
     }
+
+    public toString = () => {
+        let str: string = '{ ';
+        this.fields.forEach(f => str += `${f.nameId}:${f.name}=${f.value} `);
+        str += ' }';
+        return str;
+    }
 }
 
 export function toPatient(obj: any): Patient {
     let fields: PatientField[] = obj.fields.map((f: any) => toPatientField(f));
     let id = obj.id as number;
-    let status = obj.status;
+    let status = obj.status as Status;
     return new Patient(fields, id, status);
 }
 export function toPatientField(obj: any): PatientField {
     let name = obj.name as string;
     let value = obj.value as string;
-    return new PatientField(name, value);
+    let nameId = obj.nameId as number;
+    return new PatientField(name, value, nameId);
 }

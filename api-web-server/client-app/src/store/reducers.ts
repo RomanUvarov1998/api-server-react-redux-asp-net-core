@@ -1,4 +1,4 @@
-import { Patient, FieldValue, FieldName, SavingStatus } from "../library/patient";
+import { Patient, FieldValue, SavingStatus } from "../library/patient";
 import { Status, copyList } from "../library/history";
 import { TableContainerState } from '../components/table-container/table-container'
 
@@ -82,10 +82,11 @@ export function onFinishEditing(state: TableContainerState, save: boolean): Tabl
     });
 }
 
-export function onEdit(state: TableContainerState, fieldName: FieldName, newValue: FieldValue): TableContainerState {
+export function onEdit(state: TableContainerState, fieldNameId: number, 
+    newValue: FieldValue): TableContainerState {
     if (!state.editingPatient) throw Error("editingPatient reducers.ts");
 
-    const editingPatient = (state.editingPatient as Patient).updateField(fieldName, newValue);
+    const editingPatient = (state.editingPatient as Patient).updateField(fieldNameId, newValue);
 
     return {
         ...state,
@@ -105,10 +106,22 @@ export function onDelete(state: TableContainerState, id: number): TableContainer
     });
 }
 
-export function onSetSearchTemplate(state: TableContainerState, newValue: FieldValue, fieldName: FieldName): TableContainerState {
+export function onSetSearchTemplate(state: TableContainerState, newValue: FieldValue, 
+    fieldNameId: number): TableContainerState {
     if (!state.patientTemplate) return state;
 
-    const patientTemplate = state.patientTemplate.updateField(fieldName, newValue);
+    const patientTemplate = state.patientTemplate.updateField(fieldNameId, newValue);
+    return ({
+        ...state,
+        patientTemplate
+    });
+}
+
+export function onClearSearchTemplate(state: TableContainerState): TableContainerState {
+    if (!state.patientTemplate) return state;
+
+    const patientTemplate = state.patientTemplate.copy();
+    patientTemplate.fields.forEach(f => f.value = '');
     return ({
         ...state,
         patientTemplate

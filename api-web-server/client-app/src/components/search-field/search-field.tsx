@@ -8,7 +8,7 @@ export type SearchFieldProps = {
 }
 
 export function SearchField(props: SearchFieldProps) {
-    const id = `searchField${props.field.name}`;
+    const id = `searchField${props.field.nameId}`;
     return (
         <td>
             <label htmlFor={id} style={{ display: 'block' }}>{props.field.name}</label>

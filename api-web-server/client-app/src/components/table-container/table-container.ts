@@ -1,5 +1,5 @@
 import { connect } from 'react-redux'
-import { Patient, FieldName, FieldValue } from '../../library/patient';
+import { Patient, FieldValue } from '../../library/patient';
 import { History } from '../../library/history';
 import * as Actions from '../../store/actions';
 import { Table, TableProps } from '../table/table';
@@ -16,9 +16,9 @@ export type TableContainerDispatchProps = {
     onAdd: () => Actions.ActionAddPatient,
     onStartEditing: (id: number) => Actions.ActionStartEditingPatient,
     onFinishEditing: (save: boolean) => Actions.ActionFinishEditingPatient,
-    onEdit: (id: number, fieldName: FieldName, newValue: FieldValue) => Actions.ActionEditPatient,
+    onEdit: (id: number, fieldNameId: number, newValue: FieldValue) => Actions.ActionEditPatient,
     onDelete: (id: number) => Actions.ActionDeletePatient,
-    onSetSearchTemplate: (fieldName: FieldName, newValue: FieldValue) => Actions.ActionSetSearchTemplate,
+    onSetSearchTemplate: (fieldNameId: number, newValue: FieldValue) => Actions.ActionSetSearchTemplate,
     onUndo: () => Actions.ActionUndo,
     onRedo: () => Actions.ActionRedo
 }
@@ -40,6 +40,7 @@ const mapStateToProps = (state: TableContainerState): TableProps => {
         onEdit: Actions.edit,
         onDelete: Actions.del,
         onSetSearchTemplate: Actions.setSearchTemplate,
+        onClearTemplate: Actions.clearSearchTemplate,
         onUndo: Actions.undo,
         onRedo: Actions.redo,
     }
