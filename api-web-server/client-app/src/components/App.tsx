@@ -1,6 +1,6 @@
+import './App.css';
 import React from 'react';
 import { Provider } from 'react-redux';
-import './App.css';
 import { TableContainer, TableContainerState } from './table-container/table-container';
 import { configureStore } from '../store/my-store';
 import * as Actions from '../store/actions';
@@ -8,7 +8,7 @@ import { History, Status } from '../library/history';
 import { Patient, toPatient } from "../library/patient";
 import { myFetch } from '../library/fetchHelper';
 import { Store } from 'redux';
-import { exception } from 'console';
+import { TabNums } from './table/table';
 
 type AppProps = {
 
@@ -25,15 +25,19 @@ export class App extends React.Component<AppProps, AppState, {}> {
     super(props);
 
     let tableContainerState: TableContainerState = {
+      tabNum: TabNums.Searching,
+
       isWaitingPatientsList: true,
       isWaitingPatientFields: true,
+
       searchingList: [],
-      editingList: [],
       patientTemplate: null,
-      editingPatient: null,
-      history: new History<Patient>(),
       canLoadMore: false,
       loadCount: 10,
+
+      editingList: [],
+      editingPatient: null,
+      history: new History<Patient>(),
     };
     this.state = {
       store: configureStore(tableContainerState),
@@ -45,13 +49,14 @@ export class App extends React.Component<AppProps, AppState, {}> {
       <>
         <Provider store={this.state.store}>
           <TableContainer
-            savePatients={(list: Patient[]) => savePatients(this.state.store, list)}
-            clearList={() => clearList(this.state.store)}
             onSetSearchTemplate={
-              (fieldNameId: number, newValue: string) => 
+              (fieldNameId: number, newValue: string) =>
                 this.onSetSearchTemplate(this.state.store, fieldNameId, newValue)}
             onClearTemplate={() => this.onClearTemplate(this.state.store)}
             onLoadMore={() => this.loadMore(this.state.store)}
+
+            savePatients={(list: Patient[]) => savePatients(this.state.store, list)}
+            clearList={() => clearList(this.state.store)}
           />
         </Provider>
       </>
@@ -116,23 +121,23 @@ export class App extends React.Component<AppProps, AppState, {}> {
     if (!state.patientTemplate) throw new Error("template is null");
 
     let updatedTemplate = state.patientTemplate!.updateField(fieldNameId, newValue);
-    
+
     store.dispatch(Actions.setSearchTemplate(fieldNameId, newValue));
     this.loadPatients(
       store,
-      updatedTemplate, 
-      0, 
+      updatedTemplate,
+      0,
       state.loadCount);
   }
 
-  private onClearTemplate (store: StoreType) {
+  private onClearTemplate(store: StoreType) {
     let state = store.getState();
 
     this.state.store.dispatch(Actions.clearSearchTemplate());
     this.loadPatients(
       store,
-      state.patientTemplate!, 
-      0, 
+      state.patientTemplate!,
+      0,
       state.loadCount);
   }
 }

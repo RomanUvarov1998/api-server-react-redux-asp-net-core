@@ -2,9 +2,11 @@ import { connect } from 'react-redux'
 import { Patient, FieldValue } from '../../library/patient';
 import { History } from '../../library/history';
 import * as Actions from '../../store/actions';
-import { Table } from '../table/table';
+import { Table, TabNums } from '../table/table';
 
 export type TableContainerState = {
+    tabNum: TabNums,
+
     isWaitingPatientsList: boolean,
     isWaitingPatientFields: boolean,
 
@@ -18,6 +20,7 @@ export type TableContainerState = {
     history: History<Patient>,
 }
 export type TableContainerDispatchProps = {
+    onTabChange: (newTabNum: TabNums) => void,
     onAdd: () => Actions.ActionAddPatient,
     onStartEditing: (id: number) => Actions.ActionStartEditingPatient,
     onFinishEditing: (save: boolean) => Actions.ActionFinishEditingPatient,
@@ -29,16 +32,19 @@ export type TableContainerDispatchProps = {
     clearList: () => Actions.ActionClearList,
     onLoadMore: () => Actions.ActionLoadMorePatients
 }
-export type TableContainerProps = {
-    savePatients: (list: Patient[]) => void,
-    clearList: () => void,
+export type TableContainerProps = {    
     onSetSearchTemplate: (fieldNameId: number, newValue: string) => void,
     onClearTemplate: () => void,
-    onLoadMore: () => void
+    onLoadMore: () => void,
+
+    savePatients: (list: Patient[]) => void,
+    clearList: () => void,
 }
 
 const mapStateToProps = (state: TableContainerState): TableContainerState => {
     return {
+        tabNum: state.tabNum,
+
         isWaitingPatientFields: state.isWaitingPatientFields,
         isWaitingPatientsList: state.isWaitingPatientsList, 
 
@@ -54,6 +60,7 @@ const mapStateToProps = (state: TableContainerState): TableContainerState => {
 };
 
 const mapDispatchToProps: TableContainerDispatchProps = {
+    onTabChange: Actions.changeTab,
     onAdd: Actions.add,
     onStartEditing: Actions.startEditing,
     onFinishEditing: Actions.finishEditing,

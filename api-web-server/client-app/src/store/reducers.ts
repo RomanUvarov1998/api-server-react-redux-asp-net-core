@@ -1,6 +1,14 @@
 import { Patient, FieldValue, SavingStatus, PatientField } from "../library/patient";
 import { Status, copyList } from "../library/history";
 import { TableContainerState } from '../components/table-container/table-container'
+import { TabNums } from "../components/table/table";
+
+export function onChangeTab(state: TableContainerState, newTabNum: TabNums): TableContainerState {
+    return {
+        ...state,
+        tabNum: newTabNum
+    }
+}
 
 export function onAddPatientToEditList(state: TableContainerState, patient: Patient): TableContainerState {
     let editingList;

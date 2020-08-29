@@ -76,7 +76,6 @@ export function SearchTable(props: SearchTableProps): JSX.Element {
             {searchBar}
             <div
                 style={{ maxHeight: 300, overflowY: 'auto', margin: 10 }}
-            // onScroll={props.handleScroll}
             >
                 <table className={"table table-responsive table-striped table-bordered table-normal"}>
                     <thead className={"thead-dark"}>
@@ -86,24 +85,15 @@ export function SearchTable(props: SearchTableProps): JSX.Element {
                         {tableBodyRows}
                     </tbody>
                 </table>
+                {
+                    props.canLoadMore ?
+                        (<Button onClick={() => onLoadMore(props)}>Загрузить ещё</Button>) :
+                        (<strong>Загружены все найденные результаты</strong>)
+                }
             </div>
-            {
-                props.canLoadMore ?
-                    (<Button onClick={() => onLoadMore(props)}>Загрузить ещё</Button>) :
-                    (<strong>Загружены все найденные результаты</strong>)
-            }
         </div>
     );
 }
-
-// function handleScroll(e: React.UIEvent<HTMLDivElement, UIEvent>) {
-//     const scrolledHeight = (e.currentTarget as any).scrollTop + (e.currentTarget as any).clientHeight;
-//     // if (scrolledHeight > props.loadedHeight) {
-//     //     props.loadedHeight = scrolledHeight;
-//     //     //console.log(`loaded to ${props.loadedHeight}`);
-//     // }
-//     //console.log(e.currentTarget);
-// }
 
 function onLoadMore(props: SearchTableProps) {
     if (!props.patientTemplate) return;
