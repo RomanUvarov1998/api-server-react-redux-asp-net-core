@@ -43,32 +43,50 @@ export function SearchTable(props: SearchTableProps): JSX.Element {
         searchBar = (<p>Загрузка полей пациента...</p>);
     }
 
-    if (!props.isWaitingPatientsList) {
-        if (!props.patientTemplate) throw Error("patientTemplate is null");
+    tableBodyRows = props.patientsList.map(p => {
+        let btnEdit =
+            props.isInEditingList(p) ?
+                ('Редактируется') :
+                (<Button
+                    onClick={() => props.addToEditingList(p)}
+                >Редактировать</Button>);
 
-        tableBodyRows =
-            props.patientsList.length > 0 ?
-                (
-                    props.patientsList.map(p => {
-                        let btnEdit =
-                            props.isInEditingList(p) ?
-                                ('Редактируется') :
-                                (<Button
-                                    onClick={() => props.addToEditingList(p)}
-                                >Редактировать</Button>);
-
-                        const cells = p.fields
-                            .map(f => (<td key={f.nameId}>{f.value}</td>))
-                            .concat(<td key={'edit'}>{btnEdit}</td>);
+        const cells = p.fields
+            .map(f => (<td key={f.nameId}>{f.value}</td>))
+            .concat(<td key={'edit'}>{btnEdit}</td>);
 
 
-                        return (<tr key={p.id}>{cells}</tr>)
-                    })
-                ) :
-                (<tr><td>Список пуст</td></tr>);
-    } else {
-        let pt = props.patientTemplate;
-        tableBodyRows = (<tr><td colSpan={pt ? pt.fields.length : 1}>Загрузка списка пациентов...</td></tr>);
+        return (<tr key={p.id}>{cells}</tr>)
+    });
+
+    const columnsCount =
+        props.patientTemplate ?
+            props.patientTemplate.fields.length :
+            1;
+
+    let noPatientsLable = null;
+    if (tableBodyRows.length === 0 && !props.isWaitingPatientsList) {
+        noPatientsLable = (
+            <tr key={'noPatientsLable'}>
+                <td colSpan={columnsCount}>Список пуст</td >
+            </tr >
+        );
+    }
+
+    let loadingLable = null;
+    if (props.isWaitingPatientsList) {
+        loadingLable = (<tr><td
+            colSpan={columnsCount}
+            key={'loadingLable'}
+        >Загрузка списка пациентов...</td></tr>);
+    }
+
+    let loadMoreControl = null
+    if (!props.isWaitingPatientsList && props.patientsList.length) {
+        loadMoreControl =
+            props.canLoadMore ?
+                (<Button onClick={() => onLoadMore(props)}>Загрузить ещё</Button>) :
+                (<strong>Загружены все найденные результаты</strong>)
     }
 
     return (
@@ -83,13 +101,11 @@ export function SearchTable(props: SearchTableProps): JSX.Element {
                     </thead>
                     <tbody>
                         {tableBodyRows}
+                        {noPatientsLable}
+                        {loadingLable}
                     </tbody>
                 </table>
-                {
-                    props.canLoadMore ?
-                        (<Button onClick={() => onLoadMore(props)}>Загрузить ещё</Button>) :
-                        (<strong>Загружены все найденные результаты</strong>)
-                }
+                {loadMoreControl}
             </div>
         </div>
     );

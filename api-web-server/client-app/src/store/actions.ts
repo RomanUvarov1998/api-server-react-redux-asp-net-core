@@ -1,7 +1,6 @@
 import { FieldValue, Patient } from "../library/patient";
 import { TabNums } from "../components/table/table";
 
-export const ACTION_START_WAITING = 'ACTION_START_WAITING';
 export const ACTION_CHANGE_TAB = 'ACTION_CHANGE_TAB';
 export const ACTION_LOAD_MORE_PATIENTS = 'ACTION_LOAD_MORE_PATIENTS';
 export const ACTION_RECIEVE_PATIENTS = 'ACTION_RECIEVE_PATIENTS';
@@ -23,7 +22,6 @@ export const ACTION_SAVED_UPDATED = 'ACTION_SAVED_UPDATED';
 export const ACTION_SAVED_DELETED = 'ACTION_SAVED_DELETED';
 
 export type MyAction =
-    ActionStartWaiting |
     ActionChangeTab |
     ActionLoadMorePatients |
     ActionRecievePatients |
@@ -43,7 +41,6 @@ export type MyAction =
     ActionSavedUpdated |
     ActionSavedDeleted;
 
-export type ActionStartWaiting = { type: string, waitPatients: boolean, waitPatientFields: boolean };
 export type ActionChangeTab = { type: string, newTabNum: TabNums };
 export type ActionLoadMorePatients = { type: string };
 export type ActionRecievePatients = { type: string, patients: Patient[], append: boolean };
@@ -64,16 +61,6 @@ export type ActionSavedAdded = { type: string, newPatient: Patient, oldPatient: 
 export type ActionSavedUpdated = { type: string, updatedPatient: Patient };
 export type ActionSavedDeleted = { type: string, deletedId: number };
 
-export function startWaiting(
-    waitPatients: boolean,
-    waitPatientFields: boolean
-): ActionStartWaiting {
-    return {
-        type: ACTION_START_WAITING,
-        waitPatients,
-        waitPatientFields
-    };
-}
 export function changeTab(newTabNum: TabNums): ActionChangeTab {
     return {
         type: ACTION_CHANGE_TAB,

@@ -8,12 +8,6 @@ export function configureStore(initialState: TableContainerState) {
         : TableContainerState => {
         let a;
         switch (action.type) {
-            case Actions.ACTION_START_WAITING:
-                a = action as Actions.ActionStartWaiting;
-                return {
-                    ...state,
-                    isWaitingPatientFields: a.waitPatientFields
-                };
             case Actions.ACTION_LOAD_MORE_PATIENTS:
                 return Reducers.onLoadMorePatients(state);
             case Actions.ACTION_CHANGE_TAB:
