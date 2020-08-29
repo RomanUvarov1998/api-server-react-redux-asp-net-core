@@ -1,21 +1,19 @@
 import React from 'react';
 import { Provider } from 'react-redux';
-import { Nav, NavItem, NavLink, TabContent, TabPane } from 'reactstrap';
 import './App.css';
 import { TableContainer, TableContainerState } from './table-container/table-container';
-import { SearchTable } from './search-table/search-table';
 import { configureStore } from '../store/my-store';
 import * as Actions from '../store/actions';
 import { History, Status } from '../library/history';
 import { Patient, toPatient } from "../library/patient";
 import { myFetch } from '../library/fetchHelper';
 import { Store } from 'redux';
+import { exception } from 'console';
 
 type AppProps = {
 
 }
 export type AppState = {
-  tableContainerState: TableContainerState,
   store: StoreType
 }
 type StoreType = Store<TableContainerState, Actions.MyAction>;
@@ -26,16 +24,18 @@ export class App extends React.Component<AppProps, AppState, {}> {
   constructor(props: AppProps) {
     super(props);
 
-    let tableContainerState = {
+    let tableContainerState: TableContainerState = {
       isWaitingPatientsList: true,
       isWaitingPatientFields: true,
-      patientsList: [],
+      searchingList: [],
+      editingList: [],
       patientTemplate: null,
       editingPatient: null,
-      history: new History<Patient>()
+      history: new History<Patient>(),
+      canLoadMore: false,
+      loadCount: 10,
     };
     this.state = {
-      tableContainerState,
       store: configureStore(tableContainerState),
     };
   }
@@ -47,6 +47,11 @@ export class App extends React.Component<AppProps, AppState, {}> {
           <TableContainer
             savePatients={(list: Patient[]) => savePatients(this.state.store, list)}
             clearList={() => clearList(this.state.store)}
+            onSetSearchTemplate={
+              (fieldNameId: number, newValue: string) => 
+                this.onSetSearchTemplate(this.state.store, fieldNameId, newValue)}
+            onClearTemplate={() => this.onClearTemplate(this.state.store)}
+            onLoadMore={() => this.loadMore(this.state.store)}
           />
         </Provider>
       </>
@@ -54,39 +59,86 @@ export class App extends React.Component<AppProps, AppState, {}> {
   }
 
   componentDidMount() {
-    loadPatientFields(this.state.store);
+    this.loadPatientFields(this.state.store);
+  }
+
+  private loadPatientFields(store: StoreType) {
+    myFetch(
+      'patients/template',
+      'GET',
+      undefined,
+      value => {
+        let parsedModel = JSON.parse(value) as Patient;
+        let patientTemplate = toPatient(parsedModel);
+        store.dispatch(Actions.recievePatientFields(patientTemplate));
+
+        let state = store.getState();
+
+        this.loadPatients(
+          store,
+          patientTemplate,
+          state.searchingList.length,
+          state.loadCount);
+      }
+    );
+  }
+
+  private loadMore(store: StoreType) {
+    this.state.store.dispatch(Actions.loadMorePatients());
+
+    let state = store.getState();
+
+    let patientTemplate = state.patientTemplate!.copy();
+    this.loadPatients(
+      store,
+      patientTemplate,
+      state.searchingList.length,
+      state.loadCount)
+  }
+
+  private loadPatients(store: StoreType, currentTemplate: Patient,
+    currentListLength: number, currentLoadCount: number) {
+    myFetch(
+      `patients/list?skip=${currentListLength}&take=${currentLoadCount}`,
+      'POST',
+      JSON.stringify(currentTemplate),
+      (value: string) => {
+        let data = JSON.parse(value) as Patient[];
+        let append = currentListLength > 0;
+        let patients = data.map(el => toPatient(el));
+        store.dispatch(Actions.recievePatients(patients, append));
+      });
+  }
+
+  private onSetSearchTemplate(store: StoreType, fieldNameId: number, newValue: string) {
+    let state = store.getState();
+
+    if (!state.patientTemplate) throw new Error("template is null");
+
+    let updatedTemplate = state.patientTemplate!.updateField(fieldNameId, newValue);
+    
+    store.dispatch(Actions.setSearchTemplate(fieldNameId, newValue));
+    this.loadPatients(
+      store,
+      updatedTemplate, 
+      0, 
+      state.loadCount);
+  }
+
+  private onClearTemplate (store: StoreType) {
+    let state = store.getState();
+
+    this.state.store.dispatch(Actions.clearSearchTemplate());
+    this.loadPatients(
+      store,
+      state.patientTemplate!, 
+      0, 
+      state.loadCount);
   }
 }
 
-// function loadPatients(store: StoreType) {
-//   myFetch(
-//     'patients/list',
-//     'GET',
-//     undefined,
-//     value => {
-//       let data = JSON.parse(value) as Patient[];
-//       let ps = data.map(el => toPatient(el));
-//       // store.dispatch(Actions.addPatientToAdd(ps));
-//     });
-// }
-
 function clearList(store: StoreType) {
   store.dispatch(Actions.clearList());
-}
-
-function loadPatientFields(store: StoreType) {
-  myFetch(
-    'patients/template',
-    'GET',
-    undefined,
-    value => {
-      let parsedModel = JSON.parse(value) as Patient;
-      let patient = toPatient(parsedModel);
-      store.dispatch(Actions.recievePatientFields(patient));
-
-      // loadPatients(store);
-    }
-  );
 }
 
 function savePatients(store: StoreType, listToSave: Patient[]) {

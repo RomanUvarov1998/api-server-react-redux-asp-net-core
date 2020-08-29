@@ -97,8 +97,8 @@ export class History<Item extends IHistoryItem<Item>> {
         return newList;
     }
 
-    public canSave = (): boolean => this.listHistory.length > 0 && this.cursor > 0;
-    public onSave() {
+    public hasSomethingToSave = (): boolean => this.listHistory.length > 0 && this.cursor > 0;
+    public clearHistory() {
         this.listHistory = [];
         this.cursor = 0;
     }

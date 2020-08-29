@@ -1,7 +1,9 @@
 import { FieldValue, Patient } from "../library/patient";
 
 export const ACTION_START_WAITING = 'ACTION_START_WAITING';
-export const ACTION_ADD_PATIENT_TO_ADD = 'ACTION_ADD_PATIENT_TO_ADD';
+export const ACTION_LOAD_MORE_PATIENTS = 'ACTION_LOAD_MORE_PATIENTS';
+export const ACTION_RECIEVE_PATIENTS = 'ACTION_RECIEVE_PATIENTS';
+export const ACTION_ADD_PATIENT_TO_EDIT_LIST = 'ACTION_ADD_PATIENT_TO_EDIT_LIST';
 export const ACTION_CLEAR_LIST = 'ACTION_CLEAR_LIST';
 export const ACTION_RECIEVE_PATIENT_FIELDS = 'ACTION_RECIEVE_PATIENT_FIELDS';
 export const ACTION_ADD_PATIENT = 'ACTION_ADD_PATIENT';
@@ -20,7 +22,9 @@ export const ACTION_SAVED_DELETED = 'ACTION_SAVED_DELETED';
 
 export type MyAction =
     ActionStartWaiting |
-    ActionAddPatientToAdd |
+    ActionLoadMorePatients |
+    ActionRecievePatients |
+    ActionAddPatientToEditList |
     ActionClearList |
     ActionRecievePatientFields |
     ActionAddPatient |
@@ -37,7 +41,9 @@ export type MyAction =
     ActionSavedDeleted;
 
 export type ActionStartWaiting = { type: string, waitPatients: boolean, waitPatientFields: boolean };
-export type ActionAddPatientToAdd = { type: string, patient: Patient };
+export type ActionLoadMorePatients = { type: string };
+export type ActionRecievePatients = { type: string, patients: Patient[], append: boolean };
+export type ActionAddPatientToEditList = { type: string, patient: Patient };
 export type ActionClearList = { type: string };
 export type ActionRecievePatientFields = { type: string, patientTemplate: Patient };
 export type ActionAddPatient = { type: string };
@@ -64,9 +70,21 @@ export function startWaiting(
         waitPatientFields
     };
 }
-export function addPatientToAdd(patient: Patient): ActionAddPatientToAdd {
+export function loadMorePatients(): ActionLoadMorePatients {
     return {
-        type: ACTION_ADD_PATIENT_TO_ADD,
+        type: ACTION_LOAD_MORE_PATIENTS
+    };
+}
+export function recievePatients(patients: Patient[], append: boolean): ActionRecievePatients {
+    return {
+        type: ACTION_RECIEVE_PATIENTS,
+        patients,
+        append
+    };
+}
+export function addPatientToEditList(patient: Patient): ActionAddPatientToEditList {
+    return {
+        type: ACTION_ADD_PATIENT_TO_EDIT_LIST,
         patient
     };
 }

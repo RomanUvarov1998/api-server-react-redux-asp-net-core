@@ -2,15 +2,16 @@ import React from 'react';
 import { Button, ButtonGroup, ButtonToolbar } from 'reactstrap';
 import { TableRaw, RawState } from '../table-raw/table-raw'
 import { Patient, FieldValue, SavingStatus } from "../../library/patient";
-import { SearchBar } from '../search-bar/search-bar';
 import * as Actions from '../../store/actions';
 import { History } from '../../library/history'
 import { SearchTable } from '../search-table/search-table';
 
 export type TableProps = {
+    isWaitingPatientsList: boolean,
     isWaitingPatientFields: boolean,
     patientTemplate: Patient | null,
-    patientsList: Patient[],
+    searchingList: Patient[],
+    editingList: Patient[],
     editingPatient: Patient | null,
     history: History<Patient>,
     onAdd: () => Actions.ActionAddPatient,
@@ -18,11 +19,15 @@ export type TableProps = {
     onFinishEditing: (save: boolean) => Actions.ActionFinishEditingPatient,
     onEdit: (id: number, fieldNameId: number, newValue: FieldValue) => Actions.ActionEditPatient,
     onDelete: (id: number) => Actions.ActionDeletePatient,
-    onSetSearchTemplate: (fieldNameId: number, newValue: FieldValue) => Actions.ActionSetSearchTemplate,
+    onSetSearchTemplate: (fieldNameId: number, newValue: FieldValue) => void,
     onClearTemplate: () => void,
     onUndo: () => Actions.ActionUndo,
     onRedo: () => Actions.ActionRedo,
-    clearList: () => void
+    clearList: () => void,
+    addToEditingList: (patient: Patient) => void,
+    canLoadMore: boolean,
+    loadCount: number,
+    onLoadMore: (template: Patient, loadedCount: number, pageLength: number) => void
 }
 
 export class Table extends React.Component<TableProps, {}, {}> {
@@ -31,7 +36,7 @@ export class Table extends React.Component<TableProps, {}, {}> {
         let tableBodyRows;
         const isLoadingSomething =
             this.props.isWaitingPatientFields;
-        const isSavingSomething = this.props.patientsList
+        const isSavingSomething = this.props.editingList
             .find(p => p.savingStatus === SavingStatus.Saving) !== undefined;
 
         if (!this.props.isWaitingPatientFields) {
@@ -52,17 +57,12 @@ export class Table extends React.Component<TableProps, {}, {}> {
             tableHeadCells = (<th><p>Загрузка полей пациента...</p></th>);
         }
 
-        if (this.props.patientsList.length > 0) {
+        if (this.props.editingList.length > 0) {
             if (!this.props.patientTemplate) throw Error("patientTemplate is null");
 
             const editingId: number | undefined = this.props.editingPatient?.id;
 
-            tableBodyRows = filteredSortedList(
-                this.props.patientsList,
-                this.props.patientTemplate as Patient,
-                this.props.editingPatient,
-                p => p.id
-            )
+            tableBodyRows = this.props.editingList
                 .map((patient, ind) => {
                     let editingStatus: RawState;
 
@@ -77,21 +77,23 @@ export class Table extends React.Component<TableProps, {}, {}> {
                         editingStatus = RawState.Saved;
                     }
 
-                    return (<TableRaw
-                        key={ind}
-                        patientTemplate={this.props.patientTemplate!}
-                        patient={
-                            (this.props.editingPatient &&
-                                this.props.editingPatient.id === patient.id) ?
-                                (this.props.editingPatient!) :
-                                patient
-                        }
-                        editState={editingStatus}
-                        onEdit={this.props.onEdit}
-                        onStartEditing={this.props.onStartEditing}
-                        onFinishEditing={this.props.onFinishEditing}
-                        onDelete={this.props.onDelete}
-                    />)
+                    return (
+                        <TableRaw
+                            key={ind}
+                            patientTemplate={this.props.patientTemplate!}
+                            patient={
+                                (this.props.editingPatient &&
+                                    this.props.editingPatient.id === patient.id) ?
+                                    (this.props.editingPatient!) :
+                                    patient
+                            }
+                            editState={editingStatus}
+                            onEdit={this.props.onEdit}
+                            onStartEditing={this.props.onStartEditing}
+                            onFinishEditing={this.props.onFinishEditing}
+                            onDelete={this.props.onDelete}
+                        />
+                    );
                 }
                 );
         } else {
@@ -100,30 +102,41 @@ export class Table extends React.Component<TableProps, {}, {}> {
             );
         }
 
-        // let canClearList = this.props.patientsList.some(p => p.status === Status.Untouched);
+        let canClearList = !this.props.history.hasSomethingToSave();
 
         return (
             <>
                 <SearchTable
-                    addToEditingList={() => {}}
+                    addToEditingList={this.props.addToEditingList}
+                    isWaitingPatientsList={this.props.isWaitingPatientsList}
+                    isWaitingPatientFields={this.props.isWaitingPatientFields}
+                    patientsList={this.props.searchingList}
+                    patientTemplate={this.props.patientTemplate}
+                    canLoadMore={this.props.canLoadMore}
+                    loadCount={this.props.loadCount}
+                    onSetSearchTemplate={this.props.onSetSearchTemplate}
+                    onClearTemplate={this.props.onClearTemplate}
+                    onLoadMore={this.props.onLoadMore}
+                    isInEditingList={p => this.props.editingList.some(ep => ep.equals(p))}
                 />
+                <h1>Редактирование</h1>
                 <ButtonToolbar>
                     <ButtonGroup>
                         <Button
                             onClick={() => this.savePatients()}
                             disabled={
                                 isLoadingSomething ||
-                                !this.props.history.canSave() ||
+                                !this.props.history.hasSomethingToSave() ||
                                 this.props.editingPatient !== null ||
                                 isSavingSomething
                             }
                         >
                             {isSavingSomething ? 'Идет сохранение...' : 'Сохранить изменения'}
                         </Button>
-                        {/* <Button
+                        <Button
                             onClick={() => this.props.clearList()}
-                            disabled={!canClearList}
-                        >Очистить</Button> */}
+                            disabled={!canClearList || this.props.editingList.length === 0}
+                        >Очистить список</Button>
                     </ButtonGroup>
                     <ButtonGroup>
                         <Button
@@ -133,7 +146,7 @@ export class Table extends React.Component<TableProps, {}, {}> {
                                 !this.props.history.canUndo() ||
                                 isSavingSomething
                             }
-                        >{"<-"}</Button>
+                        >{"Отменить"}</Button>
                         <Button
                             onClick={() => this.props.onRedo()}
                             disabled={
@@ -141,7 +154,7 @@ export class Table extends React.Component<TableProps, {}, {}> {
                                 !this.props.history.canRedo() ||
                                 isSavingSomething
                             }
-                        >{"->"}</Button>
+                        >{"Повторить"}</Button>
                     </ButtonGroup>
                     <ButtonGroup>
                         <Button
@@ -151,7 +164,7 @@ export class Table extends React.Component<TableProps, {}, {}> {
                                 this.props.editingPatient !== null ||
                                 isSavingSomething
                             }
-                        >Добавить</Button>
+                        >Новый</Button>
                     </ButtonGroup>
                 </ButtonToolbar>
                 <div
@@ -172,8 +185,7 @@ export class Table extends React.Component<TableProps, {}, {}> {
     }
 
     private savePatients() {
-        this.props.history.onSave();
-        (this.props as any).savePatients(this.props.patientsList);
+        (this.props as any).savePatients(this.props.editingList);
     }
 
     private loadedHeight: number = 0;
@@ -187,30 +199,30 @@ export class Table extends React.Component<TableProps, {}, {}> {
     }
 }
 
-function filteredSortedList(
-    patientsList: Patient[],
-    patientTemplate: Patient,
-    editingPatient: Patient | null,
-    sortBy: (p: Patient) => number
-): Patient[] {
-    const res = patientsList.filter(p => {
-        if (editingPatient && editingPatient.equals(p)) return true;
+// function filteredSortedList(
+//     patientsList: Patient[],
+//     patientTemplate: Patient,
+//     editingPatient: Patient | null,
+//     sortBy: (p: Patient) => number
+// ): Patient[] {
+//     const res = patientsList.filter(p => {
+//         if (editingPatient && editingPatient.equals(p)) return true;
 
-        let contains = true;
-        patientTemplate.fields.forEach(tf => {
-            if (!tf.value) return;
+//         let contains = true;
+//         patientTemplate.fields.forEach(tf => {
+//             if (!tf.value) return;
 
-            let foundField = p.fields.find(f => f.nameId === tf.nameId);
+//             let foundField = p.fields.find(f => f.nameId === tf.nameId);
 
-            if (foundField === undefined) return;
-            if (
-                !foundField.value.toLowerCase().startsWith(tf.value.toLowerCase())
-            ) {
-                contains = false;
-            }
-        });
-        return contains;
-    });
+//             if (foundField === undefined) return;
+//             if (
+//                 !foundField.value.toLowerCase().startsWith(tf.value.toLowerCase())
+//             ) {
+//                 contains = false;
+//             }
+//         });
+//         return contains;
+//     });
 
-    return res.sort(sortBy);
-}
+//     return res.sort(sortBy);
+// }

@@ -14,71 +14,40 @@ export function configureStore(initialState: TableContainerState) {
                     ...state,
                     isWaitingPatientFields: a.waitPatientFields
                 };
-            case Actions.ACTION_ADD_PATIENT_TO_ADD:
-                a = action as Actions.ActionAddPatientToAdd;
-                return Reducers.onAddPatientToEditList(
-                    {
-                        ...state,
-                    },
-                    a.patient
-                );
+            case Actions.ACTION_LOAD_MORE_PATIENTS:
+                return Reducers.onLoadMorePatients(state);
+            case Actions.ACTION_RECIEVE_PATIENTS:
+                a = action as Actions.ActionRecievePatients;
+                return Reducers.onRecievePatients(state,a.patients,a.append);
+            case Actions.ACTION_ADD_PATIENT_TO_EDIT_LIST:
+                a = action as Actions.ActionAddPatientToEditList;
+                return Reducers.onAddPatientToEditList(state,a.patient);
             case Actions.ACTION_CLEAR_LIST:
                 a = action as Actions.ActionClearList;
-                return Reducers.onClearList(
-                    {
-                        ...state,
-                    }
-                );
+                return Reducers.onClearList(state);
             case Actions.ACTION_RECIEVE_PATIENT_FIELDS:
                 a = action as Actions.ActionRecievePatientFields;
-                return Reducers.onRecievePatientFields(
-                    {
-                        ...state,
-                        isWaitingPatientFields: false
-                    },
-                    a.patientTemplate
-                );
+                return Reducers.onRecievePatientFields(state,a.patientTemplate);
             case Actions.ACTION_ADD_PATIENT:
-                return Reducers.onAdd(
-                    state
-                );
+                return Reducers.onAdd(state);
             case Actions.ACTION_START_EDIT_PATIENT:
                 a = action as Actions.ActionStartEditingPatient;
-                return Reducers.onStartEditing(
-                    state,
-                    a.patientId
-                );
+                return Reducers.onStartEditing(state,a.patientId);
             case Actions.ACTION_FINISH_EDIT_PATIENT:
                 a = action as Actions.ActionFinishEditingPatient;
-                return Reducers.onFinishEditing(
-                    state,
-                    a.save
-                );
+                return Reducers.onFinishEditing(state,a.save);
             case Actions.ACTION_EDIT_PATIENT:
                 a = (action as Actions.ActionEditPatient);
-                return Reducers.onEdit(
-                    state,
-                    a.fieldNameId,
-                    a.newValue
-                );
+                return Reducers.onEdit(state,a.fieldNameId,a.newValue);
             case Actions.ACTION_DELETE_PATIENT:
                 a = (action as Actions.ActionDeletePatient);
-                return Reducers.onDelete(
-                    state,
-                    a.patientId
-                );
+                return Reducers.onDelete(state,a.patientId);
             case Actions.ACTION_SET_SEARCH_TEMPLATE:
                 a = (action as Actions.ActionSetSearchTemplate);
-                return Reducers.onSetSearchTemplate(
-                    state,
-                    a.newValue,
-                    a.fieldNameId
-                );
+                return Reducers.onSetSearchTemplate(state,a.newValue,a.fieldNameId);
             case Actions.ACTION_CLEAR_SEARCH_TEMPLATE:
                 a = (action as Actions.ActionSetSearchTemplate);
-                return Reducers.onClearSearchTemplate(
-                    state
-                );
+                return Reducers.onClearSearchTemplate(state);
             case Actions.ACTION_UNDO:
                 a = action as Actions.ActionUndo;
                 return Reducers.onUndo(state);
