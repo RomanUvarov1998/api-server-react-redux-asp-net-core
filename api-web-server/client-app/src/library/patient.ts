@@ -15,6 +15,13 @@ export class PatientField {
     public value: FieldValue;
     public name: FieldName;
     public nameId: number;
+
+    public static from(obj: any): PatientField {
+        let name = obj.name as string;
+        let value = obj.value as string;
+        let nameId = obj.nameId as number;
+        return new PatientField(name, value, nameId);
+    }
 }
 
 export enum SavingStatus {
@@ -100,19 +107,14 @@ export class Patient implements IHistoryItem<Patient> {
         str += ' }';
         return str;
     }
-}
 
-export function toPatient(obj: any): Patient {
-    let fields: PatientField[] = obj.fields.map((f: any) => toPatientField(f));
-    let id = obj.id as number;
-    let status = obj.status as Status;
-    return new Patient(fields, id, status);
-}
-export function toPatientField(obj: any): PatientField {
-    let name = obj.name as string;
-    let value = obj.value as string;
-    let nameId = obj.nameId as number;
-    return new PatientField(name, value, nameId);
+    public static from(obj: any): Patient {
+        let fields: PatientField[] = obj.fields.map(
+            (f: any) => PatientField.from(f));
+        let id = obj.id as number;
+        let status = obj.status as Status;
+        return new Patient(fields, id, status);
+    }
 }
 
 export class PatientSearchTemplateField {
@@ -149,18 +151,37 @@ export class PatientSearchTemplate {
     };
     public updateField = (fieldNameId: number, newFieldValue: FieldValue) => {
         const copy = this.copy();
-        
+
         copy.fields.forEach(f => {
             if (f.nameId === fieldNameId) {
                 f.value = newFieldValue;
-            } 
+            }
         });
 
         return copy;
     }
+
+    public static from(obj: any): PatientSearchTemplate {
+        let fields: PatientField[] = obj.fields.map(
+            (f: any) => PatientField.from(f));
+        return new PatientSearchTemplate(fields);
+    }
 };
 
-export function toPatientSearchTemplate(obj: any): PatientSearchTemplate {
-    let fields: PatientField[] = obj.fields.map((f: any) => toPatientField(f));
-    return new PatientSearchTemplate(fields);
+export class PatientDTO {
+    constructor() { }
+
+    fields: PatientField[] = [];
+    id: number = 0;
+    status: Status = Status.Untouched;
+
+    public static from({ fields, id, status }: Patient): PatientDTO {
+        const p = {
+            fields,
+            id,
+            status
+        };
+
+        return p;
+    }
 }

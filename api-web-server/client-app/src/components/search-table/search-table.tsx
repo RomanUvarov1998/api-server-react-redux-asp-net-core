@@ -13,6 +13,7 @@ export type SearchTableProps = {
     canLoadMore: boolean,
     loadCount: number,
     onSetSearchTemplate: (fieldNameId: number, newValue: string) => void,
+    giveVariants: (fieldNameId: number, variants: string[]) => void,
     onClearTemplate: () => void,
     onLoadMore: (template: PatientSearchTemplate, loadedCount: number, pageLength: number) => void
 }
@@ -35,6 +36,7 @@ export function SearchTable(props: SearchTableProps): JSX.Element {
                 frozen={false}
                 patientTemplate={props.patientTemplate}
                 onSetSearchTemplate={props.onSetSearchTemplate}
+                giveVariants={props.giveVariants}
                 onClearTemplate={props.onClearTemplate}
             />
         );

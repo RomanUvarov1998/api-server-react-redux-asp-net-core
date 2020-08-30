@@ -1,7 +1,11 @@
-import { Patient, FieldValue, SavingStatus, PatientField, PatientSearchTemplate } from "../library/patient";
+import { Patient, FieldValue, SavingStatus, PatientField, 
+    PatientSearchTemplate, 
+    PatientDTO} from "../library/patient";
 import { Status, copyList } from "../library/history";
 import { TableContainerState } from '../components/table-container/table-container'
 import { TabNums } from "../components/table/table";
+import { myFetch } from "../library/fetchHelper";
+import * as Actions from '../store/actions';
 
 export function onChangeTab(state: TableContainerState, newTabNum: TabNums): TableContainerState {
     return {
@@ -25,7 +29,16 @@ export function onAddPatientToEditList(state: TableContainerState, patient: Pati
     }
 }
 
-export function onLoadMorePatients(state: TableContainerState): TableContainerState {
+export function onLoadMorePatients(state: TableContainerState,
+    delayedStoreDispatch: undefined | ((action: Actions.MyAction) => void)): TableContainerState {
+    const patientTemplate = state.patientTemplate!.copy();
+
+    loadPatients(
+        delayedStoreDispatch,
+        patientTemplate,
+        state.searchingList.length,
+        state.loadCount);
+
     return {
         ...state,
         isWaitingPatientsList: true
@@ -49,6 +62,13 @@ export function onRecievePatients(state: TableContainerState, patients: Patient[
 }
 
 export function onClearList(state: TableContainerState): TableContainerState {
+    if (
+        state.editingList.some(p => p.status !== Status.Untouched) &&
+        state.history.hasSomethingToSave()
+    ) {
+        throw new Error('cannot clear list from reducer');
+    }
+
     let editingList = state.editingList.filter(p => p.status !== Status.Untouched);
 
     return {
@@ -155,11 +175,31 @@ export function onDelete(state: TableContainerState, id: number): TableContainer
     });
 }
 
-export function onSetSearchTemplate(state: TableContainerState, newValue: FieldValue,
-    fieldNameId: number): TableContainerState {
+export function onSetSearchTemplate(state: TableContainerState,
+    delayedStoreDispatch: undefined | ((action: Actions.MyAction) => void),
+    newValue: FieldValue, fieldNameId: number): TableContainerState {
     if (!state.patientTemplate) throw new Error("template is null");
 
     const patientTemplate = state.patientTemplate.updateField(fieldNameId, newValue);
+
+    loadPatients(
+        delayedStoreDispatch,
+        patientTemplate,
+        0,
+        state.loadCount);
+
+    myFetch(
+        `patients/variants?fieldNameId=${fieldNameId}&maxCount=${5}`,
+        'POST',
+        JSON.stringify(patientTemplate),
+        value => {
+            const variants = JSON.parse(value) as string[];
+            if (delayedStoreDispatch) {
+                delayedStoreDispatch(Actions.giveVariants(fieldNameId, variants));
+            }
+        }
+    );
+
     return ({
         ...state,
         patientTemplate
@@ -185,11 +225,20 @@ export function onGiveVariants(state: TableContainerState, fieldNameId: number,
     };
 }
 
-export function onClearSearchTemplate(state: TableContainerState): TableContainerState {
+export function onClearSearchTemplate(state: TableContainerState,
+    delayedStoreDispatch: undefined | ((action: Actions.MyAction) => void)
+): TableContainerState {
     if (!state.patientTemplate) return state;
 
     const patientTemplate = state.patientTemplate.copy();
     patientTemplate.fields.forEach(f => f.value = '');
+
+    loadPatients(
+        delayedStoreDispatch,
+        patientTemplate,
+        0,
+        state.loadCount);
+
     return ({
         ...state,
         patientTemplate
@@ -212,7 +261,11 @@ export function onRedo(state: TableContainerState): TableContainerState {
     };
 }
 
-export function onStartSaving(state: TableContainerState): TableContainerState {
+export function onStartSaving(state: TableContainerState,
+    delayedStoreDispatch: undefined | ((action: Actions.MyAction) => void)
+): TableContainerState {
+    if (state.editingPatient) throw new Error('one patient is stil being edited');
+
     const editingList = copyList(state.editingList)
         .map(p => {
             p.savingStatus =
@@ -221,6 +274,9 @@ export function onStartSaving(state: TableContainerState): TableContainerState {
                     SavingStatus.Saving;
             return p;
         });
+
+    saveNextPatient(delayedStoreDispatch, state.editingList, 0);
+
     return {
         ...state,
         editingList
@@ -313,4 +369,94 @@ export function onPatientSavedDeleted(state: TableContainerState, deletedId: num
         editingList,
         searchingList
     };
+}
+
+
+
+export function loadPatients(
+    delayedStoreDispatch: undefined | ((action: Actions.MyAction) => void),
+    currentTemplate: PatientSearchTemplate, currentListLength: number,
+    currentLoadCount: number) {
+    myFetch(
+        `patients/list?skip=${currentListLength}&take=${currentLoadCount}`,
+        'POST',
+        JSON.stringify(currentTemplate),
+        (value: string) => {
+            const data = JSON.parse(value) as Patient[];
+            const append = currentListLength > 0;
+            const patients = data.map(el => Patient.from(el));
+            if (delayedStoreDispatch) {
+                delayedStoreDispatch(Actions.recievePatients(patients, append));
+            }
+        });
+}
+
+function saveNextPatient(
+    delayedStoreDispatch: undefined | ((action: Actions.MyAction) => void),
+    listToSave: Patient[], index: number) {
+    while (
+        index < listToSave.length &&
+        listToSave[index].status === Status.Untouched
+    ) {
+        console.log(`patient ${listToSave[index].toString()} is untouched, next...`);
+        index += 1;
+    }
+
+    if (index >= listToSave.length) {
+        console.log('all saved!');
+        return;
+    }
+
+    const patient = listToSave[index];
+    let action;
+    let processResponseBody: (value: string) => void;
+    switch (patient.status) {
+        case Status.Added:
+            action = 'add';
+            processResponseBody = (value: string) => {
+                const parsedModel = JSON.parse(value) as Patient;
+                const addedPatient = Patient.from(parsedModel);
+
+                console.log(`added '${addedPatient.toString()}'`);
+                if (delayedStoreDispatch) {
+                    delayedStoreDispatch(Actions.savedAdded(addedPatient, patient));
+                }
+            };
+            break;
+        case Status.Modified:
+            action = 'update';
+            processResponseBody = (value: string) => {
+                const parsedModel = JSON.parse(value) as Patient;
+                const updatedPatient = Patient.from(parsedModel);
+
+                console.log(`updated '${updatedPatient.toString()}'`);
+
+                if (delayedStoreDispatch) {
+                    delayedStoreDispatch(Actions.savedUpdated(updatedPatient));
+                }
+            };
+            break;
+        case Status.Deleted:
+            action = 'delete';
+            processResponseBody = (value: string) => {
+                const deletedId = JSON.parse(value) as number;
+
+                console.log(`deleted '${deletedId}'`);
+                if (delayedStoreDispatch) {
+                    delayedStoreDispatch(Actions.savedDeleted(deletedId));
+                }
+            };
+            break;
+        default: throw new Error(`unknown action ${action} on patient ${listToSave[index]}`);
+    }
+
+    myFetch(
+        `patients/${action}`,
+        'POST',
+        JSON.stringify(PatientDTO.from(listToSave[index])),
+        (value: string) => {
+            processResponseBody(value);
+            saveNextPatient(delayedStoreDispatch, listToSave, index + 1);
+        }
+    );
 }

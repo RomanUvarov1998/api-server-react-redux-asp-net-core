@@ -7,6 +7,7 @@ export type SearchBarProps = {
     frozen: boolean,
     patientTemplate: PatientSearchTemplate,
     onSetSearchTemplate: (fieldNameId: number, newValue: FieldValue) => void,
+    giveVariants: (fieldNameId: number, variants: string[]) => void,
     onClearTemplate: () => void
 }
 

@@ -1,15 +1,17 @@
-import { createStore } from 'redux'
+import { createStore } from 'redux';
 import * as Actions from './actions';
 import * as Reducers from './reducers';
-import { TableContainerState } from '../components/table-container/table-container'
+import { TableContainerState } from '../components/table-container/table-container';
 
 export function configureStore(initialState: TableContainerState) {
+    let delayedDispatch: undefined | ((action: Actions.MyAction) => void) = undefined;
+
     const red = (state = initialState, action: Actions.MyAction)
         : TableContainerState => {
         let a;
         switch (action.type) {
             case Actions.ACTION_LOAD_MORE_PATIENTS:
-                return Reducers.onLoadMorePatients(state);
+                return Reducers.onLoadMorePatients(state, delayedDispatch);
             case Actions.ACTION_CHANGE_TAB:
                 a = action as Actions.ActionChangeTab;
                 return Reducers.onChangeTab(state, a.newTabNum);
@@ -41,13 +43,13 @@ export function configureStore(initialState: TableContainerState) {
                 return Reducers.onDelete(state, a.patientId);
             case Actions.ACTION_SET_SEARCH_TEMPLATE:
                 a = (action as Actions.ActionSetSearchTemplate);
-                return Reducers.onSetSearchTemplate(state, a.newValue, a.fieldNameId);
+                return Reducers.onSetSearchTemplate(state, delayedDispatch, a.newValue, a.fieldNameId);
             case Actions.ACTION_GIVE_VARIANTS:
                 a = (action as Actions.ActionGiveVariants);
                 return Reducers.onGiveVariants(state, a.fieldNameId, a.variants);
             case Actions.ACTION_CLEAR_SEARCH_TEMPLATE:
                 a = (action as Actions.ActionSetSearchTemplate);
-                return Reducers.onClearSearchTemplate(state);
+                return Reducers.onClearSearchTemplate(state, delayedDispatch);
             case Actions.ACTION_UNDO:
                 a = action as Actions.ActionUndo;
                 return Reducers.onUndo(state);
@@ -56,7 +58,7 @@ export function configureStore(initialState: TableContainerState) {
                 return Reducers.onRedo(state);
             case Actions.ACTION_START_SAVING:
                 a = action as Actions.ActionStartSaving;
-                return Reducers.onStartSaving(state);
+                return Reducers.onStartSaving(state, delayedDispatch);
             case Actions.ACTION_SAVED_ADDED:
                 a = action as Actions.ActionSavedAdded;
                 return Reducers.onPatientSavedAdded(state, a.newPatient, a.oldPatient);
@@ -72,6 +74,8 @@ export function configureStore(initialState: TableContainerState) {
     };
 
     const store = createStore(red);
+
+    delayedDispatch = (action: Actions.MyAction) => store.dispatch(action);
 
     return store;
 }

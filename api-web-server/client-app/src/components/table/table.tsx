@@ -20,6 +20,7 @@ export type TableProps = {
     loadCount: number,
     onLoadMore: (template: PatientSearchTemplate, loadedCount: number, pageLength: number) => void,
     onSetSearchTemplate: (fieldNameId: number, newValue: FieldValue) => void,
+    giveVariants: (fieldNameId: number, variants: string[]) => void,
     onClearTemplate: () => void,
     addToEditingList: (patient: Patient) => void,
 
@@ -33,6 +34,7 @@ export type TableProps = {
     onDelete: (id: number) => Actions.ActionDeletePatient,
     onUndo: () => Actions.ActionUndo,
     onRedo: () => Actions.ActionRedo,
+    savePatients: (patients: Patient[]) => Actions.ActionStartSaving,
     clearList: () => void
 }
 
@@ -145,6 +147,7 @@ export class Table extends React.Component<TableProps, {}, {}> {
                             canLoadMore={this.props.canLoadMore}
                             loadCount={this.props.loadCount}
                             onSetSearchTemplate={this.props.onSetSearchTemplate}
+                            giveVariants={this.props.giveVariants}
                             onClearTemplate={this.props.onClearTemplate}
                             onLoadMore={this.props.onLoadMore}
                             isInEditingList={p => this.props.editingList.some(ep => ep.equals(p))}
@@ -155,7 +158,8 @@ export class Table extends React.Component<TableProps, {}, {}> {
                         <ButtonToolbar>
                             <ButtonGroup>
                                 <Button
-                                    onClick={() => this.savePatients()}
+                                    onClick={() => this.props
+                                            .savePatients(this.props.editingList)}
                                     disabled={
                                         isLoadingSomething ||
                                         !this.props.history.hasSomethingToSave() ||
@@ -167,7 +171,11 @@ export class Table extends React.Component<TableProps, {}, {}> {
                                 </Button>
                                 <Button
                                     onClick={() => this.props.clearList()}
-                                    disabled={!canClearList || this.props.editingList.length === 0}
+                                    disabled={
+                                        !canClearList || 
+                                        this.props.editingList.length === 0 ||
+                                        this.props.editingPatient !== null
+                                    }
                                 >Очистить список</Button>
                             </ButtonGroup>
                             <ButtonGroup>
@@ -176,17 +184,19 @@ export class Table extends React.Component<TableProps, {}, {}> {
                                     disabled={
                                         isLoadingSomething ||
                                         !this.props.history.canUndo() ||
-                                        isSavingSomething
+                                        isSavingSomething ||
+                                        this.props.editingPatient !== null
                                     }
-                                >{"Отменить"}</Button>
+                                >{"Undo"}</Button>
                                 <Button
                                     onClick={() => this.props.onRedo()}
                                     disabled={
                                         isLoadingSomething ||
                                         !this.props.history.canRedo() ||
-                                        isSavingSomething
+                                        isSavingSomething ||
+                                        this.props.editingPatient !== null
                                     }
-                                >{"Повторить"}</Button>
+                                >{"Redo"}</Button>
                             </ButtonGroup>
                             <ButtonGroup>
                                 <Button
@@ -215,9 +225,5 @@ export class Table extends React.Component<TableProps, {}, {}> {
                 </TabContent>
             </>
         );
-    }
-
-    private savePatients() {
-        (this.props as any).savePatients(this.props.editingList);
     }
 }

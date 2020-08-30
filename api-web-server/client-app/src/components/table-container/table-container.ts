@@ -21,6 +21,13 @@ export type TableContainerState = {
 }
 export type TableContainerDispatchProps = {
     onTabChange: (newTabNum: TabNums) => void,
+
+    onLoadMore: (template: PatientSearchTemplate, loadedCount: number, pageLength: number) => void,
+    onSetSearchTemplate: (fieldNameId: number, newValue: FieldValue) => void,
+    giveVariants: (fieldNameId: number, variants: string[]) => void,
+    onClearTemplate: () => void,
+    addToEditingList: (patient: Patient) => void,
+
     onAdd: () => Actions.ActionAddPatient,
     onStartEditing: (id: number) => Actions.ActionStartEditingPatient,
     onFinishEditing: (save: boolean) => Actions.ActionFinishEditingPatient,
@@ -28,17 +35,11 @@ export type TableContainerDispatchProps = {
     onDelete: (id: number) => Actions.ActionDeletePatient,
     onUndo: () => Actions.ActionUndo,
     onRedo: () => Actions.ActionRedo,
-    addToEditingList: (patient: Patient) => Actions.ActionAddPatientToEditList,
-    clearList: () => Actions.ActionClearList,
-    onLoadMore: () => Actions.ActionLoadMorePatients
+    savePatients: (patients: Patient[]) => Actions.ActionStartSaving,
+    clearList: () => Actions.ActionClearList
 }
 export type TableContainerProps = {    
-    onSetSearchTemplate: (fieldNameId: number, newValue: string) => void,
-    onClearTemplate: () => void,
-    onLoadMore: () => void,
-
-    savePatients: (list: Patient[]) => void,
-    clearList: () => void,
+    
 }
 
 const mapStateToProps = (state: TableContainerState): TableContainerState => {
@@ -61,6 +62,13 @@ const mapStateToProps = (state: TableContainerState): TableContainerState => {
 
 const mapDispatchToProps: TableContainerDispatchProps = {
     onTabChange: Actions.changeTab,
+
+    onLoadMore: Actions.loadMorePatients,
+    onSetSearchTemplate: Actions.setSearchTemplate,
+    giveVariants: Actions.giveVariants,
+    onClearTemplate: Actions.clearSearchTemplate,
+    addToEditingList: Actions.addPatientToEditList,
+
     onAdd: Actions.add,
     onStartEditing: Actions.startEditing,
     onFinishEditing: Actions.finishEditing,
@@ -68,9 +76,8 @@ const mapDispatchToProps: TableContainerDispatchProps = {
     onDelete: Actions.del,
     onUndo: Actions.undo,
     onRedo: Actions.redo,
-    addToEditingList: Actions.addPatientToEditList,
+    savePatients: Actions.startSaving,
     clearList: Actions.clearList,
-    onLoadMore: Actions.loadMorePatients
 };
 
 function mergeProps(
