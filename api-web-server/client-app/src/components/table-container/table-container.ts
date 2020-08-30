@@ -1,5 +1,5 @@
 import { connect } from 'react-redux'
-import { Patient, FieldValue } from '../../library/patient';
+import { Patient, FieldValue, PatientSearchTemplate } from '../../library/patient';
 import { History } from '../../library/history';
 import * as Actions from '../../store/actions';
 import { Table, TabNums } from '../table/table';
@@ -11,7 +11,7 @@ export type TableContainerState = {
     isWaitingPatientFields: boolean,
 
     searchingList: Patient[],
-    patientTemplate: Patient | null,
+    patientTemplate: PatientSearchTemplate | null,
     canLoadMore: boolean,
     loadCount: number,
 

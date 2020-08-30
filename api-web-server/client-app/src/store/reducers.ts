@@ -1,4 +1,4 @@
-import { Patient, FieldValue, SavingStatus, PatientField } from "../library/patient";
+import { Patient, FieldValue, SavingStatus, PatientField, PatientSearchTemplate } from "../library/patient";
 import { Status, copyList } from "../library/history";
 import { TableContainerState } from '../components/table-container/table-container'
 import { TabNums } from "../components/table/table";
@@ -57,7 +57,7 @@ export function onClearList(state: TableContainerState): TableContainerState {
     }
 }
 
-export function onRecievePatientFields(state: TableContainerState, patientTemplate: Patient): TableContainerState {
+export function onRecievePatientFields(state: TableContainerState, patientTemplate: PatientSearchTemplate): TableContainerState {
     return {
         ...state,
         patientTemplate,
@@ -164,6 +164,25 @@ export function onSetSearchTemplate(state: TableContainerState, newValue: FieldV
         ...state,
         patientTemplate
     });
+}
+
+export function onGiveVariants(state: TableContainerState, fieldNameId: number,
+    variants: string[]): TableContainerState {
+    if (!state.patientTemplate) throw new Error("template is null");
+
+    const patientTemplate = state.patientTemplate.copy();
+    patientTemplate.fields.forEach(f => {
+        if (f.nameId === fieldNameId) {
+            f.variants = variants.slice();
+        } else {
+            f.variants = [];
+        }
+    });
+
+    return {
+        ...state,
+        patientTemplate
+    };
 }
 
 export function onClearSearchTemplate(state: TableContainerState): TableContainerState {

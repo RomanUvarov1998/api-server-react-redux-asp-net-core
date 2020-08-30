@@ -1,6 +1,6 @@
 import React from "react";
 import { RawCell } from "../raw-cell/raw-cell";
-import { Patient, FieldValue, PatientField, SavingStatus } from "../../library/patient";
+import { Patient, FieldValue, PatientField, SavingStatus, PatientSearchTemplate } from "../../library/patient";
 import { Status } from "../../library/history";
 
 export enum RawState {
@@ -9,7 +9,7 @@ export enum RawState {
     Frozen
 }
 export type TableRawProps = {
-    patientTemplate: Patient,
+    patientTemplate: PatientSearchTemplate,
     patient: Patient,
     editState: RawState,
     onEdit: (id: number, fieldNameId: number, newValue: FieldValue) => void,

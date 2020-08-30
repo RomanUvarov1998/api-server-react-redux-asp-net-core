@@ -2,7 +2,7 @@ import React from 'react';
 import classnames from 'classnames';
 import { Button, ButtonGroup, ButtonToolbar, Nav, NavItem, NavLink, TabContent, TabPane } from 'reactstrap';
 import { TableRaw, RawState } from '../table-raw/table-raw'
-import { Patient, FieldValue, SavingStatus } from "../../library/patient";
+import { Patient, FieldValue, SavingStatus, PatientSearchTemplate } from "../../library/patient";
 import * as Actions from '../../store/actions';
 import { History } from '../../library/history'
 import { SearchTable } from '../search-table/search-table';
@@ -14,11 +14,11 @@ export type TableProps = {
     isWaitingPatientsList: boolean,
     isWaitingPatientFields: boolean,
 
-    patientTemplate: Patient | null,
+    patientTemplate: PatientSearchTemplate | null,
     searchingList: Patient[],
     canLoadMore: boolean,
     loadCount: number,
-    onLoadMore: (template: Patient, loadedCount: number, pageLength: number) => void,
+    onLoadMore: (template: PatientSearchTemplate, loadedCount: number, pageLength: number) => void,
     onSetSearchTemplate: (fieldNameId: number, newValue: FieldValue) => void,
     onClearTemplate: () => void,
     addToEditingList: (patient: Patient) => void,
@@ -57,7 +57,7 @@ export class Table extends React.Component<TableProps, {}, {}> {
                 <th key={"btnEdit"}></th>,
                 <th key={"btnDelete"}></th>
             ];
-            tableHeadCells.push(...this.props.patientTemplate.fields.map(
+            tableHeadCells.push(...this.props.patientTemplate!.fields.map(
                 tf => (
                     <th key={tf.nameId}>
                         {tf.name}

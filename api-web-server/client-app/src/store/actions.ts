@@ -1,4 +1,4 @@
-import { FieldValue, Patient } from "../library/patient";
+import { FieldValue, Patient, PatientSearchTemplate } from "../library/patient";
 import { TabNums } from "../components/table/table";
 
 export const ACTION_CHANGE_TAB = 'ACTION_CHANGE_TAB';
@@ -13,6 +13,7 @@ export const ACTION_FINISH_EDIT_PATIENT = 'ACTION_FINISH_EDIT_PATIENT';
 export const ACTION_EDIT_PATIENT = 'ACTION_EDIT_PATIENT';
 export const ACTION_DELETE_PATIENT = 'ACTION_DELETE_PATIENT';
 export const ACTION_SET_SEARCH_TEMPLATE = 'ACTION_SET_SEARCH_TEMPLATE';
+export const ACTION_GIVE_VARIANTS = 'ACTION_GIVE_VARIANTS';
 export const ACTION_CLEAR_SEARCH_TEMPLATE = 'ACTION_CLEAR_SEARCH_TEMPLATE';
 export const ACTION_UNDO = 'ACTION_UNDO';
 export const ACTION_REDO = 'ACTION_REDO';
@@ -33,6 +34,7 @@ export type MyAction =
     ActionEditPatient |
     ActionDeletePatient |
     ActionSetSearchTemplate |
+    ActionGiveVariants |
     ActionClearSearchTemplate |
     ActionUndo |
     ActionRedo |
@@ -46,13 +48,14 @@ export type ActionLoadMorePatients = { type: string };
 export type ActionRecievePatients = { type: string, patients: Patient[], append: boolean };
 export type ActionAddPatientToEditList = { type: string, patient: Patient };
 export type ActionClearList = { type: string };
-export type ActionRecievePatientFields = { type: string, patientTemplate: Patient };
+export type ActionRecievePatientFields = { type: string, patientTemplate: PatientSearchTemplate };
 export type ActionAddPatient = { type: string };
 export type ActionStartEditingPatient = { type: string, patientId: number };
 export type ActionFinishEditingPatient = { type: string, save: boolean };
 export type ActionEditPatient = { type: string, patientId: number, fieldNameId: number, newValue: FieldValue };
 export type ActionDeletePatient = { type: string, patientId: number };
 export type ActionSetSearchTemplate = { type: string, fieldNameId: number, newValue: FieldValue };
+export type ActionGiveVariants = { type: string, fieldNameId: number, variants: string[] };
 export type ActionClearSearchTemplate = { type: string };
 export type ActionUndo = { type: string };
 export type ActionRedo = { type: string };
@@ -90,7 +93,7 @@ export function clearList(): ActionClearList {
         type: ACTION_CLEAR_LIST,
     };
 }
-export function recievePatientFields(patientTemplate: Patient): ActionRecievePatientFields {
+export function recievePatientFields(patientTemplate: PatientSearchTemplate): ActionRecievePatientFields {
     return {
         type: ACTION_RECIEVE_PATIENT_FIELDS,
         patientTemplate
@@ -133,6 +136,13 @@ export function setSearchTemplate(fieldNameId: number, newValue: FieldValue): Ac
         fieldNameId,
         newValue,
     }
+}
+export function giveVariants(fieldNameId: number, variants: string[]): ActionGiveVariants {
+    return {
+        type: ACTION_GIVE_VARIANTS,
+        fieldNameId,
+        variants
+    };
 }
 export function clearSearchTemplate(): ActionClearSearchTemplate {
     return {

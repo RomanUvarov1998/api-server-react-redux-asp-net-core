@@ -42,6 +42,9 @@ export function configureStore(initialState: TableContainerState) {
             case Actions.ACTION_SET_SEARCH_TEMPLATE:
                 a = (action as Actions.ActionSetSearchTemplate);
                 return Reducers.onSetSearchTemplate(state, a.newValue, a.fieldNameId);
+            case Actions.ACTION_GIVE_VARIANTS:
+                a = (action as Actions.ActionGiveVariants);
+                return Reducers.onGiveVariants(state, a.fieldNameId, a.variants);
             case Actions.ACTION_CLEAR_SEARCH_TEMPLATE:
                 a = (action as Actions.ActionSetSearchTemplate);
                 return Reducers.onClearSearchTemplate(state);

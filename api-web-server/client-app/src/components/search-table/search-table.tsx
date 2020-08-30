@@ -1,5 +1,5 @@
 import React from 'react';
-import { Patient } from '../../library/patient'
+import { Patient, PatientSearchTemplate } from '../../library/patient'
 import { SearchBar } from '../search-bar/search-bar';
 import { Button } from 'reactstrap';
 
@@ -9,12 +9,12 @@ export type SearchTableProps = {
     isWaitingPatientFields: boolean,
     patientsList: Patient[],
     isInEditingList: (patient: Patient) => boolean,
-    patientTemplate: Patient | null,
+    patientTemplate: PatientSearchTemplate | null,
     canLoadMore: boolean,
     loadCount: number,
     onSetSearchTemplate: (fieldNameId: number, newValue: string) => void,
     onClearTemplate: () => void,
-    onLoadMore: (template: Patient, loadedCount: number, pageLength: number) => void
+    onLoadMore: (template: PatientSearchTemplate, loadedCount: number, pageLength: number) => void
 }
 
 export function SearchTable(props: SearchTableProps): JSX.Element {

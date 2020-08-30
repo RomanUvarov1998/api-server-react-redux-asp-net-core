@@ -114,3 +114,53 @@ export function toPatientField(obj: any): PatientField {
     let nameId = obj.nameId as number;
     return new PatientField(name, value, nameId);
 }
+
+export class PatientSearchTemplateField {
+    constructor({ name, nameId }: PatientField) {
+        this.name = name;
+        this.nameId = nameId;
+        this.variants = [];
+        this.value = '';
+    }
+
+    public name: FieldName;
+    public nameId: number;
+    public variants: FieldValue[];
+    public value: FieldValue;
+}
+export class PatientSearchTemplate {
+    constructor(fields: PatientField[]) {
+        this.fields = fields.map(f => new PatientSearchTemplateField(f));
+    }
+
+    public fields: PatientSearchTemplateField[];
+
+    public copy = () => {
+        const pst = new PatientSearchTemplate(
+            this.fields.map(f => new PatientField(f.name, '', f.nameId)));
+
+        pst.fields.forEach(f => {
+            const copyf = this.fields.find(tf => tf.nameId === f.nameId);
+            f.variants = copyf!.variants.slice();
+            f.value = copyf!.value;
+        });
+
+        return pst;
+    };
+    public updateField = (fieldNameId: number, newFieldValue: FieldValue) => {
+        const copy = this.copy();
+        
+        copy.fields.forEach(f => {
+            if (f.nameId === fieldNameId) {
+                f.value = newFieldValue;
+            } 
+        });
+
+        return copy;
+    }
+};
+
+export function toPatientSearchTemplate(obj: any): PatientSearchTemplate {
+    let fields: PatientField[] = obj.fields.map((f: any) => toPatientField(f));
+    return new PatientSearchTemplate(fields);
+}

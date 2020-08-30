@@ -1,11 +1,11 @@
 import React from 'react'
-import { Patient, FieldValue, PatientField } from '../../library/patient'
+import { FieldValue, PatientSearchTemplate, PatientSearchTemplateField } from '../../library/patient'
 import { SearchField } from '../search-field/search-field'
 import { Button } from 'reactstrap';
 
 export type SearchBarProps = {
     frozen: boolean,
-    patientTemplate: Patient,
+    patientTemplate: PatientSearchTemplate,
     onSetSearchTemplate: (fieldNameId: number, newValue: FieldValue) => void,
     onClearTemplate: () => void
 }
@@ -24,15 +24,15 @@ export function SearchBar(props: SearchBarProps) {
     return (
         <>
             <h1>Поиск</h1>
-            <table><thead><tr>{searchFields}</tr></thead></table>
             <Button onClick={() => clearTemplateHandler(props)}>Очистить фильтр</Button>
+            <table><thead><tr>{searchFields}</tr></thead></table>
         </>
     );
 }
 
 function clearTemplateHandler(props: SearchBarProps) {
     if (props.patientTemplate.fields.reduce(
-        (previousValue: boolean, currentValue: PatientField) => {
+        (previousValue: boolean, currentValue: PatientSearchTemplateField) => {
             return previousValue && currentValue.value === '';
         },
         true)

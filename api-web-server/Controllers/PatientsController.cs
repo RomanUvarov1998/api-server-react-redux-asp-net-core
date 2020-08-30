@@ -2,13 +2,14 @@ using System.Collections.Generic;
 using System.Linq;
 using System.IO;
 using System.Threading.Tasks;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Http;
+using Newtonsoft.Json;
 using database;
 using database.Models;
 using api_web_server.ViewModels;
-using Microsoft.EntityFrameworkCore;
-using Newtonsoft.Json;
+using api_web_server.ContextHelpers;
 
 namespace api_web_server
 {
@@ -35,19 +36,19 @@ namespace api_web_server
         }
 
         [HttpGet("template")]
-        public PatientVM GetTemplate()
+        public PatientSearchTemplateVM GetTemplate()
         {
             List<FieldName> fns = dbContext.FieldNames.ToList();
 
-            PatientVM pvm = PatientVM.CreateEmpty(fns);
+            var searchTemplate = new PatientSearchTemplateVM(fns);
 
-            return pvm;
+            return searchTemplate;
         }
 
         [HttpPost("add")]
         public async Task<IActionResult> Add()
         {
-            PatientVM patientVM = await TryReadPatient();
+            var patientVM = await ReadModelFromBodyAsync<PatientVM>();
 
             if (patientVM.Status != Status.Added) return BadRequest("Status must be Added (0)");
 
@@ -66,7 +67,7 @@ namespace api_web_server
         [HttpPost("update")]
         public async Task<IActionResult> Update()
         {
-            PatientVM patientVM = await TryReadPatient();
+            var patientVM = await ReadModelFromBodyAsync<PatientVM>();
 
             if (patientVM.Status != Status.Modified) return BadRequest();
 
@@ -88,7 +89,7 @@ namespace api_web_server
         [HttpPost("delete")]
         public async Task<IActionResult> Delete()
         {
-            PatientVM patientVM = await TryReadPatient();
+            var patientVM = await ReadModelFromBodyAsync<PatientVM>();
 
             if (patientVM.Status != Status.Deleted) return BadRequest();
 
@@ -105,57 +106,15 @@ namespace api_web_server
         }
 
         [HttpPost("list")]
-        public async Task<IActionResult> Some(int skip, int take)
+        public async Task<IActionResult> GetPortion(int skip, int take)
         {
             if (skip < 0) return BadRequest("skip must be >= 0");
             if (take < 0) return BadRequest("take must be >= 0");
 
-            var template = await TryReadPatient();
+            var template = await ReadModelFromBodyAsync<PatientSearchTemplateVM>();
 
-            var query = Patient
-                .IncludeFields(dbContext.Patients);
-
-            foreach (var field in template.Fields)
-            {
-                string trimmedValue = field.Value.Trim();
-
-                if (string.IsNullOrEmpty(trimmedValue)) continue;
-
-                query = query
-                    .Where(p => p.Fields.Any(
-                        f => 
-                            f.Name.Id == field.NameId &&
-                            f.Value.ToLower().StartsWith(trimmedValue.ToLower())
-                    ));
-            }
-
-            var patients = query
-                .OrderBy(p => p.CreatedDate)
-                .Skip(skip)
-                .Take(take)
-                .ToList();
-
-            // string filter = template.Fields[0].Value.ToLower();
-
-            // var patientIds = dbContext.PatientFields
-            //     .Where(f =>
-            //         f.NameId == 1 &&
-            //         f.Value.ToLower().StartsWith(filter)
-            //     ).Select(f => f.PatientId)
-            //     .Distinct()
-            //     .OrderBy(id => id)
-            //     .Skip(skip)
-            //     .Take(take)
-            //     .ToArray();
-
-            // var patients = new List<Patient>();
-            // foreach (var id in patientIds) {
-            //     patients.Add(
-            //         Patient
-            //             .IncludeFields(dbContext.Patients)
-            //             .First(p => p.Id == id)
-            //     );
-            // }
+            var patients = MyContexthelper
+                .GetPatientsByTemplate(dbContext, template, skip, take);
 
             var patientsVM = patients
                 .Select(p => new PatientVM(p))
@@ -164,16 +123,30 @@ namespace api_web_server
             return Ok(patientsVM);
         }
 
-        private async Task<PatientVM> TryReadPatient()
+        [HttpPost("variants")]
+        public async Task<IActionResult> GetVariants(int fieldNameId, int maxCount)
+        {
+            var template = await ReadModelFromBodyAsync<PatientSearchTemplateVM>();
+
+            var fieldNames = MyContexthelper
+                .GetVariantsByTemplate(dbContext, template, fieldNameId, maxCount);
+
+            return Ok(fieldNames);
+        }
+
+        private async Task<T> ReadModelFromBodyAsync<T>()
         {
             HttpRequest request = this.Request;
             StreamReader stream = new StreamReader(request.Body);
             string json = await stream.ReadToEndAsync();
 
-            PatientVM patientVM = JsonConvert
-                .DeserializeObject<PatientVM>(json);
+            var serializerSettings = new JsonSerializerSettings();
+            serializerSettings.MissingMemberHandling = MissingMemberHandling.Error;
 
-            return patientVM;
+            T model = JsonConvert
+                .DeserializeObject<T>(json, serializerSettings);
+
+            return model;
         }
 
         private readonly MyContext dbContext;
