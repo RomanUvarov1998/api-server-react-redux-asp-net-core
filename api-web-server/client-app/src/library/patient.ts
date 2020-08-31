@@ -3,24 +3,24 @@ import { Status, IHistoryItem } from './history';
 export type FieldName = string;
 export type FieldValue = string;
 
-export class PatientField {
+export class PatientFieldDTM {
     constructor(_name: FieldName, _value: FieldValue, _nameId: number) {
         this.name = _name;
         this.value = _value;
         this.nameId = _nameId;
     }
 
-    public copy = (): PatientField => new PatientField(this.name, this.value, this.nameId);
+    public copy = (): PatientFieldDTM => new PatientFieldDTM(this.name, this.value, this.nameId);
 
     public value: FieldValue;
     public name: FieldName;
     public nameId: number;
 
-    public static from(obj: any): PatientField {
+    public static from(obj: any): PatientFieldDTM {
         let name = obj.name as string;
         let value = obj.value as string;
         let nameId = obj.nameId as number;
-        return new PatientField(name, value, nameId);
+        return new PatientFieldDTM(name, value, nameId);
     }
 }
 
@@ -29,8 +29,8 @@ export enum SavingStatus {
     Saving
 }
 
-export class Patient implements IHistoryItem<Patient> {
-    constructor(fields: PatientField[], id: number,
+export class PatientVM implements IHistoryItem<PatientVM> {
+    constructor(fields: PatientFieldDTM[], id: number,
         status: Status) {
         this.fields = fields;
         this.id = id;
@@ -38,7 +38,7 @@ export class Patient implements IHistoryItem<Patient> {
         this.savingStatus = SavingStatus.Saved;
     }
 
-    fields: PatientField[];
+    fields: PatientFieldDTM[];
     id: number;
     status: Status;
     savingStatus: SavingStatus;
@@ -46,7 +46,7 @@ export class Patient implements IHistoryItem<Patient> {
     public updateField = (fieldNameId: number, newFieldValue: FieldValue) => {
         const newFields = this.fields.map(field => {
             if (field.nameId === fieldNameId) {
-                return new PatientField(field.name, newFieldValue, field.nameId);
+                return new PatientFieldDTM(field.name, newFieldValue, field.nameId);
             } else {
                 return field;
             }
@@ -61,10 +61,10 @@ export class Patient implements IHistoryItem<Patient> {
             default: throw new Error("Unknown status");
         }
 
-        return new Patient(newFields, this.id, newStatus);
+        return new PatientVM(newFields, this.id, newStatus);
     }
 
-    public updateWhole = (template: Patient) => {
+    public updateWhole = (template: PatientVM) => {
         const newFields = template.fields.map(field => field.copy());
 
         let newStatus;
@@ -76,18 +76,18 @@ export class Patient implements IHistoryItem<Patient> {
             default: throw new Error("Unknown status");
         }
 
-        return new Patient(newFields, this.id, newStatus);
+        return new PatientVM(newFields, this.id, newStatus);
     }
 
-    public copy = (): Patient => {
-        return new Patient(
+    public copy = (): PatientVM => {
+        return new PatientVM(
             this.fields.map(f => f.copy()),
             this.id,
             this.status
         );
     }
-    public equals = (item: Patient): boolean => item.id === this.id;
-    public isUpdatedRelativelyTo = (item: Patient): boolean => {
+    public equals = (item: PatientVM): boolean => item.id === this.id;
+    public isUpdatedRelativelyTo = (item: PatientVM): boolean => {
         let updated = false;
 
         this.fields.forEach(field => {
@@ -108,17 +108,17 @@ export class Patient implements IHistoryItem<Patient> {
         return str;
     }
 
-    public static from(obj: any): Patient {
-        let fields: PatientField[] = obj.fields.map(
-            (f: any) => PatientField.from(f));
+    public static from(obj: any): PatientVM {
+        let fields: PatientFieldDTM[] = obj.fields.map(
+            (f: any) => PatientFieldDTM.from(f));
         let id = obj.id as number;
         let status = obj.status as Status;
-        return new Patient(fields, id, status);
+        return new PatientVM(fields, id, status);
     }
 }
 
-export class PatientSearchTemplateField {
-    constructor({ name, nameId }: PatientField) {
+export class PatientSearchTemplateFieldVM {
+    constructor({ name, nameId }: PatientFieldDTM) {
         this.name = name;
         this.nameId = nameId;
         this.variants = [];
@@ -130,16 +130,16 @@ export class PatientSearchTemplateField {
     public variants: FieldValue[];
     public value: FieldValue;
 }
-export class PatientSearchTemplate {
-    constructor(fields: PatientField[]) {
-        this.fields = fields.map(f => new PatientSearchTemplateField(f));
+export class PatientSearchTemplateVM {
+    constructor(fields: PatientFieldDTM[]) {
+        this.fields = fields.map(f => new PatientSearchTemplateFieldVM(f));
     }
 
-    public fields: PatientSearchTemplateField[];
+    public fields: PatientSearchTemplateFieldVM[];
 
     public copy = () => {
-        const pst = new PatientSearchTemplate(
-            this.fields.map(f => new PatientField(f.name, '', f.nameId)));
+        const pst = new PatientSearchTemplateVM(
+            this.fields.map(f => new PatientFieldDTM(f.name, '', f.nameId)));
 
         pst.fields.forEach(f => {
             const copyf = this.fields.find(tf => tf.nameId === f.nameId);
@@ -161,21 +161,19 @@ export class PatientSearchTemplate {
         return copy;
     }
 
-    public static from(obj: any): PatientSearchTemplate {
-        let fields: PatientField[] = obj.fields.map(
-            (f: any) => PatientField.from(f));
-        return new PatientSearchTemplate(fields);
+    public static from(obj: any): PatientSearchTemplateVM {
+        let fields: PatientFieldDTM[] = obj.fields.map(
+            (f: any) => PatientFieldDTM.from(f));
+        return new PatientSearchTemplateVM(fields);
     }
 };
 
-export class PatientDTO {
-    constructor() { }
-
-    fields: PatientField[] = [];
+export class PatientDTM {
+    fields: PatientFieldDTM[] = [];
     id: number = 0;
     status: Status = Status.Untouched;
 
-    public static from({ fields, id, status }: Patient): PatientDTO {
+    public static from({ fields, id, status }: PatientVM): PatientDTM {
         const p = {
             fields,
             id,

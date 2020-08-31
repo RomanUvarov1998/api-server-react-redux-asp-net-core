@@ -1,6 +1,6 @@
-import { Patient, FieldValue, SavingStatus, PatientField, 
-    PatientSearchTemplate, 
-    PatientDTO} from "../library/patient";
+import { PatientVM, FieldValue, SavingStatus, PatientFieldDTM, 
+    PatientSearchTemplateVM, 
+    PatientDTM} from "../library/patient";
 import { Status, copyList } from "../library/history";
 import { TableContainerState } from '../components/table-container/table-container'
 import { TabNums } from "../components/table/table";
@@ -14,7 +14,7 @@ export function onChangeTab(state: TableContainerState, newTabNum: TabNums): Tab
     }
 }
 
-export function onAddPatientToEditList(state: TableContainerState, patient: Patient): TableContainerState {
+export function onAddPatientToEditList(state: TableContainerState, patient: PatientVM): TableContainerState {
     let editingList;
 
     if (state.editingList.some(p => p.equals(patient))) {
@@ -45,7 +45,7 @@ export function onLoadMorePatients(state: TableContainerState,
     };
 }
 
-export function onRecievePatients(state: TableContainerState, patients: Patient[],
+export function onRecievePatients(state: TableContainerState, patients: PatientVM[],
     append: boolean): TableContainerState {
     let searchingList =
         append ?
@@ -77,7 +77,7 @@ export function onClearList(state: TableContainerState): TableContainerState {
     }
 }
 
-export function onRecievePatientFields(state: TableContainerState, patientTemplate: PatientSearchTemplate): TableContainerState {
+export function onRecievePatientFields(state: TableContainerState, patientTemplate: PatientSearchTemplateVM): TableContainerState {
     return {
         ...state,
         patientTemplate,
@@ -89,8 +89,8 @@ export function onAdd(state: TableContainerState): TableContainerState {
     if (!state.patientTemplate) return state;
     if (state.editingPatient !== null) return state;
 
-    const newPatient = new Patient(
-        state.patientTemplate.fields.map(f => new PatientField(f.name, '', f.nameId)),
+    const newPatient = new PatientVM(
+        state.patientTemplate.fields.map(f => new PatientFieldDTM(f.name, '', f.nameId)),
         -1,
         Status.Added
     );
@@ -130,11 +130,11 @@ export function onFinishEditing(state: TableContainerState, save: boolean): Tabl
     if (!state.editingPatient) throw Error("reducers.ts editingPatient");
 
     const patientToEdit = state.editingList
-        .find(p => p.id === (state.editingPatient as Patient).id);
+        .find(p => p.id === (state.editingPatient as PatientVM).id);
     if (!patientToEdit) throw Error("reducers.ts patientToEdit");
 
     if (save) {
-        const template = (state.editingPatient as Patient).copy();
+        const template = (state.editingPatient as PatientVM).copy();
         editingList = state.history.edit(
             patientToEdit,
             p => p.updateWhole(template),
@@ -155,7 +155,7 @@ export function onEdit(state: TableContainerState, fieldNameId: number,
     newValue: FieldValue): TableContainerState {
     if (!state.editingPatient) throw Error("editingPatient reducers.ts");
 
-    const editingPatient = (state.editingPatient as Patient).updateField(fieldNameId, newValue);
+    const editingPatient = (state.editingPatient as PatientVM).updateField(fieldNameId, newValue);
 
     return {
         ...state,
@@ -283,7 +283,7 @@ export function onStartSaving(state: TableContainerState,
     };
 }
 
-export function onPatientSavedAdded(state: TableContainerState, newPatient: Patient, oldPatient: Patient): TableContainerState {
+export function onPatientSavedAdded(state: TableContainerState, newPatient: PatientVM, oldPatient: PatientVM): TableContainerState {
     const editingList = state.editingList
         .map(p => {
             let newP;
@@ -318,7 +318,7 @@ export function onPatientSavedAdded(state: TableContainerState, newPatient: Pati
     };
 }
 
-export function onPatientSavedUpdated(state: TableContainerState, updatedPatient: Patient): TableContainerState {
+export function onPatientSavedUpdated(state: TableContainerState, updatedPatient: PatientVM): TableContainerState {
     const editingList = state.editingList
         .map(p => {
             let newP;
@@ -375,16 +375,16 @@ export function onPatientSavedDeleted(state: TableContainerState, deletedId: num
 
 export function loadPatients(
     delayedStoreDispatch: undefined | ((action: Actions.MyAction) => void),
-    currentTemplate: PatientSearchTemplate, currentListLength: number,
+    currentTemplate: PatientSearchTemplateVM, currentListLength: number,
     currentLoadCount: number) {
     myFetch(
         `patients/list?skip=${currentListLength}&take=${currentLoadCount}`,
         'POST',
         JSON.stringify(currentTemplate),
         (value: string) => {
-            const data = JSON.parse(value) as Patient[];
+            const data = JSON.parse(value) as PatientVM[];
             const append = currentListLength > 0;
-            const patients = data.map(el => Patient.from(el));
+            const patients = data.map(el => PatientVM.from(el));
             if (delayedStoreDispatch) {
                 delayedStoreDispatch(Actions.recievePatients(patients, append));
             }
@@ -393,7 +393,7 @@ export function loadPatients(
 
 function saveNextPatient(
     delayedStoreDispatch: undefined | ((action: Actions.MyAction) => void),
-    listToSave: Patient[], index: number) {
+    listToSave: PatientVM[], index: number) {
     while (
         index < listToSave.length &&
         listToSave[index].status === Status.Untouched
@@ -414,8 +414,8 @@ function saveNextPatient(
         case Status.Added:
             action = 'add';
             processResponseBody = (value: string) => {
-                const parsedModel = JSON.parse(value) as Patient;
-                const addedPatient = Patient.from(parsedModel);
+                const parsedModel = JSON.parse(value) as PatientVM;
+                const addedPatient = PatientVM.from(parsedModel);
 
                 console.log(`added '${addedPatient.toString()}'`);
                 if (delayedStoreDispatch) {
@@ -426,8 +426,8 @@ function saveNextPatient(
         case Status.Modified:
             action = 'update';
             processResponseBody = (value: string) => {
-                const parsedModel = JSON.parse(value) as Patient;
-                const updatedPatient = Patient.from(parsedModel);
+                const parsedModel = JSON.parse(value) as PatientVM;
+                const updatedPatient = PatientVM.from(parsedModel);
 
                 console.log(`updated '${updatedPatient.toString()}'`);
 
@@ -453,7 +453,7 @@ function saveNextPatient(
     myFetch(
         `patients/${action}`,
         'POST',
-        JSON.stringify(PatientDTO.from(listToSave[index])),
+        JSON.stringify(PatientDTM.from(listToSave[index])),
         (value: string) => {
             processResponseBody(value);
             saveNextPatient(delayedStoreDispatch, listToSave, index + 1);

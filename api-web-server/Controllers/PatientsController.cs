@@ -8,7 +8,7 @@ using Microsoft.AspNetCore.Http;
 using Newtonsoft.Json;
 using database;
 using database.Models;
-using api_web_server.ViewModels;
+using api_web_server.DataTransferModels;
 using api_web_server.ContextHelpers;
 
 namespace api_web_server
@@ -23,7 +23,7 @@ namespace api_web_server
         }
 
         [HttpGet("list")]
-        public IEnumerable<PatientVM> GetPatients()
+        public IEnumerable<PatientDTM> GetPatients()
         {
             List<Patient> ps = Patient
                 .IncludeFields(dbContext.Patients)
@@ -31,16 +31,16 @@ namespace api_web_server
                 .ToList();
 
             return ps
-                .Select(p => new PatientVM(p))
+                .Select(p => new PatientDTM(p))
                 .ToList();
         }
 
         [HttpGet("template")]
-        public PatientSearchTemplateVM GetTemplate()
+        public PatientSearchTemplateDTM GetTemplate()
         {
             List<FieldName> fns = dbContext.FieldNames.ToList();
 
-            var searchTemplate = new PatientSearchTemplateVM(fns);
+            var searchTemplate = new PatientSearchTemplateDTM(fns);
 
             return searchTemplate;
         }
@@ -48,53 +48,53 @@ namespace api_web_server
         [HttpPost("add")]
         public async Task<IActionResult> Add()
         {
-            var patientVM = await ReadModelFromBodyAsync<PatientVM>();
+            var patientDTM = await ReadModelFromBodyAsync<PatientDTM>();
 
-            if (patientVM.Status != Status.Added) return BadRequest("Status must be Added (0)");
+            if (patientDTM.Status != Status.Added) return BadRequest("Status must be Added (0)");
 
             List<FieldName> existingFieldNames = dbContext.FieldNames.ToList();
             Patient patient = new Patient();
-            patientVM.UpdateModel(patient, existingFieldNames);
+            patientDTM.UpdateModel(patient, existingFieldNames);
             dbContext.Patients.Add(patient);
 
             // save changes and update 'patient.Id' according to database 
             dbContext.SaveChanges(true);
-            patientVM.UpdateDatabaseId(patient);
+            patientDTM.UpdateDatabaseId(patient);
 
-            return Ok(patientVM);
+            return Ok(patientDTM);
         }
 
         [HttpPost("update")]
         public async Task<IActionResult> Update()
         {
-            var patientVM = await ReadModelFromBodyAsync<PatientVM>();
+            var patientDTM = await ReadModelFromBodyAsync<PatientDTM>();
 
-            if (patientVM.Status != Status.Modified) return BadRequest();
+            if (patientDTM.Status != Status.Modified) return BadRequest();
 
             List<FieldName> existingFieldNames = dbContext.FieldNames.ToList();
             Patient patient = dbContext.Patients
                 .Include(p => p.Fields)
                 .ThenInclude(f => f.Name)
-                .FirstOrDefault(p => p.Id == patientVM.Id);
+                .FirstOrDefault(p => p.Id == patientDTM.Id);
 
             if (patient == null) return NotFound();
 
-            patientVM.UpdateModel(patient, existingFieldNames);
+            patientDTM.UpdateModel(patient, existingFieldNames);
 
             dbContext.SaveChanges(true);
 
-            return Ok(patientVM);
+            return Ok(patientDTM);
         }
 
         [HttpPost("delete")]
         public async Task<IActionResult> Delete()
         {
-            var patientVM = await ReadModelFromBodyAsync<PatientVM>();
+            var patientDTM = await ReadModelFromBodyAsync<PatientDTM>();
 
-            if (patientVM.Status != Status.Deleted) return BadRequest();
+            if (patientDTM.Status != Status.Deleted) return BadRequest();
 
             Patient patient = dbContext.Patients
-                .FirstOrDefault(p => p.Id == patientVM.Id);
+                .FirstOrDefault(p => p.Id == patientDTM.Id);
 
             if (patient == null) return NotFound();
 
@@ -111,22 +111,22 @@ namespace api_web_server
             if (skip < 0) return BadRequest("skip must be >= 0");
             if (take < 0) return BadRequest("take must be >= 0");
 
-            var template = await ReadModelFromBodyAsync<PatientSearchTemplateVM>();
+            var template = await ReadModelFromBodyAsync<PatientSearchTemplateDTM>();
 
             var patients = MyContexthelper
                 .GetPatientsByTemplate(dbContext, template, skip, take);
 
-            var patientsVM = patients
-                .Select(p => new PatientVM(p))
+            var patientsDTM = patients
+                .Select(p => new PatientDTM(p))
                 .ToList();
 
-            return Ok(patientsVM);
+            return Ok(patientsDTM);
         }
 
         [HttpPost("variants")]
         public async Task<IActionResult> GetVariants(int fieldNameId, int maxCount)
         {
-            var template = await ReadModelFromBodyAsync<PatientSearchTemplateVM>();
+            var template = await ReadModelFromBodyAsync<PatientSearchTemplateDTM>();
 
             var fieldNames = MyContexthelper
                 .GetVariantsByTemplate(dbContext, template, fieldNameId, maxCount);

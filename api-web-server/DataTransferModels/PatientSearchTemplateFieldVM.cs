@@ -1,12 +1,12 @@
 using database.Models;
 using System.Collections.Generic;
 
-namespace api_web_server.ViewModels
+namespace api_web_server.DataTransferModels
 {
-    public class PatientSearchTemplateFieldVM
+    public class PatientSearchTemplateFieldDTM
     {
-        public PatientSearchTemplateFieldVM() { }
-        public PatientSearchTemplateFieldVM(FieldName fieldName)
+        public PatientSearchTemplateFieldDTM() { }
+        public PatientSearchTemplateFieldDTM(FieldName fieldName)
         {
             Name = fieldName.Value;
             NameId = fieldName.Id;

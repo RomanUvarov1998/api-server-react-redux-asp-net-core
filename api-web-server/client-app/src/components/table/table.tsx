@@ -2,7 +2,7 @@ import React from 'react';
 import classnames from 'classnames';
 import { Button, ButtonGroup, ButtonToolbar, Nav, NavItem, NavLink, TabContent, TabPane } from 'reactstrap';
 import { TableRaw, RawState } from '../table-raw/table-raw'
-import { Patient, FieldValue, SavingStatus, PatientSearchTemplate } from "../../library/patient";
+import { PatientVM, FieldValue, SavingStatus, PatientSearchTemplateVM } from "../../library/patient";
 import * as Actions from '../../store/actions';
 import { History } from '../../library/history'
 import { SearchTable } from '../search-table/search-table';
@@ -14,19 +14,19 @@ export type TableProps = {
     isWaitingPatientsList: boolean,
     isWaitingPatientFields: boolean,
 
-    patientTemplate: PatientSearchTemplate | null,
-    searchingList: Patient[],
+    patientTemplate: PatientSearchTemplateVM | null,
+    searchingList: PatientVM[],
     canLoadMore: boolean,
     loadCount: number,
-    onLoadMore: (template: PatientSearchTemplate, loadedCount: number, pageLength: number) => void,
+    onLoadMore: (template: PatientSearchTemplateVM, loadedCount: number, pageLength: number) => void,
     onSetSearchTemplate: (fieldNameId: number, newValue: FieldValue) => void,
     giveVariants: (fieldNameId: number, variants: string[]) => void,
     onClearTemplate: () => void,
-    addToEditingList: (patient: Patient) => void,
+    addToEditingList: (patient: PatientVM) => void,
 
-    editingList: Patient[],
-    editingPatient: Patient | null,
-    history: History<Patient>,
+    editingList: PatientVM[],
+    editingPatient: PatientVM | null,
+    history: History<PatientVM>,
     onAdd: () => Actions.ActionAddPatient,
     onStartEditing: (id: number) => Actions.ActionStartEditingPatient,
     onFinishEditing: (save: boolean) => Actions.ActionFinishEditingPatient,
@@ -34,7 +34,7 @@ export type TableProps = {
     onDelete: (id: number) => Actions.ActionDeletePatient,
     onUndo: () => Actions.ActionUndo,
     onRedo: () => Actions.ActionRedo,
-    savePatients: (patients: Patient[]) => Actions.ActionStartSaving,
+    savePatients: (patients: PatientVM[]) => Actions.ActionStartSaving,
     clearList: () => void
 }
 

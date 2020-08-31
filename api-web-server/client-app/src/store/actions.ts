@@ -1,4 +1,4 @@
-import { FieldValue, Patient, PatientSearchTemplate } from "../library/patient";
+import { FieldValue, PatientVM, PatientSearchTemplateVM } from "../library/patient";
 import { TabNums } from "../components/table/table";
 
 export const ACTION_CHANGE_TAB = 'ACTION_CHANGE_TAB';
@@ -45,10 +45,10 @@ export type MyAction =
 
 export type ActionChangeTab = { type: string, newTabNum: TabNums };
 export type ActionLoadMorePatients = { type: string };
-export type ActionRecievePatients = { type: string, patients: Patient[], append: boolean };
-export type ActionAddPatientToEditList = { type: string, patient: Patient };
+export type ActionRecievePatients = { type: string, patients: PatientVM[], append: boolean };
+export type ActionAddPatientToEditList = { type: string, patient: PatientVM };
 export type ActionClearList = { type: string };
-export type ActionRecievePatientFields = { type: string, patientTemplate: PatientSearchTemplate };
+export type ActionRecievePatientFields = { type: string, patientTemplate: PatientSearchTemplateVM };
 export type ActionAddPatient = { type: string };
 export type ActionStartEditingPatient = { type: string, patientId: number };
 export type ActionFinishEditingPatient = { type: string, save: boolean };
@@ -60,8 +60,8 @@ export type ActionClearSearchTemplate = { type: string };
 export type ActionUndo = { type: string };
 export type ActionRedo = { type: string };
 export type ActionStartSaving = { type: string };
-export type ActionSavedAdded = { type: string, newPatient: Patient, oldPatient: Patient };
-export type ActionSavedUpdated = { type: string, updatedPatient: Patient };
+export type ActionSavedAdded = { type: string, newPatient: PatientVM, oldPatient: PatientVM };
+export type ActionSavedUpdated = { type: string, updatedPatient: PatientVM };
 export type ActionSavedDeleted = { type: string, deletedId: number };
 
 export function changeTab(newTabNum: TabNums): ActionChangeTab {
@@ -75,14 +75,14 @@ export function loadMorePatients(): ActionLoadMorePatients {
         type: ACTION_LOAD_MORE_PATIENTS
     };
 }
-export function recievePatients(patients: Patient[], append: boolean): ActionRecievePatients {
+export function recievePatients(patients: PatientVM[], append: boolean): ActionRecievePatients {
     return {
         type: ACTION_RECIEVE_PATIENTS,
         patients,
         append
     };
 }
-export function addPatientToEditList(patient: Patient): ActionAddPatientToEditList {
+export function addPatientToEditList(patient: PatientVM): ActionAddPatientToEditList {
     return {
         type: ACTION_ADD_PATIENT_TO_EDIT_LIST,
         patient
@@ -93,7 +93,7 @@ export function clearList(): ActionClearList {
         type: ACTION_CLEAR_LIST,
     };
 }
-export function recievePatientFields(patientTemplate: PatientSearchTemplate): ActionRecievePatientFields {
+export function recievePatientFields(patientTemplate: PatientSearchTemplateVM): ActionRecievePatientFields {
     return {
         type: ACTION_RECIEVE_PATIENT_FIELDS,
         patientTemplate
@@ -164,14 +164,14 @@ export function startSaving(): ActionStartSaving {
         type: ACTION_START_SAVING
     };
 }
-export function savedAdded(newPatient: Patient, oldPatient: Patient): ActionSavedAdded {
+export function savedAdded(newPatient: PatientVM, oldPatient: PatientVM): ActionSavedAdded {
     return {
         type: ACTION_SAVED_ADDED,
         newPatient,
         oldPatient
     };
 }
-export function savedUpdated(updatedPatient: Patient): ActionSavedUpdated {
+export function savedUpdated(updatedPatient: PatientVM): ActionSavedUpdated {
     return {
         type: ACTION_SAVED_UPDATED,
         updatedPatient

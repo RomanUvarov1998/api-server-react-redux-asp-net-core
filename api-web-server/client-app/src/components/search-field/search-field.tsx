@@ -1,10 +1,10 @@
 import React, { useState } from 'react'
-import { FieldValue, PatientSearchTemplateField } from '../../library/patient';
+import { FieldValue, PatientSearchTemplateFieldVM } from '../../library/patient';
 import { Dropdown, DropdownToggle, DropdownMenu, DropdownItem } from 'reactstrap';
 
 export type SearchFieldProps = {
     frozen: boolean,
-    field: PatientSearchTemplateField,
+    field: PatientSearchTemplateFieldVM,
     onInput: (newValue: FieldValue) => void
 }
 
@@ -31,7 +31,10 @@ export function SearchField(props: SearchFieldProps) {
         <td>
             <Dropdown
                 isOpen={isOpen}
-                toggle={() => setIsOpen(!isOpen)}
+                toggle={() => {
+                    setIsOpen(true);
+                    props.onInput(props.field.value);
+                }}
             >
                 <DropdownToggle
                     caret={true}
@@ -40,11 +43,12 @@ export function SearchField(props: SearchFieldProps) {
                     <input
                         id={id}
                         value={props.field.value}
-                        onChange={(e) => {
+                        onChange={e => {
                             setIsOpen(true);
                             props.onInput(e.currentTarget.value);
                         }}
                         disabled={props.frozen}
+                        onBlur={() => setIsOpen(false)}
                     />
                 </DropdownToggle>
                 <DropdownMenu>

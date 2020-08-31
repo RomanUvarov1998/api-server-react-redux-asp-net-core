@@ -2,7 +2,7 @@ using System;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Collections.Generic;
-using api_web_server.ViewModels;
+using api_web_server.DataTransferModels;
 using database;
 using database.Models;
 
@@ -12,7 +12,7 @@ namespace api_web_server.ContextHelpers
     {
         public static List<Patient> GetPatientsByTemplate(
             MyContext dbContext,
-            PatientSearchTemplateVM template,
+            PatientSearchTemplateDTM template,
             int skip, int take)
         {
             var query = Patient.IncludeFields(dbContext.Patients);
@@ -28,7 +28,7 @@ namespace api_web_server.ContextHelpers
 
         public static List<string> GetVariantsByTemplate(
             MyContext dbContext,
-            PatientSearchTemplateVM template,
+            PatientSearchTemplateDTM template,
             int fieldNameId,
             int maxCount)
         {
@@ -48,7 +48,7 @@ namespace api_web_server.ContextHelpers
 
         private static IQueryable<Patient> GetPatientsQueryByTemplate(
             IQueryable<Patient> query,
-            PatientSearchTemplateVM template)
+            PatientSearchTemplateDTM template)
         {
             foreach (var field in template.Fields)
             {

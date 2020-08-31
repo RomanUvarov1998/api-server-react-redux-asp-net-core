@@ -5,7 +5,7 @@ import { TableContainer, TableContainerState } from './table-container/table-con
 import { configureStore } from '../store/my-store';
 import * as Actions from '../store/actions';
 import { History } from '../library/history';
-import { Patient, PatientSearchTemplate } from "../library/patient";
+import { PatientVM, PatientSearchTemplateVM } from "../library/patient";
 import { myFetch } from '../library/fetchHelper';
 import { Store } from 'redux';
 import { TabNums } from './table/table';
@@ -38,7 +38,7 @@ export class App extends React.Component<AppProps, AppState, {}> {
 
       editingList: [],
       editingPatient: null,
-      history: new History<Patient>(),
+      history: new History<PatientVM>(),
     };
     this.state = {
       store: configureStore(tableContainerState),
@@ -63,8 +63,8 @@ export class App extends React.Component<AppProps, AppState, {}> {
       'GET',
       undefined,
       value => {
-        const parsedModel = JSON.parse(value) as PatientSearchTemplate;
-        const patientTemplate = PatientSearchTemplate.from(parsedModel);
+        const parsedModel = JSON.parse(value) as PatientSearchTemplateVM;
+        const patientTemplate = PatientSearchTemplateVM.from(parsedModel);
         store.dispatch(Actions.recievePatientFields(patientTemplate));
 
         const curState = store.getState();

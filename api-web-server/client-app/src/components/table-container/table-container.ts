@@ -1,5 +1,5 @@
 import { connect } from 'react-redux'
-import { Patient, FieldValue, PatientSearchTemplate } from '../../library/patient';
+import { PatientVM, FieldValue, PatientSearchTemplateVM } from '../../library/patient';
 import { History } from '../../library/history';
 import * as Actions from '../../store/actions';
 import { Table, TabNums } from '../table/table';
@@ -10,23 +10,23 @@ export type TableContainerState = {
     isWaitingPatientsList: boolean,
     isWaitingPatientFields: boolean,
 
-    searchingList: Patient[],
-    patientTemplate: PatientSearchTemplate | null,
+    searchingList: PatientVM[],
+    patientTemplate: PatientSearchTemplateVM | null,
     canLoadMore: boolean,
     loadCount: number,
 
-    editingList: Patient[],
-    editingPatient: Patient | null,
-    history: History<Patient>,
+    editingList: PatientVM[],
+    editingPatient: PatientVM | null,
+    history: History<PatientVM>,
 }
 export type TableContainerDispatchProps = {
     onTabChange: (newTabNum: TabNums) => void,
 
-    onLoadMore: (template: PatientSearchTemplate, loadedCount: number, pageLength: number) => void,
+    onLoadMore: (template: PatientSearchTemplateVM, loadedCount: number, pageLength: number) => void,
     onSetSearchTemplate: (fieldNameId: number, newValue: FieldValue) => void,
     giveVariants: (fieldNameId: number, variants: string[]) => void,
     onClearTemplate: () => void,
-    addToEditingList: (patient: Patient) => void,
+    addToEditingList: (patient: PatientVM) => void,
 
     onAdd: () => Actions.ActionAddPatient,
     onStartEditing: (id: number) => Actions.ActionStartEditingPatient,
@@ -35,7 +35,7 @@ export type TableContainerDispatchProps = {
     onDelete: (id: number) => Actions.ActionDeletePatient,
     onUndo: () => Actions.ActionUndo,
     onRedo: () => Actions.ActionRedo,
-    savePatients: (patients: Patient[]) => Actions.ActionStartSaving,
+    savePatients: (patients: PatientVM[]) => Actions.ActionStartSaving,
     clearList: () => Actions.ActionClearList
 }
 export type TableContainerProps = {    

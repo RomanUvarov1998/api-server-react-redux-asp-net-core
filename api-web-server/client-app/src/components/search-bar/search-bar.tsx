@@ -1,11 +1,11 @@
 import React from 'react'
-import { FieldValue, PatientSearchTemplate, PatientSearchTemplateField } from '../../library/patient'
+import { FieldValue, PatientSearchTemplateVM, PatientSearchTemplateFieldVM } from '../../library/patient'
 import { SearchField } from '../search-field/search-field'
 import { Button } from 'reactstrap';
 
 export type SearchBarProps = {
     frozen: boolean,
-    patientTemplate: PatientSearchTemplate,
+    patientTemplate: PatientSearchTemplateVM,
     onSetSearchTemplate: (fieldNameId: number, newValue: FieldValue) => void,
     giveVariants: (fieldNameId: number, variants: string[]) => void,
     onClearTemplate: () => void
@@ -33,7 +33,7 @@ export function SearchBar(props: SearchBarProps) {
 
 function clearTemplateHandler(props: SearchBarProps) {
     if (props.patientTemplate.fields.reduce(
-        (previousValue: boolean, currentValue: PatientSearchTemplateField) => {
+        (previousValue: boolean, currentValue: PatientSearchTemplateFieldVM) => {
             return previousValue && currentValue.value === '';
         },
         true)

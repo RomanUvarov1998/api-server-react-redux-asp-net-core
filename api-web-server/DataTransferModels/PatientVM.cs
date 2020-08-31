@@ -3,26 +3,26 @@ using database.Models;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace api_web_server.ViewModels
+namespace api_web_server.DataTransferModels
 {
-    public class PatientVM
+    public class PatientDTM
     {
-        public PatientVM() { }
-        public PatientVM(Patient instance)
+        public PatientDTM() { }
+        public PatientDTM(Patient instance)
         {
             Fields = instance.Fields
-                .Select(f => new PatientFieldVM(f))
+                .Select(f => new PatientFieldDTM(f))
                 .ToList();
 
             Id = instance.Id;
             Status = Status.Untouched;
         }
-        public static PatientVM CreateEmpty(List<FieldName> fieldNames)
+        public static PatientDTM CreateEmpty(List<FieldName> fieldNames)
         {
-            PatientVM patient = new PatientVM()
+            PatientDTM patient = new PatientDTM()
             {
                 Fields = fieldNames
-                    .Select(fn => PatientFieldVM.CreateEmpty(fn))
+                    .Select(fn => PatientFieldDTM.CreateEmpty(fn))
                     .ToList(),
                 Id = 0
             };
@@ -33,7 +33,7 @@ namespace api_web_server.ViewModels
         {
             bool updated = false;
 
-            foreach (PatientFieldVM templateField in this.Fields)
+            foreach (PatientFieldDTM templateField in this.Fields)
             {
                 PatientField modelField = model.Fields
                     .FirstOrDefault(f => f.Name.Id == templateField.NameId);
@@ -62,7 +62,7 @@ namespace api_web_server.ViewModels
             this.Id = model.Id;
         }
 
-        public List<PatientFieldVM> Fields { get; set; }
+        public List<PatientFieldDTM> Fields { get; set; }
 
         public int Id { get; set; }
         public Status Status { get; set; }

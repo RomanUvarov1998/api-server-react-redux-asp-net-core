@@ -1,6 +1,6 @@
 import React from "react";
 import { RawCell } from "../raw-cell/raw-cell";
-import { Patient, FieldValue, PatientField, SavingStatus, PatientSearchTemplate } from "../../library/patient";
+import { PatientVM, FieldValue, PatientFieldDTM, SavingStatus, PatientSearchTemplateVM } from "../../library/patient";
 import { Status } from "../../library/history";
 
 export enum RawState {
@@ -9,8 +9,8 @@ export enum RawState {
     Frozen
 }
 export type TableRawProps = {
-    patientTemplate: PatientSearchTemplate,
-    patient: Patient,
+    patientTemplate: PatientSearchTemplateVM,
+    patient: PatientVM,
     editState: RawState,
     onEdit: (id: number, fieldNameId: number, newValue: FieldValue) => void,
     onStartEditing: (id: number) => void,
@@ -30,7 +30,7 @@ export function TableRaw(props: TableRawProps) {
                         newValue =>
                             props.onEdit(
                                 props.patient.id,
-                                (field as PatientField).nameId,
+                                (field as PatientFieldDTM).nameId,
                                 newValue
                             )
                     }
@@ -100,7 +100,7 @@ function getBtnDeleteOrCancel(props: TableRawProps): JSX.Element {
     );
 }
 
-function statusToString(patient: Patient): string {
+function statusToString(patient: PatientVM): string {
     let status;
 
     if (patient.savingStatus === SavingStatus.Saving) {

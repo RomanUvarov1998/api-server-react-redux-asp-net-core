@@ -1,21 +1,21 @@
 import React from 'react';
-import { Patient, PatientSearchTemplate } from '../../library/patient'
+import { PatientVM, PatientSearchTemplateVM } from '../../library/patient'
 import { SearchBar } from '../search-bar/search-bar';
 import { Button } from 'reactstrap';
 
 export type SearchTableProps = {
-    addToEditingList: (patient: Patient) => void,
+    addToEditingList: (patient: PatientVM) => void,
     isWaitingPatientsList: boolean,
     isWaitingPatientFields: boolean,
-    patientsList: Patient[],
-    isInEditingList: (patient: Patient) => boolean,
-    patientTemplate: PatientSearchTemplate | null,
+    patientsList: PatientVM[],
+    isInEditingList: (patient: PatientVM) => boolean,
+    patientTemplate: PatientSearchTemplateVM | null,
     canLoadMore: boolean,
     loadCount: number,
     onSetSearchTemplate: (fieldNameId: number, newValue: string) => void,
     giveVariants: (fieldNameId: number, variants: string[]) => void,
     onClearTemplate: () => void,
-    onLoadMore: (template: PatientSearchTemplate, loadedCount: number, pageLength: number) => void
+    onLoadMore: (template: PatientSearchTemplateVM, loadedCount: number, pageLength: number) => void
 }
 
 export function SearchTable(props: SearchTableProps): JSX.Element {
