@@ -1,9 +1,11 @@
-﻿using Microsoft.EntityFrameworkCore;
-using database.Models;
-using System.Linq;
+﻿using System.Linq;
 using System.Collections.Generic;
 using System;
 using System.Text;
+using Microsoft.Extensions.Logging;
+using Microsoft.EntityFrameworkCore;
+using database.Models;
+using Microsoft.Data.SqlClient;
 
 namespace database
 {
@@ -20,58 +22,61 @@ namespace database
             {
                 Console.WriteLine("No database found, so a new database was created");
             }
-
-            if (!Patients.Any())
-            {
-                var name = new FieldName() { Value = "Имя" };
-                var surname = new FieldName() { Value = "Фамилия" };
-                var patronimyc = new FieldName() { Value = "Отчество" };
-
-                FieldNames.AddRange(name, surname, patronimyc);
-
-                SaveChanges();
-
-                char[] chars = "йцукенгшщзхъфывапролджэячсмитьбю".ToCharArray();
-                Random rng = new Random();
-                string getWord(int length) {
-                    var sb = new StringBuilder(string.Empty);
-                    for (int i = 0; i < length; ++i)
-                        sb.Append(chars[rng.Next(chars.Length)]);
-                    return sb.ToString();
-                }
-
-                var patientsToAdd = new List<Patient>();
-                for (int i = 0; i < 100; i++)
-                {
-                    patientsToAdd.Add(
-                        new Patient(
-                            new PatientField(name, getWord(10)),
-                            new PatientField(surname, getWord(10)),
-                            new PatientField(patronimyc, getWord(10))
-                        )
-                    );
-                }
-
-                Patients.AddRange(patientsToAdd);
-
-                SaveChanges();
-            }
         }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
+
             modelBuilder.Entity<Patient>()
-                .HasMany(p => p.Fields)
-                .WithOne(pf => pf.Patient)
-                .HasForeignKey(p => p.PatientId);
+                    .HasMany(p => p.Fields)
+                    .WithOne(pf => pf.Patient)
+                    .HasForeignKey(p => p.PatientId);
 
             modelBuilder.Entity<PatientField>()
-                .HasKey(pf => new { pf.PatientId, pf.NameId });
+                        .HasKey(pf => new
+                        {
+                            pf.PatientId,
+                            pf.NameId
+                        });
 
             modelBuilder.Entity<PatientField>()
                 .HasOne(p => p.Name)
                 .WithMany()
                 .HasForeignKey(p => p.NameId);
+
+            var fieldNames = new string[] { "Имя", "Фамилия", "Отчество" }
+                .Select((n, index) => new FieldName() { Id = index + 1, Value = n })
+                .ToList();
+            var patients = new List<Patient>();
+            var patientFields = new List<PatientField>();
+
+            char[] chars = "йцукенгшщзхъфывапролджэячсмитьбюЙЦУКЕНГШЩЗХЪФЫВАПРОЛДЖЭЯЧСМИТЬБЮ".ToCharArray();
+            var rng = new Random();
+            string getWord(int length)
+            {
+                var sb = new StringBuilder(string.Empty);
+                for (int i = 0; i < length; ++i)
+                    sb.Append(chars[rng.Next(chars.Length)]);
+                return sb.ToString();
+            }
+
+            int patientsCount = 100;
+            for (int patientId = 1; patientId <= patientsCount; patientId++)
+            {
+                patients.Add(new Patient() { Id = patientId });
+                patientFields.AddRange(
+                    fieldNames.Select(fn =>
+                        new PatientField()
+                        {
+                            PatientId = patientId,
+                            NameId = fn.Id,
+                            Value = getWord(10)
+                        }));
+            }
+
+            modelBuilder.Entity<Patient>().HasData(patients);
+            modelBuilder.Entity<PatientField>().HasData(patientFields);
+            modelBuilder.Entity<FieldName>().HasData(fieldNames);
         }
     }
 }
