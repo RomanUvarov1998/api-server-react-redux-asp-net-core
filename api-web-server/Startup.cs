@@ -6,6 +6,7 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.AspNetCore.SpaServices.ReactDevelopmentServer;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 using database;
 
 namespace api_web_server
@@ -32,32 +33,38 @@ namespace api_web_server
             });
 
             string databaseProvider = Configuration["CustomChosenDB"];
-            switch (databaseProvider)
+            string connectionString = Configuration.GetConnectionString(databaseProvider);
+            DbContextOptionsBuilder setDatabase(DbContextOptionsBuilder options) 
             {
-                case "SQLite":
-                    services.AddDbContext<MyContext>(
-                        options => options.UseSqlite(
-                            Configuration.GetConnectionString(databaseProvider)
-                        )
-                    );
-                    break;
-                case "MSSqlServer":
-                    services.AddDbContext<MyContext>(
-                        options => options.UseSqlServer(
-                            Configuration.GetConnectionString(databaseProvider)
-                        )
-                    );
-                    break;
-                default:
-                    throw new Exception("Необходимо установить строку подключения в appsettings.json в поле 'CustomChosenDB'");
+                switch (databaseProvider) {
+                    case "SQLite": return options.UseSqlite(connectionString);
+                    case "MSSqlServer": return options.UseSqlServer(connectionString);
+                    default:
+                        throw new Exception("Необходимо установить строку подключения в appsettings.json в поле 'CustomChosenDB'");
+                }
             }
+
+            services.AddDbContext<MyContext>(
+                options => setDatabase(options)
+                .UseLoggerFactory(MyLoggerFactory)
+                .EnableSensitiveDataLogging());
 
             services.AddCors();
         }
         public IConfiguration Configuration { get; }
+        public static readonly ILoggerFactory MyLoggerFactory
+            = LoggerFactory.Create(builder =>
+            {
+                builder.AddConsole();
+            });
+
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
-        public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
+        public void Configure(
+            IApplicationBuilder app,
+            IWebHostEnvironment env,
+            ILogger<Startup> logger
+            )
         {
             if (env.IsDevelopment())
             {
@@ -78,6 +85,7 @@ namespace api_web_server
 
             app.UseEndpoints(endpoints =>
             {
+                // logger.LogTrace($"Request path: {endpoints.con}", 3);                
                 endpoints.MapControllerRoute(
                     name: "default",
                     pattern: "{controller=Patients}/{action}");
