@@ -7,6 +7,8 @@ api-web-server/obj/
 database/bin/
 database/obj/
 
+testing/
+
 api-web-server/*.db
 api-web-server/*.db-shm
 api-web-server/*.db-wal

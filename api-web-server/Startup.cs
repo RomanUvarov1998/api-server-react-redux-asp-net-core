@@ -1,4 +1,5 @@
 using System;
+using Microsoft.Data.Sqlite;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.DependencyInjection;
@@ -34,10 +35,16 @@ namespace api_web_server
 
             string databaseProvider = Configuration["CustomChosenDB"];
             string connectionString = Configuration.GetConnectionString(databaseProvider);
-            DbContextOptionsBuilder setDatabase(DbContextOptionsBuilder options) 
+            DbContextOptionsBuilder setDatabase(DbContextOptionsBuilder options)
             {
-                switch (databaseProvider) {
-                    case "SQLite": return options.UseSqlite(connectionString);
+                switch (databaseProvider)
+                {
+                    case "SQLite":
+                        var connection = new SqliteConnection(connectionString);
+                        // replace standart lower() function with the new one
+                        connection.CreateFunction("lower",
+                            (string s) => s.ToLowerInvariant());
+                        return options.UseSqlite(connection);
                     case "MSSqlServer": return options.UseSqlServer(connectionString);
                     default:
                         throw new Exception("Необходимо установить строку подключения в appsettings.json в поле 'CustomChosenDB'");
@@ -62,8 +69,7 @@ namespace api_web_server
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
         public void Configure(
             IApplicationBuilder app,
-            IWebHostEnvironment env,
-            ILogger<Startup> logger
+            IWebHostEnvironment env
             )
         {
             if (env.IsDevelopment())
@@ -85,7 +91,6 @@ namespace api_web_server
 
             app.UseEndpoints(endpoints =>
             {
-                // logger.LogTrace($"Request path: {endpoints.con}", 3);                
                 endpoints.MapControllerRoute(
                     name: "default",
                     pattern: "{controller=Patients}/{action}");

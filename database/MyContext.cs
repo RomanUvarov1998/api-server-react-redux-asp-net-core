@@ -2,10 +2,8 @@
 using System.Collections.Generic;
 using System;
 using System.Text;
-using Microsoft.Extensions.Logging;
 using Microsoft.EntityFrameworkCore;
 using database.Models;
-using Microsoft.Data.SqlClient;
 
 namespace database
 {
@@ -31,14 +29,12 @@ namespace database
                     .HasMany(p => p.Fields)
                     .WithOne(pf => pf.Patient)
                     .HasForeignKey(p => p.PatientId);
-
             modelBuilder.Entity<PatientField>()
                         .HasKey(pf => new
                         {
                             pf.PatientId,
                             pf.NameId
                         });
-
             modelBuilder.Entity<PatientField>()
                 .HasOne(p => p.Name)
                 .WithMany()
