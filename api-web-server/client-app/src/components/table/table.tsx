@@ -77,18 +77,10 @@ export class Table extends React.Component<TableProps, {}, {}> {
 
             tableBodyRows = this.props.editingList
                 .map((patient, ind) => {
-                    let editingStatus: RawState;
-
-                    if (isSavingSomething) {
-                        editingStatus = RawState.Frozen;
-                    } else if (editingId) {
-                        editingStatus =
-                            (editingId === patient.id) ?
-                                RawState.Editing :
-                                RawState.Frozen;
-                    } else {
-                        editingStatus = RawState.Saved;
-                    }
+                    const editingStatus =
+                        isSavingSomething ?
+                            RawState.Frozen :
+                            RawState.Editing;
 
                     return (
                         <TableRaw
@@ -102,8 +94,8 @@ export class Table extends React.Component<TableProps, {}, {}> {
                             }
                             editState={editingStatus}
                             onEdit={this.props.onEdit}
-                            onStartEditing={this.props.onStartEditing}
-                            onFinishEditing={this.props.onFinishEditing}
+                            onCellFocus={() => this.cellFocusHandler(patient.id)}
+                            onCellBlur={() => this.cellBlurHandler(patient.id)}
                             onDelete={this.props.onDelete}
                         />
                     );
@@ -185,8 +177,8 @@ export class Table extends React.Component<TableProps, {}, {}> {
                                     disabled={
                                         isLoadingSomething ||
                                         !this.props.history.canUndo() ||
-                                        isSavingSomething ||
-                                        this.props.editingPatient !== null
+                                        isSavingSomething || false
+                                        // this.props.editingPatient !== null
                                     }
                                 >{"Undo"}</Button>
                                 <Button
@@ -194,8 +186,8 @@ export class Table extends React.Component<TableProps, {}, {}> {
                                     disabled={
                                         isLoadingSomething ||
                                         !this.props.history.canRedo() ||
-                                        isSavingSomething ||
-                                        this.props.editingPatient !== null
+                                        isSavingSomething || false
+                                        // this.props.editingPatient !== null
                                     }
                                 >{"Redo"}</Button>
                             </ButtonGroup>
@@ -207,7 +199,7 @@ export class Table extends React.Component<TableProps, {}, {}> {
                                         this.props.editingPatient !== null ||
                                         isSavingSomething
                                     }
-                                >Новый</Button>
+                                >Добавить</Button>
                             </ButtonGroup>
                         </ButtonToolbar>
                         <div
@@ -226,5 +218,21 @@ export class Table extends React.Component<TableProps, {}, {}> {
                 </TabContent>
             </>
         );
+    }
+
+    private cellFocusHandler = (id: number) => {
+        if (this.props.editingPatient && this.props.editingPatient.id !== id) {
+            this.props.onFinishEditing(true);
+            this.props.onStartEditing(id);
+        } else if (!this.props.editingPatient) {
+            this.props.onStartEditing(id);
+        }
+        console.log('focus');
+    }
+
+    private cellBlurHandler = (id: number) => {
+        if (!this.props.editingPatient) throw new Error('No editing patient!');
+        console.log('blur');
+        this.props.onFinishEditing(true);
     }
 }

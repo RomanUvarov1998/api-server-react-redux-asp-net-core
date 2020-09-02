@@ -3,23 +3,24 @@ import React from "react"
 export type RawCellProps = {
     setEntityValue: (v: string) => void,
     value: string,
-    isEditing: boolean
+    disabled: boolean
+    onFocus: () => void,
+    onBlur: () => void,
 }
 
 export function RawCell(props: RawCellProps) {
-    if (props.isEditing) {
-        return (
-            <td>
-                <input
-                    type={"text"}
-                    value={props.value}
-                    onChange={(e) => onChange(e, props)}
-                />
-            </td>
-        );
-    } else {
-        return (<td>{props.value}</td>);
-    }
+    return (
+        <td>
+            <input
+                type={"text"}
+                value={props.value}
+                onChange={(e) => onChange(e, props)}
+                disabled={props.disabled}
+                onFocus={props.onFocus}
+                onBlur={props.onBlur}
+            />
+        </td>
+    );
 }
 
 function onChange(e: React.FormEvent<HTMLInputElement>, props: RawCellProps) {
