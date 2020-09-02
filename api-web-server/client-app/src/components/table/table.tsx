@@ -27,7 +27,7 @@ export type TableProps = {
     editingList: PatientVM[],
     editingPatient: PatientVM | null,
     history: History<PatientVM>,
-    onAdd: () => Actions.ActionAddPatient,
+    onAdd: (filledTemplate?: PatientSearchTemplateVM | undefined) => Actions.ActionAddPatient,
     onStartEditing: (id: number) => Actions.ActionStartEditingPatient,
     onFinishEditing: (save: boolean) => Actions.ActionFinishEditingPatient,
     onEdit: (id: number, fieldNameId: number, newValue: FieldValue) => Actions.ActionEditPatient,
@@ -151,6 +151,7 @@ export class Table extends React.Component<TableProps, {}, {}> {
                             onClearTemplate={this.props.onClearTemplate}
                             onLoadMore={this.props.onLoadMore}
                             isInEditingList={p => this.props.editingList.some(ep => ep.equals(p))}
+                            onAdd={this.props.onAdd}
                         />
                     </TabPane>
                     <TabPane tabId={TabNums.Editing}>
@@ -159,7 +160,7 @@ export class Table extends React.Component<TableProps, {}, {}> {
                             <ButtonGroup>
                                 <Button
                                     onClick={() => this.props
-                                            .savePatients(this.props.editingList)}
+                                        .savePatients(this.props.editingList)}
                                     disabled={
                                         isLoadingSomething ||
                                         !this.props.history.hasSomethingToSave() ||
@@ -172,7 +173,7 @@ export class Table extends React.Component<TableProps, {}, {}> {
                                 <Button
                                     onClick={() => this.props.clearList()}
                                     disabled={
-                                        !canClearList || 
+                                        !canClearList ||
                                         this.props.editingList.length === 0 ||
                                         this.props.editingPatient !== null
                                     }
@@ -200,7 +201,7 @@ export class Table extends React.Component<TableProps, {}, {}> {
                             </ButtonGroup>
                             <ButtonGroup>
                                 <Button
-                                    onClick={this.props.onAdd}
+                                    onClick={() => this.props.onAdd()}
                                     disabled={
                                         isLoadingSomething ||
                                         this.props.editingPatient !== null ||

@@ -49,7 +49,7 @@ export type ActionRecievePatients = { type: string, patients: PatientVM[], appen
 export type ActionAddPatientToEditList = { type: string, patient: PatientVM };
 export type ActionClearList = { type: string };
 export type ActionRecievePatientFields = { type: string, patientTemplate: PatientSearchTemplateVM };
-export type ActionAddPatient = { type: string };
+export type ActionAddPatient = { type: string, filledTemplate: PatientSearchTemplateVM | undefined };
 export type ActionStartEditingPatient = { type: string, patientId: number };
 export type ActionFinishEditingPatient = { type: string, save: boolean };
 export type ActionEditPatient = { type: string, patientId: number, fieldNameId: number, newValue: FieldValue };
@@ -99,9 +99,10 @@ export function recievePatientFields(patientTemplate: PatientSearchTemplateVM): 
         patientTemplate
     };
 }
-export function add(): ActionAddPatient {
+export function add(filledTemplate: PatientSearchTemplateVM | undefined = undefined): ActionAddPatient {
     return {
-        type: ACTION_ADD_PATIENT
+        type: ACTION_ADD_PATIENT,
+        filledTemplate
     };
 }
 export function startEditing(patientId: number): ActionStartEditingPatient {

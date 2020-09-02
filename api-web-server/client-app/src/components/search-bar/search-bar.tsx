@@ -1,14 +1,15 @@
 import React from 'react'
 import { FieldValue, PatientSearchTemplateVM, PatientSearchTemplateFieldVM } from '../../library/patient'
 import { SearchField } from '../search-field/search-field'
-import { Button } from 'reactstrap';
+import { Button, ButtonToolbar } from 'reactstrap';
 
 export type SearchBarProps = {
     frozen: boolean,
     patientTemplate: PatientSearchTemplateVM,
     onSetSearchTemplate: (fieldNameId: number, newValue: FieldValue) => void,
     giveVariants: (fieldNameId: number, variants: string[]) => void,
-    onClearTemplate: () => void
+    onClearTemplate: () => void,
+    onAdd: (template: PatientSearchTemplateVM) => void
 }
 
 export function SearchBar(props: SearchBarProps) {
@@ -25,7 +26,10 @@ export function SearchBar(props: SearchBarProps) {
     return (
         <>
             <h1>Поиск</h1>
-            <Button onClick={() => clearTemplateHandler(props)}>Очистить фильтр</Button>
+            <ButtonToolbar>
+                <Button onClick={() => clearTemplateHandler(props)}>Очистить фильтр</Button>
+                <Button onClick={() => props.onAdd(props.patientTemplate)}>Добавить</Button>
+            </ButtonToolbar>
             <table><thead><tr>{searchFields}</tr></thead></table>
         </>
     );

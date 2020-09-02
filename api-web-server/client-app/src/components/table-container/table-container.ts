@@ -28,7 +28,7 @@ export type TableContainerDispatchProps = {
     onClearTemplate: () => void,
     addToEditingList: (patient: PatientVM) => void,
 
-    onAdd: () => Actions.ActionAddPatient,
+    onAdd: (filledTemplate?: PatientSearchTemplateVM | undefined) => Actions.ActionAddPatient,
     onStartEditing: (id: number) => Actions.ActionStartEditingPatient,
     onFinishEditing: (save: boolean) => Actions.ActionFinishEditingPatient,
     onEdit: (id: number, fieldNameId: number, newValue: FieldValue) => Actions.ActionEditPatient,

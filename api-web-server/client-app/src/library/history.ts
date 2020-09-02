@@ -66,9 +66,13 @@ export class History<Item extends IHistoryItem<Item>> {
             listBefore,
             {
                 redo: list => {
-                    let pat = list.find(p => p.equals(deletedItemCopy));
-                    pat!.status = Status.Deleted;
-                    return copyList(list);
+                    if (deletedItemCopy.status === Status.Added) {
+                        return copyList(list).filter(p => !p.equals(deletedItemCopy));
+                    } else {
+                        let pat = list.find(p => p.equals(deletedItemCopy));
+                        pat!.status = Status.Deleted;
+                        return copyList(list);
+                    }
                 },
                 undo: list => {
                     if (deletedItemCopy.status === Status.Added) {

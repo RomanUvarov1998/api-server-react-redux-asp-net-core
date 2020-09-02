@@ -28,7 +28,8 @@ export function configureStore(initialState: TableContainerState) {
                 a = action as Actions.ActionRecievePatientFields;
                 return Reducers.onRecievePatientFields(state, a.patientTemplate);
             case Actions.ACTION_ADD_PATIENT:
-                return Reducers.onAdd(state);
+                a = action as Actions.ActionAddPatient;
+                return Reducers.onAdd(state, a.filledTemplate);
             case Actions.ACTION_START_EDIT_PATIENT:
                 a = action as Actions.ActionStartEditingPatient;
                 return Reducers.onStartEditing(state, a.patientId);

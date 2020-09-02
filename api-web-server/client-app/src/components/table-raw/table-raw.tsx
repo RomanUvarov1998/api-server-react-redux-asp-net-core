@@ -83,14 +83,14 @@ function getBtnDeleteOrCancel(props: TableRawProps): JSX.Element {
     return (
         props.editState === RawState.Editing ?
             (<button
-                onClick={e => props.onFinishEditing(false)}
+                onClick={() => props.onFinishEditing(false)}
                 disabled={
                     props.patient.status === Status.Deleted ||
                     props.patient.savingStatus === SavingStatus.Saving
                 }
             >Отмена</button>) :
             (<button
-                onClick={e => props.onDelete(props.patient.id)}
+                onClick={() => props.onDelete(props.patient.id)}
                 disabled={
                     props.editState === RawState.Frozen ||
                     props.patient.status === Status.Deleted ||

@@ -15,7 +15,8 @@ export type SearchTableProps = {
     onSetSearchTemplate: (fieldNameId: number, newValue: string) => void,
     giveVariants: (fieldNameId: number, variants: string[]) => void,
     onClearTemplate: () => void,
-    onLoadMore: (template: PatientSearchTemplateVM, loadedCount: number, pageLength: number) => void
+    onLoadMore: (template: PatientSearchTemplateVM, loadedCount: number, pageLength: number) => void,
+    onAdd: (template: PatientSearchTemplateVM) => void
 }
 
 export function SearchTable(props: SearchTableProps): JSX.Element {
@@ -38,6 +39,7 @@ export function SearchTable(props: SearchTableProps): JSX.Element {
                 onSetSearchTemplate={props.onSetSearchTemplate}
                 giveVariants={props.giveVariants}
                 onClearTemplate={props.onClearTemplate}
+                onAdd={props.onAdd}
             />
         );
     } else {

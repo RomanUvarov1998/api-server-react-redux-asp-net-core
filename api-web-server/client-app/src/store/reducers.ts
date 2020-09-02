@@ -1,6 +1,8 @@
-import { PatientVM, FieldValue, SavingStatus, PatientFieldDTM, 
-    PatientSearchTemplateVM, 
-    PatientDTM} from "../library/patient";
+import {
+    PatientVM, FieldValue, SavingStatus, PatientFieldDTM,
+    PatientSearchTemplateVM,
+    PatientDTM
+} from "../library/patient";
 import { Status, copyList } from "../library/history";
 import { TableContainerState } from '../components/table-container/table-container'
 import { TabNums } from "../components/table/table";
@@ -85,12 +87,17 @@ export function onRecievePatientFields(state: TableContainerState, patientTempla
     }
 }
 
-export function onAdd(state: TableContainerState): TableContainerState {
+export function onAdd(state: TableContainerState, filledTemplate: PatientSearchTemplateVM | undefined): TableContainerState {
     if (!state.patientTemplate) return state;
     if (state.editingPatient !== null) return state;
 
+    const fields =
+        filledTemplate ?
+            filledTemplate.fields.map(f => new PatientFieldDTM(f.name, f.value, f.nameId)) :
+            state.patientTemplate.fields.map(f => new PatientFieldDTM(f.name, '', f.nameId));
+
     const newPatient = new PatientVM(
-        state.patientTemplate.fields.map(f => new PatientFieldDTM(f.name, '', f.nameId)),
+        fields,
         -1,
         Status.Added
     );
@@ -107,7 +114,8 @@ export function onAdd(state: TableContainerState): TableContainerState {
     return ({
         ...state,
         editingPatient,
-        editingList
+        editingList,
+        tabNum: TabNums.Editing
     })
 }
 
