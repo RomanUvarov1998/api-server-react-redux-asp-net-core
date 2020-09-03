@@ -1,6 +1,5 @@
-import React, { useState } from 'react'
+import React from 'react'
 import { FieldValue, PatientSearchTemplateFieldVM } from '../../library/patient';
-import { Dropdown, DropdownToggle, DropdownMenu, DropdownItem } from 'reactstrap';
 
 export type SearchFieldProps = {
     frozen: boolean,
@@ -9,52 +8,37 @@ export type SearchFieldProps = {
 }
 
 export function SearchField(props: SearchFieldProps) {
-    const [isOpen, setIsOpen] = useState(false);
-
-    const items =
-        props.field.variants.length ?
-            props.field.variants
+    const items = props.field.variants
                 .map((v, ind) => (
-                    <DropdownItem
+                    <option
                         key={ind}
-                        onClick={() => {
-                            props.onInput(v);
-                            setIsOpen(false);
-                        }}
-                    >{v}</DropdownItem>
-                )) :
-            (<DropdownItem header>Не найдено</DropdownItem>);
+                        onClick={() => props.onInput(v)}
+                    >{v}</option>
+                ));
 
-    const id = `searchField${props.field.nameId}`;
+    console.log(items.length);
+
+    const inputId = `input${props.field.nameId}`;
+    const datalistId = `datalist${props.field.nameId}`;
 
     return (
-        <td>
-            <Dropdown
-                isOpen={isOpen}
-                toggle={() => {
-                    setIsOpen(true);
-                    props.onInput(props.field.value);
-                }}
-            >
-                <DropdownToggle
-                    caret={true}
-                >
-                    <label htmlFor={id} style={{ display: 'block' }}>{props.field.name}</label>
-                    <input
-                        id={id}
-                        value={props.field.value}
-                        onChange={e => {
-                            setIsOpen(true);
-                            props.onInput(e.currentTarget.value);
-                        }}
-                        disabled={props.frozen}
-                        onBlur={() => setIsOpen(false)}
-                    />
-                </DropdownToggle>
-                <DropdownMenu>
-                    {items}
-                </DropdownMenu>
-            </Dropdown>
+        <td>        
+            <label 
+                htmlFor={inputId}
+                style={{display: "block"}}
+            >{props.field.name}</label>    
+            <input
+                id={inputId}
+                value={props.field.value}
+                onFocus={() => props.onInput(props.field.value)}
+                onClick={() => props.onInput(props.field.value)}
+                onChange={e => props.onInput(e.currentTarget.value)}
+                disabled={props.frozen}
+                list={datalistId}
+            />
+            <datalist id={datalistId}>
+                {items}
+            </datalist>
         </td>
     );
 }
