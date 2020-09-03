@@ -4,8 +4,7 @@ import { Provider } from 'react-redux';
 import { TableContainer, TableContainerState } from './table-container/table-container';
 import { configureStore } from '../store/my-store';
 import * as Actions from '../store/actions';
-import { History } from '../library/history';
-import { PatientVM, PatientSearchTemplateVM } from "../library/patient";
+import { PatientSearchTemplateVM } from "../library/patient";
 import { myFetch } from '../library/fetchHelper';
 import { Store } from 'redux';
 import { TabNums } from './table/table';
@@ -37,8 +36,6 @@ export class App extends React.Component<AppProps, AppState, {}> {
       loadCount: 10,
 
       editingList: [],
-      editingPatient: null,
-      history: new History<PatientVM>(),
     };
     this.state = {
       store: configureStore(tableContainerState),

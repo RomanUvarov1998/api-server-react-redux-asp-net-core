@@ -16,8 +16,6 @@ export function SearchField(props: SearchFieldProps) {
                     >{v}</option>
                 ));
 
-    console.log(items.length);
-
     const inputId = `input${props.field.nameId}`;
     const datalistId = `datalist${props.field.nameId}`;
 

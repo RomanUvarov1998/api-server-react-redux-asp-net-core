@@ -1,6 +1,5 @@
 import { connect } from 'react-redux'
 import { PatientVM, FieldValue, PatientSearchTemplateVM } from '../../library/patient';
-import { History } from '../../library/history';
 import * as Actions from '../../store/actions';
 import { Table, TabNums } from '../table/table';
 
@@ -15,9 +14,7 @@ export type TableContainerState = {
     canLoadMore: boolean,
     loadCount: number,
 
-    editingList: PatientVM[],
-    editingPatient: PatientVM | null,
-    history: History<PatientVM>,
+    editingList: PatientVM[]
 }
 export type TableContainerDispatchProps = {
     onTabChange: (newTabNum: TabNums) => void,
@@ -29,12 +26,8 @@ export type TableContainerDispatchProps = {
     addToEditingList: (patient: PatientVM) => void,
 
     onAdd: (filledTemplate?: PatientSearchTemplateVM | undefined) => Actions.ActionAddPatient,
-    onStartEditing: (id: number) => Actions.ActionStartEditingPatient,
-    onFinishEditing: (save: boolean) => Actions.ActionFinishEditingPatient,
-    onEdit: (id: number, fieldNameId: number, newValue: FieldValue) => Actions.ActionEditPatient,
+    onEdit: (patientCopy: PatientVM, fieldNameId: number, newValue: FieldValue) => Actions.ActionEditPatient,
     onDelete: (id: number) => Actions.ActionDeletePatient,
-    onUndo: () => Actions.ActionUndo,
-    onRedo: () => Actions.ActionRedo,
     savePatients: (patients: PatientVM[]) => Actions.ActionStartSaving,
 }
 export type TableContainerProps = {    
@@ -53,9 +46,7 @@ const mapStateToProps = (state: TableContainerState): TableContainerState => {
         canLoadMore: state.canLoadMore, 
         loadCount: state.loadCount, 
 
-        editingList: state.editingList,
-        editingPatient: state.editingPatient,
-        history: state.history,
+        editingList: state.editingList
     }
 };
 
@@ -69,12 +60,8 @@ const mapDispatchToProps: TableContainerDispatchProps = {
     addToEditingList: Actions.addPatientToEditList,
 
     onAdd: Actions.add,
-    onStartEditing: Actions.startEditing,
-    onFinishEditing: Actions.finishEditing,
     onEdit: Actions.edit,
     onDelete: Actions.del,
-    onUndo: Actions.undo,
-    onRedo: Actions.redo,
     savePatients: Actions.startSaving,
 };
 

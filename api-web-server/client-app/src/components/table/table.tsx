@@ -4,7 +4,6 @@ import { Button, ButtonGroup, ButtonToolbar, Nav, NavItem, NavLink, TabContent, 
 import { TableRaw, RawState } from '../table-raw/table-raw'
 import { PatientVM, FieldValue, SavingStatus, PatientSearchTemplateVM } from "../../library/patient";
 import * as Actions from '../../store/actions';
-import { History } from '../../library/history'
 import { SearchTable } from '../search-table/search-table';
 
 export type TableProps = {
@@ -25,15 +24,9 @@ export type TableProps = {
     addToEditingList: (patient: PatientVM) => void,
 
     editingList: PatientVM[],
-    editingPatient: PatientVM | null,
-    history: History<PatientVM>,
     onAdd: (filledTemplate?: PatientSearchTemplateVM | undefined) => Actions.ActionAddPatient,
-    onStartEditing: (id: number) => Actions.ActionStartEditingPatient,
-    onFinishEditing: (save: boolean) => Actions.ActionFinishEditingPatient,
-    onEdit: (id: number, fieldNameId: number, newValue: FieldValue) => Actions.ActionEditPatient,
+    onEdit: (patientCopy: PatientVM, fieldNameId: number, newValue: FieldValue) => Actions.ActionEditPatient,
     onDelete: (id: number) => Actions.ActionDeletePatient,
-    onUndo: () => Actions.ActionUndo,
-    onRedo: () => Actions.ActionRedo,
     savePatients: (patients: PatientVM[]) => Actions.ActionStartSaving,
 }
 
@@ -74,15 +67,9 @@ export class Table extends React.Component<TableProps, {}, {}> {
                         <TableRaw
                             key={ind}
                             patientTemplate={this.props.patientTemplate!}
-                            patient={
-                                (this.props.editingPatient &&
-                                    this.props.editingPatient.id === patient.id) ?
-                                    (this.props.editingPatient!) :
-                                    patient}
+                            patient={patient}
                             editState={editingStatus}
                             onEdit={this.props.onEdit}
-                            onCellFocus={() => this.cellFocusHandler(patient.id)}
-                            onCellBlur={() => this.cellBlurHandler()}
                             onDelete={this.props.onDelete}
                         />
                     );
@@ -146,8 +133,6 @@ export class Table extends React.Component<TableProps, {}, {}> {
                                         .savePatients(this.props.editingList)}
                                     disabled={
                                         isLoadingSomething ||
-                                        !this.props.history.hasSomethingToSave() ||
-                                        // this.props.editingPatient !== null ||
                                         isSavingSomething
                                     }
                                 >
@@ -155,32 +140,10 @@ export class Table extends React.Component<TableProps, {}, {}> {
                                 </Button>
                             </ButtonGroup>
                             <ButtonGroup>
-                                {/* <Button
-                                    onClick={this.props.onUndo}
-                                    disabled={
-                                        isLoadingSomething ||
-                                        !this.props.history.canUndo() ||
-                                        isSavingSomething || false
-                                        // this.props.editingPatient !== null
-                                    }
-                                >{"Undo"}</Button>
-                                <Button
-                                    onClick={() => this.props.onRedo()}
-                                    disabled={
-                                        isLoadingSomething ||
-                                        !this.props.history.canRedo() ||
-                                        isSavingSomething || false
-                                        // this.props.editingPatient !== null
-                                    }
-                                >{"Redo"}</Button> */}
-                                <p>[Undo and Redo are being fixed...]</p>
-                            </ButtonGroup>
-                            <ButtonGroup>
                                 <Button
                                     onClick={() => this.props.onAdd()}
                                     disabled={
                                         isLoadingSomething ||
-                                        this.props.editingPatient !== null ||
                                         isSavingSomething
                                     }
                                 >Добавить</Button>
@@ -204,17 +167,17 @@ export class Table extends React.Component<TableProps, {}, {}> {
         );
     }
 
-    private cellFocusHandler = (id: number) => {
-        if (this.props.editingPatient && this.props.editingPatient.id !== id) {
-            this.props.onFinishEditing(true);
-            this.props.onStartEditing(id);
-        } else if (!this.props.editingPatient) {
-            this.props.onStartEditing(id);
-        }
-    }
+    // private cellFocusHandler = (id: number) => {
+    //     if (this.props.editingPatient && this.props.editingPatient.id !== id) {
+    //         this.props.onFinishEditing(true);
+    //         this.props.onStartEditing(id);
+    //     } else if (!this.props.editingPatient) {
+    //         this.props.onStartEditing(id);
+    //     }
+    // }
 
-    private cellBlurHandler = () => {
-        if (!this.props.editingPatient) throw new Error('No editing patient!');
-        this.props.onFinishEditing(true);
-    }
+    // private cellBlurHandler = () => {
+    //     if (!this.props.editingPatient) throw new Error('No editing patient!');
+    //     this.props.onFinishEditing(true);
+    // }
 }

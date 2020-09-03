@@ -1,21 +1,18 @@
 import React from "react";
 import { RawCell } from "../raw-cell/raw-cell";
-import { PatientVM, FieldValue, PatientFieldDTM, SavingStatus, PatientSearchTemplateVM } from "../../library/patient";
+import { PatientVM, FieldValue, SavingStatus, PatientSearchTemplateVM } from "../../library/patient";
 import { Status } from "../../library/history";
 import { Button } from "reactstrap";
 
 export enum RawState {
     Editing,
-    // Saved,
     Frozen
 }
 export type TableRawProps = {
     patientTemplate: PatientSearchTemplateVM,
     patient: PatientVM,
     editState: RawState,
-    onCellFocus: () => void,
-    onEdit: (id: number, fieldNameId: number, newValue: FieldValue) => void,
-    onCellBlur: () => void,
+    onEdit: (patientCopy: PatientVM, fieldNameId: number, newValue: FieldValue) => void,
     onDelete: (id: number) => void,
 }
 
@@ -30,16 +27,14 @@ export function TableRaw(props: TableRawProps) {
                     setEntityValue={
                         newValue =>
                             props.onEdit(
-                                props.patient.id,
-                                (field as PatientFieldDTM).nameId,
+                                props.patient.copy(),
+                                field.nameId,
                                 newValue
                             )
                     }
                     value={field.value}
                     disabled={props.editState !== RawState.Editing || 
                         props.patient.status === Status.Deleted}
-                    onFocus={props.onCellFocus}
-                    onBlur={props.onCellBlur}
                 />) :
                 (<div>Не указано</div>)
         );

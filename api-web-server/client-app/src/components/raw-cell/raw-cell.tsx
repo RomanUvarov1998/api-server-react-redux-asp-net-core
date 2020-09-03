@@ -4,8 +4,6 @@ export type RawCellProps = {
     setEntityValue: (v: string) => void,
     value: string,
     disabled: boolean
-    onFocus: () => void,
-    onBlur: () => void,
 }
 
 export function RawCell(props: RawCellProps) {
@@ -16,8 +14,6 @@ export function RawCell(props: RawCellProps) {
                 value={props.value}
                 onChange={(e) => onChange(e, props)}
                 disabled={props.disabled}
-                onFocus={props.onFocus}
-                onBlur={props.onBlur}
             />
         </td>
     );

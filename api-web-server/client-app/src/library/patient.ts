@@ -38,10 +38,10 @@ export class PatientVM implements IHistoryItem<PatientVM> {
         this.savingStatus = SavingStatus.Saved;
     }
 
-    fields: PatientFieldDTM[];
-    id: number;
-    status: Status;
-    savingStatus: SavingStatus;
+    public fields: PatientFieldDTM[];
+    public id: number;
+    public status: Status;
+    public savingStatus: SavingStatus;
 
     public updateField = (fieldNameId: number, newFieldValue: FieldValue) => {
         const newFields = this.fields.map(field => {

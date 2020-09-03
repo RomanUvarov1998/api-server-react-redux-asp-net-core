@@ -3,7 +3,7 @@ import {
     PatientSearchTemplateVM,
     PatientDTM
 } from "../library/patient";
-import { Status, copyList } from "../library/history";
+import { Status } from "../library/history";
 import { TableContainerState } from '../components/table-container/table-container'
 import { TabNums } from "../components/table/table";
 import { myFetch } from "../library/fetchHelper";
@@ -73,7 +73,6 @@ export function onRecievePatientFields(state: TableContainerState, patientTempla
 
 export function onAdd(state: TableContainerState, filledTemplate: PatientSearchTemplateVM | undefined): TableContainerState {
     if (!state.patientTemplate) return state;
-    if (state.editingPatient !== null) return state;
 
     const fields =
         filledTemplate ?
@@ -92,74 +91,40 @@ export function onAdd(state: TableContainerState, filledTemplate: PatientSearchT
         }
     });
 
-    const editingList = state.history.add(newPatient, state.editingList);
-    const editingPatient = newPatient.copy();
+    const editingList = state.editingList.concat(newPatient);
 
     return ({
         ...state,
-        editingPatient,
         editingList,
         tabNum: TabNums.Editing
     })
 }
 
-export function onStartEditing(state: TableContainerState, id: number): TableContainerState {
-    if (state.editingPatient && state.editingPatient.id !== id)
-        throw Error("reducers.ts already editing");
-
-    const patientToEdit = state.editingList.find(p => p.id === id);
-    if (!patientToEdit) throw Error("reducers.ts patientToEdit");
-
-    return ({
-        ...state,
-        editingPatient: patientToEdit.copy()
-    });
-}
-
-export function onFinishEditing(state: TableContainerState, save: boolean): TableContainerState {
-    let editingList;
-
-    if (!state.editingPatient) throw Error("reducers.ts editingPatient");
-
-    const patientToEdit = state.editingList
-        .find(p => p.id === (state.editingPatient as PatientVM).id);
-    if (!patientToEdit) throw Error("reducers.ts patientToEdit");
-
-    if (save) {
-        const template = (state.editingPatient as PatientVM).copy();
-        editingList = state.history.edit(
-            patientToEdit,
-            p => p.updateWhole(template),
-            state.editingList
-        );
-    } else {
-        editingList = state.editingList;
-    }
-
-    return ({
-        ...state,
-        editingList,
-        editingPatient: null
-    });
-}
-
-export function onEdit(state: TableContainerState, fieldNameId: number,
+export function onEdit(state: TableContainerState, patientCopy: PatientVM, fieldNameId: number,
     newValue: FieldValue): TableContainerState {
-    if (!state.editingPatient) throw Error("editingPatient reducers.ts");
+    let editedPatient = state.editingList.find(p => p.equals(patientCopy));
 
-    const editingPatient = (state.editingPatient as PatientVM).updateField(fieldNameId, newValue);
+    if (!editedPatient) throw new Error('Editing patient not found');
+
+    editedPatient = editedPatient!.updateField(fieldNameId, newValue);
+
+    const editingList = state.editingList
+        .map(p => p.equals(editedPatient!) ? (editedPatient!) : p);
 
     return {
         ...state,
-        editingPatient
+        editingList
     };
 }
 
 export function onDelete(state: TableContainerState, id: number): TableContainerState {
-    const editingList = state.history.del(
-        patient => patient.id === id,
-        state.editingList
-    );
+    const deletingPatient = state.editingList.find(p => p.id === id);
+
+    if (!deletingPatient) throw new Error('deletingPatient not found');
+
+    deletingPatient.status = Status.Deleted;
+
+    const editingList = state.editingList.slice();
 
     return ({
         ...state,
@@ -237,29 +202,10 @@ export function onClearSearchTemplate(state: TableContainerState,
     });
 }
 
-export function onUndo(state: TableContainerState): TableContainerState {
-    let editingList = state.history.undo(state.editingList);
-    return {
-        ...state,
-        editingList
-    };
-}
-
-export function onRedo(state: TableContainerState): TableContainerState {
-    let editingList = state.history.redo(state.editingList);
-    return {
-        ...state,
-        editingList
-    };
-}
-
 export function onStartSaving(state: TableContainerState,
     delayedStoreDispatch: undefined | ((action: Actions.MyAction) => void)
 ): TableContainerState {
-    if (state.editingPatient) throw new Error('one patient is stil being edited');
-
-    const editingList = copyList(state.editingList)
-        .map(p => {
+    const editingList = state.editingList.map(p => {
             p.savingStatus =
                 p.status === Status.Untouched ?
                     SavingStatus.Saved :
@@ -278,24 +224,6 @@ export function onStartSaving(state: TableContainerState,
 export function onPatientSavedAdded(state: TableContainerState, newPatient: PatientVM, oldPatient: PatientVM): TableContainerState {
     const editingList = state.editingList
         .filter(p => !p.equals(oldPatient));
-        // .map(p => {
-        //     let newP;
-
-        //     if (p.equals(oldPatient)) {
-        //         newP = newPatient.copy();
-        //         newP.savingStatus = SavingStatus.Saved;
-        //         newP.status = Status.Untouched;
-        //     } else {
-        //         newP = p.copy();
-        //         newP.savingStatus = p.savingStatus;
-        //     }
-
-        //     return newP;
-        // });
-
-    if (!editingList.some(p => p.status !== Status.Untouched)) {
-        state.history.clearHistory();
-    }
 
     newPatient.status = Status.Untouched;
     const searchingList = state.searchingList
@@ -314,24 +242,6 @@ export function onPatientSavedAdded(state: TableContainerState, newPatient: Pati
 export function onPatientSavedUpdated(state: TableContainerState, updatedPatient: PatientVM): TableContainerState {
     const editingList = state.editingList
         .filter(p => !p.equals(updatedPatient));
-        // .map(p => {
-        //     let newP;
-
-        //     if (p.equals(updatedPatient)) {
-        //         newP = updatedPatient.copy();
-        //         newP.savingStatus = SavingStatus.Saved;
-        //         newP.status = Status.Untouched;
-        //     } else {
-        //         newP = p.copy();
-        //         newP.savingStatus = p.savingStatus;
-        //     }
-
-        //     return newP;
-        // });
-
-    if (!editingList.some(p => p.status !== Status.Untouched)) {
-        state.history.clearHistory();
-    }
 
     updatedPatient.status = Status.Untouched;
     const searchingList = state.searchingList
@@ -350,10 +260,6 @@ export function onPatientSavedUpdated(state: TableContainerState, updatedPatient
 export function onPatientSavedDeleted(state: TableContainerState, deletedId: number): TableContainerState {
     const editingList = state.editingList
         .filter(p => p.id !== deletedId);
-
-    if (!editingList.some(p => p.status !== Status.Untouched)) {
-        state.history.clearHistory();
-    }
 
     const searchingList = state.searchingList
         .filter(p => p.id !== deletedId);

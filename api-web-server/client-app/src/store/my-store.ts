@@ -27,15 +27,10 @@ export function configureStore(initialState: TableContainerState) {
             case Actions.ACTION_ADD_PATIENT:
                 a = action as Actions.ActionAddPatient;
                 return Reducers.onAdd(state, a.filledTemplate);
-            case Actions.ACTION_START_EDIT_PATIENT:
-                a = action as Actions.ActionStartEditingPatient;
-                return Reducers.onStartEditing(state, a.patientId);
-            case Actions.ACTION_FINISH_EDIT_PATIENT:
-                a = action as Actions.ActionFinishEditingPatient;
-                return Reducers.onFinishEditing(state, a.save);
             case Actions.ACTION_EDIT_PATIENT:
                 a = (action as Actions.ActionEditPatient);
-                return Reducers.onEdit(state, a.fieldNameId, a.newValue);
+                console.log(`reducer ${a.patientCopy.status}`);
+                return Reducers.onEdit(state, a.patientCopy, a.fieldNameId, a.newValue);
             case Actions.ACTION_DELETE_PATIENT:
                 a = (action as Actions.ActionDeletePatient);
                 return Reducers.onDelete(state, a.patientId);
@@ -48,12 +43,6 @@ export function configureStore(initialState: TableContainerState) {
             case Actions.ACTION_CLEAR_SEARCH_TEMPLATE:
                 a = (action as Actions.ActionSetSearchTemplate);
                 return Reducers.onClearSearchTemplate(state, delayedDispatch);
-            case Actions.ACTION_UNDO:
-                a = action as Actions.ActionUndo;
-                return Reducers.onUndo(state);
-            case Actions.ACTION_REDO:
-                a = action as Actions.ActionUndo;
-                return Reducers.onRedo(state);
             case Actions.ACTION_START_SAVING:
                 a = action as Actions.ActionStartSaving;
                 return Reducers.onStartSaving(state, delayedDispatch);
