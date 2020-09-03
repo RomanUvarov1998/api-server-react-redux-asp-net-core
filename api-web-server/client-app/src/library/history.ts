@@ -11,83 +11,83 @@ export class History<Item extends IHistoryItem<Item>> {
         this.cursor = 0;
     }
 
-    public add(newItem: Item, listBefore: Item[]): Item[] {
-        const newItemCopy = newItem.copy();
-        newItemCopy.status = Status.Added;
-        return this.addAndApplyAction(
-            listBefore,
-            {
-                redo: list => copyList(list).concat(newItemCopy),
-                undo: list => copyList(list).filter(it => !it.equals(newItemCopy)),
-            }
-        );
-    }
-    public edit(itemToEdit: Item, editor: (item: Item) => Item, listBefore: Item[]): Item[] {
-        const initialItem = itemToEdit.copy();
-        initialItem.status = itemToEdit.status;
+    // public add(newItem: Item, listBefore: Item[]): Item[] {
+    //     const newItemCopy = newItem.copy();
+    //     newItemCopy.status = Status.Added;
+    //     return this.addAndApplyAction(
+    //         listBefore,
+    //         {
+    //             redo: list => copyList(list).concat(newItemCopy),
+    //             undo: list => copyList(list).filter(it => !it.equals(newItemCopy)),
+    //         }
+    //     );
+    // }
+    // public edit(itemToEdit: Item, editor: (item: Item) => Item, listBefore: Item[]): Item[] {
+    //     const initialItem = itemToEdit.copy();
+    //     initialItem.status = itemToEdit.status;
 
-        const editedItem = editor(initialItem);
-        if (editedItem.status !== Status.Added) {
-            editedItem.status = Status.Modified;
-        }
+    //     const editedItem = editor(initialItem);
+    //     if (editedItem.status !== Status.Added) {
+    //         editedItem.status = Status.Modified;
+    //     }
 
-        if (!itemToEdit.isUpdatedRelativelyTo(editedItem)) return listBefore;
+    //     if (!itemToEdit.isUpdatedRelativelyTo(editedItem)) return listBefore;
 
-        return this.addAndApplyAction(
-            listBefore,
-            {
-                redo: list => {
-                    let newList = copyList(list).map(
-                        el =>
-                            el.equals(initialItem) ?
-                                editedItem :
-                                el
-                    );
-                    return newList;
-                },
-                undo: list => {
-                    let newList = copyList(list).map(
-                        el =>
-                            el.equals(initialItem) ?
-                                initialItem :
-                                el
-                    );
-                    return newList;
-                },
-            }
-        );
-    }
-    public del(predicate: (item: Item) => boolean, listBefore: Item[]): Item[] {
-        let deletedItem = listBefore.find(predicate);
-        if (!deletedItem) throw Error("deletedItem history.ts");
-        const deletedItemCopy = deletedItem!.copy();
+    //     return this.addAndApplyAction(
+    //         listBefore,
+    //         {
+    //             redo: list => {
+    //                 let newList = copyList(list).map(
+    //                     el =>
+    //                         el.equals(initialItem) ?
+    //                             editedItem :
+    //                             el
+    //                 );
+    //                 return newList;
+    //             },
+    //             undo: list => {
+    //                 let newList = copyList(list).map(
+    //                     el =>
+    //                         el.equals(initialItem) ?
+    //                             initialItem :
+    //                             el
+    //                 );
+    //                 return newList;
+    //             },
+    //         }
+    //     );
+    // }
+    // public del(predicate: (item: Item) => boolean, listBefore: Item[]): Item[] {
+    //     let deletedItem = listBefore.find(predicate);
+    //     if (!deletedItem) throw Error("deletedItem history.ts");
+    //     const deletedItemCopy = deletedItem!.copy();
 
-        return this.addAndApplyAction(
-            listBefore,
-            {
-                redo: list => {
-                    if (deletedItemCopy.status === Status.Added) {
-                        return copyList(list).filter(p => !p.equals(deletedItemCopy));
-                    } else {
-                        const newList = copyList(list);
-                        let pat = newList.find(p => p.equals(deletedItemCopy));
-                        pat!.status = Status.Deleted;
-                        return newList;
-                    }
-                },
-                undo: list => {
-                    if (deletedItemCopy.status === Status.Added) {
-                        return copyList(list).concat(deletedItemCopy);
-                    } else {
-                        const newList = copyList(list);
-                        let pat = newList.find(p => p.equals(deletedItemCopy));
-                        pat!.status = deletedItemCopy.status;
-                        return newList;
-                    }
-                },
-            }
-        );
-    }
+    //     return this.addAndApplyAction(
+    //         listBefore,
+    //         {
+    //             redo: list => {
+    //                 if (deletedItemCopy.status === Status.Added) {
+    //                     return copyList(list).filter(p => !p.equals(deletedItemCopy));
+    //                 } else {
+    //                     const newList = copyList(list);
+    //                     let pat = newList.find(p => p.equals(deletedItemCopy));
+    //                     pat!.status = Status.Deleted;
+    //                     return newList;
+    //                 }
+    //             },
+    //             undo: list => {
+    //                 if (deletedItemCopy.status === Status.Added) {
+    //                     return copyList(list).concat(deletedItemCopy);
+    //                 } else {
+    //                     const newList = copyList(list);
+    //                     let pat = newList.find(p => p.equals(deletedItemCopy));
+    //                     pat!.status = deletedItemCopy.status;
+    //                     return newList;
+    //                 }
+    //             },
+    //         }
+    //     );
+    // }
 
     public canUndo = (): boolean => this.cursor > 0;
     public canRedo = (): boolean => this.cursor < this.listHistory.length;
@@ -134,12 +134,4 @@ export interface IHistoryItem<Item> {
     equals: (item: Item) => boolean,
     isUpdatedRelativelyTo: (item: Item) => boolean,
     status: Status,
-}
-
-export function copyList<Item extends IHistoryItem<Item>>(list: Item[]): Item[] {
-    if (!list || list.length === 0) {
-        return [];
-    } else {
-        return list.map(el => el.copy());
-    }
 }
