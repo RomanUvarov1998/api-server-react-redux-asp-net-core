@@ -35,7 +35,6 @@ export type TableProps = {
     onUndo: () => Actions.ActionUndo,
     onRedo: () => Actions.ActionRedo,
     savePatients: (patients: PatientVM[]) => Actions.ActionStartSaving,
-    clearList: () => void
 }
 
 export enum TabNums {
@@ -55,25 +54,14 @@ export class Table extends React.Component<TableProps, {}, {}> {
         if (!this.props.isWaitingPatientFields) {
             if (!this.props.patientTemplate) throw Error("patientTemplate is null");
 
-            tableHeadCells = [
-                <th key={"btnEdit"}></th>,
-                <th key={"btnDelete"}></th>
-            ];
-            tableHeadCells.push(...this.props.patientTemplate!.fields.map(
-                tf => (
-                    <th key={tf.nameId}>
-                        {tf.name}
-                    </th>
-                )
-            ));
+            tableHeadCells = this.props.patientTemplate!.fields.map(
+                tf => (<th key={tf.nameId}>{tf.name}</th>));
         } else {
             tableHeadCells = (<th><p>Загрузка полей пациента...</p></th>);
         }
 
         if (this.props.editingList.length > 0) {
             if (!this.props.patientTemplate) throw Error("patientTemplate is null");
-
-            const editingId: number | undefined = this.props.editingPatient?.id;
 
             tableBodyRows = this.props.editingList
                 .map((patient, ind) => {
@@ -90,12 +78,11 @@ export class Table extends React.Component<TableProps, {}, {}> {
                                 (this.props.editingPatient &&
                                     this.props.editingPatient.id === patient.id) ?
                                     (this.props.editingPatient!) :
-                                    patient
-                            }
+                                    patient}
                             editState={editingStatus}
                             onEdit={this.props.onEdit}
                             onCellFocus={() => this.cellFocusHandler(patient.id)}
-                            onCellBlur={() => this.cellBlurHandler(patient.id)}
+                            onCellBlur={() => this.cellBlurHandler()}
                             onDelete={this.props.onDelete}
                         />
                     );
@@ -108,7 +95,6 @@ export class Table extends React.Component<TableProps, {}, {}> {
             );
         }
 
-        const canClearList = !this.props.history.hasSomethingToSave();
         const el = this.props.editingList.length;
         const editingTabLabel = el ? `Редактирование (${el})` : 'Редактирование';
 
@@ -119,12 +105,14 @@ export class Table extends React.Component<TableProps, {}, {}> {
                         <NavLink
                             className={classnames({ active: this.props.tabNum === TabNums.Searching })}
                             onClick={() => this.props.onTabChange(TabNums.Searching)}
+                            style={{ cursor: "pointer" }}
                         >Поиск</NavLink>
                     </NavItem>
                     <NavItem>
                         <NavLink
                             className={classnames({ active: this.props.tabNum === TabNums.Editing })}
                             onClick={() => this.props.onTabChange(TabNums.Editing)}
+                            style={{ cursor: "pointer" }}
                         >{editingTabLabel}</NavLink>
                     </NavItem>
                 </Nav>
@@ -146,7 +134,10 @@ export class Table extends React.Component<TableProps, {}, {}> {
                             onAdd={this.props.onAdd}
                         />
                     </TabPane>
-                    <TabPane tabId={TabNums.Editing}>
+                    <TabPane
+                        tabId={TabNums.Editing}
+                        style={{ margin: 10 }}
+                    >
                         <h1>Редактирование</h1>
                         <ButtonToolbar>
                             <ButtonGroup>
@@ -156,23 +147,15 @@ export class Table extends React.Component<TableProps, {}, {}> {
                                     disabled={
                                         isLoadingSomething ||
                                         !this.props.history.hasSomethingToSave() ||
-                                        this.props.editingPatient !== null ||
+                                        // this.props.editingPatient !== null ||
                                         isSavingSomething
                                     }
                                 >
                                     {isSavingSomething ? 'Идет сохранение...' : 'Сохранить изменения'}
                                 </Button>
-                                <Button
-                                    onClick={() => this.props.clearList()}
-                                    disabled={
-                                        !canClearList ||
-                                        this.props.editingList.length === 0 ||
-                                        this.props.editingPatient !== null
-                                    }
-                                >Очистить список</Button>
                             </ButtonGroup>
                             <ButtonGroup>
-                                <Button
+                                {/* <Button
                                     onClick={this.props.onUndo}
                                     disabled={
                                         isLoadingSomething ||
@@ -189,7 +172,8 @@ export class Table extends React.Component<TableProps, {}, {}> {
                                         isSavingSomething || false
                                         // this.props.editingPatient !== null
                                     }
-                                >{"Redo"}</Button>
+                                >{"Redo"}</Button> */}
+                                <p>[Undo and Redo are being fixed...]</p>
                             </ButtonGroup>
                             <ButtonGroup>
                                 <Button
@@ -227,12 +211,10 @@ export class Table extends React.Component<TableProps, {}, {}> {
         } else if (!this.props.editingPatient) {
             this.props.onStartEditing(id);
         }
-        console.log('focus');
     }
 
-    private cellBlurHandler = (id: number) => {
+    private cellBlurHandler = () => {
         if (!this.props.editingPatient) throw new Error('No editing patient!');
-        console.log('blur');
         this.props.onFinishEditing(true);
     }
 }

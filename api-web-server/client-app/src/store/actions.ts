@@ -5,7 +5,6 @@ export const ACTION_CHANGE_TAB = 'ACTION_CHANGE_TAB';
 export const ACTION_LOAD_MORE_PATIENTS = 'ACTION_LOAD_MORE_PATIENTS';
 export const ACTION_RECIEVE_PATIENTS = 'ACTION_RECIEVE_PATIENTS';
 export const ACTION_ADD_PATIENT_TO_EDIT_LIST = 'ACTION_ADD_PATIENT_TO_EDIT_LIST';
-export const ACTION_CLEAR_LIST = 'ACTION_CLEAR_LIST';
 export const ACTION_RECIEVE_PATIENT_FIELDS = 'ACTION_RECIEVE_PATIENT_FIELDS';
 export const ACTION_ADD_PATIENT = 'ACTION_ADD_PATIENT';
 export const ACTION_START_EDIT_PATIENT = 'ACTION_START_EDIT_PATIENT';
@@ -27,7 +26,6 @@ export type MyAction =
     ActionLoadMorePatients |
     ActionRecievePatients |
     ActionAddPatientToEditList |
-    ActionClearList |
     ActionRecievePatientFields |
     ActionAddPatient |
     ActionStartEditingPatient |
@@ -47,7 +45,6 @@ export type ActionChangeTab = { type: string, newTabNum: TabNums };
 export type ActionLoadMorePatients = { type: string };
 export type ActionRecievePatients = { type: string, patients: PatientVM[], append: boolean };
 export type ActionAddPatientToEditList = { type: string, patient: PatientVM };
-export type ActionClearList = { type: string };
 export type ActionRecievePatientFields = { type: string, patientTemplate: PatientSearchTemplateVM };
 export type ActionAddPatient = { type: string, filledTemplate: PatientSearchTemplateVM | undefined };
 export type ActionStartEditingPatient = { type: string, patientId: number };
@@ -86,11 +83,6 @@ export function addPatientToEditList(patient: PatientVM): ActionAddPatientToEdit
     return {
         type: ACTION_ADD_PATIENT_TO_EDIT_LIST,
         patient
-    };
-}
-export function clearList(): ActionClearList {
-    return {
-        type: ACTION_CLEAR_LIST,
     };
 }
 export function recievePatientFields(patientTemplate: PatientSearchTemplateVM): ActionRecievePatientFields {

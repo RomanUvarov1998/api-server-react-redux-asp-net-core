@@ -36,7 +36,6 @@ export type TableContainerDispatchProps = {
     onUndo: () => Actions.ActionUndo,
     onRedo: () => Actions.ActionRedo,
     savePatients: (patients: PatientVM[]) => Actions.ActionStartSaving,
-    clearList: () => Actions.ActionClearList
 }
 export type TableContainerProps = {    
     
@@ -77,7 +76,6 @@ const mapDispatchToProps: TableContainerDispatchProps = {
     onUndo: Actions.undo,
     onRedo: Actions.redo,
     savePatients: Actions.startSaving,
-    clearList: Actions.clearList,
 };
 
 function mergeProps(

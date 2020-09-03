@@ -63,22 +63,6 @@ export function onRecievePatients(state: TableContainerState, patients: PatientV
     };
 }
 
-export function onClearList(state: TableContainerState): TableContainerState {
-    if (
-        state.editingList.some(p => p.status !== Status.Untouched) &&
-        state.history.hasSomethingToSave()
-    ) {
-        throw new Error('cannot clear list from reducer');
-    }
-
-    let editingList = state.editingList.filter(p => p.status !== Status.Untouched);
-
-    return {
-        ...state,
-        editingList
-    }
-}
-
 export function onRecievePatientFields(state: TableContainerState, patientTemplate: PatientSearchTemplateVM): TableContainerState {
     return {
         ...state,
@@ -293,20 +277,21 @@ export function onStartSaving(state: TableContainerState,
 
 export function onPatientSavedAdded(state: TableContainerState, newPatient: PatientVM, oldPatient: PatientVM): TableContainerState {
     const editingList = state.editingList
-        .map(p => {
-            let newP;
+        .filter(p => !p.equals(oldPatient));
+        // .map(p => {
+        //     let newP;
 
-            if (p.equals(oldPatient)) {
-                newP = newPatient.copy();
-                newP.savingStatus = SavingStatus.Saved;
-                newP.status = Status.Untouched;
-            } else {
-                newP = p.copy();
-                newP.savingStatus = p.savingStatus;
-            }
+        //     if (p.equals(oldPatient)) {
+        //         newP = newPatient.copy();
+        //         newP.savingStatus = SavingStatus.Saved;
+        //         newP.status = Status.Untouched;
+        //     } else {
+        //         newP = p.copy();
+        //         newP.savingStatus = p.savingStatus;
+        //     }
 
-            return newP;
-        });
+        //     return newP;
+        // });
 
     if (!editingList.some(p => p.status !== Status.Untouched)) {
         state.history.clearHistory();
@@ -328,20 +313,21 @@ export function onPatientSavedAdded(state: TableContainerState, newPatient: Pati
 
 export function onPatientSavedUpdated(state: TableContainerState, updatedPatient: PatientVM): TableContainerState {
     const editingList = state.editingList
-        .map(p => {
-            let newP;
+        .filter(p => !p.equals(updatedPatient));
+        // .map(p => {
+        //     let newP;
 
-            if (p.equals(updatedPatient)) {
-                newP = updatedPatient.copy();
-                newP.savingStatus = SavingStatus.Saved;
-                newP.status = Status.Untouched;
-            } else {
-                newP = p.copy();
-                newP.savingStatus = p.savingStatus;
-            }
+        //     if (p.equals(updatedPatient)) {
+        //         newP = updatedPatient.copy();
+        //         newP.savingStatus = SavingStatus.Saved;
+        //         newP.status = Status.Untouched;
+        //     } else {
+        //         newP = p.copy();
+        //         newP.savingStatus = p.savingStatus;
+        //     }
 
-            return newP;
-        });
+        //     return newP;
+        // });
 
     if (!editingList.some(p => p.status !== Status.Untouched)) {
         state.history.clearHistory();
