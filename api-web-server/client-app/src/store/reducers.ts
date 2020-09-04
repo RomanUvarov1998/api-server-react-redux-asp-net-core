@@ -236,6 +236,22 @@ export function onConfirmSavingResult(state: MainContainerState): MainContainerS
     };
 }
 
+export function onStartEditPatientTemplate(state: MainContainerState): MainContainerState {
+    return {
+        ...state,
+        isEditingPatientTemplate: true
+    };
+}
+export function onFinishEditPatientTemplate(state: MainContainerState, save: boolean, newTemplate: PatientSearchTemplateVM): MainContainerState {
+    const patientTemplate = save ? newTemplate : state.patientTemplate;
+    
+    return {
+        ...state,
+        isEditingPatientTemplate: false,
+        patientTemplate
+    };
+}
+
 
 
 export function loadPatients(

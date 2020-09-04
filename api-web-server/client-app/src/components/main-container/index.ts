@@ -7,6 +7,7 @@ export type MainContainerState = {
     isWaitingPatientsList: boolean,
     isWaitingPatientFields: boolean,
 
+    isEditingPatientTemplate: boolean,
     searchingList: PatientVM[],
     patientTemplate: PatientSearchTemplateVM | null,
     canLoadMore: boolean,
@@ -19,6 +20,7 @@ const mapStateToProps = (state: MainContainerState): MainContainerState => {
         isWaitingPatientFields: state.isWaitingPatientFields,
         isWaitingPatientsList: state.isWaitingPatientsList, 
 
+        isEditingPatientTemplate: state.isEditingPatientTemplate,
         searchingList: state.searchingList,
         patientTemplate: state.patientTemplate,
         canLoadMore: state.canLoadMore, 
@@ -39,6 +41,9 @@ export type TableContainerDispatchProps = {
     onDelete: (id: number) => Actions.ActionDeletePatient,
     onExitEditor: (save: boolean) => Actions.ActionExitEditor,
     onConfirmSavingResult: () => Actions.ActionConfirmSavingResult
+
+    onStartEditPatientTemplate: () => Actions.ActionStartEditPatientTemplate,
+    onFinishEditPatientTemplate: (save: boolean, newTemplate: PatientSearchTemplateVM) => Actions.ActionFinishEditPatientTemplate,
 }
 const mapDispatchToProps: TableContainerDispatchProps = {
     onSetSearchTemplate: Actions.setSearchTemplate,
@@ -50,7 +55,10 @@ const mapDispatchToProps: TableContainerDispatchProps = {
     onEditPatient: Actions.editPatient,
     onDelete: Actions.del,
     onExitEditor: Actions.exitEditor,
-    onConfirmSavingResult: Actions.confirmSavingResult
+    onConfirmSavingResult: Actions.confirmSavingResult,
+
+    onStartEditPatientTemplate: Actions.startEditPatientTemplate,
+    onFinishEditPatientTemplate: Actions.finishEditPatientTemplate
 };
 
 export type MainContainerProps = {    

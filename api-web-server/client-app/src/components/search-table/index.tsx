@@ -18,6 +18,7 @@ export type SearchTableProps = {
     addPatientFromSearchFields: (patient: PatientSearchTemplateVM) => void,
     onEnterEditor: (patient: PatientVM | undefined) => void,
     onDelete: (id: number) => void
+    onStartEditPatientTemplate: () => void
 }
 
 export function SearchTable(props: SearchTableProps): JSX.Element {
@@ -110,6 +111,7 @@ export function SearchTable(props: SearchTableProps): JSX.Element {
 
     return (
         <div style={{ margin: 10 }}>
+            <Button onClick={props.onStartEditPatientTemplate}>Изменить шаблон</Button>
             {searchBar}
             <div
                 style={{ marginTop: 10 }}

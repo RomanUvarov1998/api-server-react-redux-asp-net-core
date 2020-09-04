@@ -27,6 +27,7 @@ export class App extends React.Component<AppProps, AppState, {}> {
       isWaitingPatientsList: true,
       isWaitingPatientFields: true,
 
+      isEditingPatientTemplate: false,
       searchingList: [],
       patientTemplate: null,
       canLoadMore: false,

@@ -1,13 +1,15 @@
 import React from 'react';
-import { PatientVM, FieldValue, PatientSearchTemplateVM } from "../../library/patient";
+import { PatientVM, FieldValue, PatientSearchTemplateVM  } from "../../library/patient";
 import { SearchTable } from '../search-table';
 import { PatientEditor } from '../patient-editor';
+import { PatientTemplateEditor } from '../patient-template-editor';
 import { Status } from '../../library/history';
 
 export type PatientManagerProps = {
     isWaitingPatientsList: boolean,
     isWaitingPatientFields: boolean,
 
+    isEditingPatientTemplate: boolean,
     patientTemplate: PatientSearchTemplateVM | null,
     searchingList: PatientVM[],
     canLoadMore: boolean,
@@ -23,23 +25,31 @@ export type PatientManagerProps = {
     onDelete: (id: number) => void,
     onExitEditor: (save: boolean) => void,
     onConfirmSavingResult: () => void,
+
+    onStartEditPatientTemplate: () => void,
+    onFinishEditPatientTemplate: (save: boolean, newTemplate: PatientSearchTemplateVM) => void,
 }
 
 export class PatientManager extends React.Component<PatientManagerProps, {}, {}> {
     render(): React.ReactNode {
-        let content;     
-           
-        if (this.props.editingPatient && this.props.editingPatient.status !== Status.Deleted) {
-            content = (<PatientEditor 
+        let content;
+
+        if (this.props.isEditingPatientTemplate) {
+            content = (<PatientTemplateEditor
+                initialTemplate={this.props.patientTemplate!.copy()}
+                onSave={this.props.onFinishEditPatientTemplate}
+            />);
+        } else if (this.props.editingPatient && this.props.editingPatient.status !== Status.Deleted) {
+            content = (<PatientEditor
                 patient={this.props.editingPatient!}
-                onUpdate={(fieldNameId: number, newValue: string) => 
+                onUpdate={(fieldNameId: number, newValue: string) =>
                     this.props.onEditPatient(fieldNameId, newValue)}
                 onExitEditor={this.props.onExitEditor}
                 onConfirmSavingResult={this.props.onConfirmSavingResult}
             />);
         } else {
             content = (<SearchTable
-                addPatientFromSearchFields={(patient: PatientSearchTemplateVM) => 
+                addPatientFromSearchFields={(patient: PatientSearchTemplateVM) =>
                     this.props.onEnterEditor(patient.toPatientVM())}
                 isWaitingPatientsList={this.props.isWaitingPatientsList}
                 isWaitingPatientFields={this.props.isWaitingPatientFields}
@@ -53,8 +63,9 @@ export class PatientManager extends React.Component<PatientManagerProps, {}, {}>
                 onLoadMore={this.props.onLoadMorePatients}
                 onEnterEditor={this.props.onEnterEditor}
                 onDelete={this.props.onDelete}
+                onStartEditPatientTemplate={this.props.onStartEditPatientTemplate}
             />);
-        }            
+        }
 
         return content;
     }

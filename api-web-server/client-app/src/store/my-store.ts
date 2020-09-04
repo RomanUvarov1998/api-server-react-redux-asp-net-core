@@ -49,6 +49,13 @@ export function configureStore(initialState: MainContainerState) {
                 a = (action as Actions.ActionConfirmSavingResult);
                 return Reducers.onConfirmSavingResult(state);
 
+            case Actions.ACTION_START_EDIT_PATIENT_TEMPLATE:
+                a = (action as Actions.ActionStartEditPatientTemplate);
+                return Reducers.onStartEditPatientTemplate(state);
+            case Actions.ACTION_FINISH_EDIT_PATIENT_TEMPLATE:
+                a = (action as Actions.ActionFinishEditPatientTemplate);
+                return Reducers.onFinishEditPatientTemplate(state, a.save, a.newTemplate);
+
             default:
                 return state;
         }

@@ -14,6 +14,9 @@ export const ACTION_EXIT_EDITOR = 'ACTION_EXIT_EDITOR';
 export const ACTION_GET_SAVING_RESULT = 'ACTION_GET_SAVING_RESULT';
 export const ACTION_CONFIRM_SAVING_RESULT = 'ACTION_CONFIRM_SAVING_RESULT';
 
+export const ACTION_START_EDIT_PATIENT_TEMPLATE = 'ACTION_START_EDIT_PATIENT_TEMPLATE';
+export const ACTION_FINISH_EDIT_PATIENT_TEMPLATE = 'ACTION_FINISH_EDIT_PATIENT_TEMPLATE';
+
 export type MyAction =
     ActionRecievePatientFields |
     ActionSetSearchTemplate |
@@ -42,6 +45,9 @@ export type ActionDeletePatient = { type: string, patientId: number };
 export type ActionExitEditor = { type: string, save: boolean };
 export type ActionGetSavingResult = { type: string, success: boolean, message: string };
 export type ActionConfirmSavingResult = { type: string };
+
+export type ActionStartEditPatientTemplate = { type: string };
+export type ActionFinishEditPatientTemplate = { type: string, save: boolean, newTemplate: PatientSearchTemplateVM };
 
 
 export function recievePatientFields(patientTemplate: PatientSearchTemplateVM): ActionRecievePatientFields {
@@ -117,5 +123,18 @@ export function getSavingResult(success: boolean, message: string): ActionGetSav
 export function confirmSavingResult(): ActionConfirmSavingResult {
     return {
         type: ACTION_CONFIRM_SAVING_RESULT
+    };
+}
+
+export function startEditPatientTemplate(): ActionStartEditPatientTemplate {
+    return {
+        type: ACTION_START_EDIT_PATIENT_TEMPLATE
+    };
+}
+export function finishEditPatientTemplate(save: boolean, newTemplate: PatientSearchTemplateVM, ): ActionFinishEditPatientTemplate {
+    return {
+        type: ACTION_FINISH_EDIT_PATIENT_TEMPLATE,
+        save,
+        newTemplate
     };
 }
