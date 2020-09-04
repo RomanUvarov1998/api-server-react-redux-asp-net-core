@@ -29,7 +29,7 @@ export class PatientManager extends React.Component<PatientManagerProps, {}, {}>
     render(): React.ReactNode {
         let content;     
            
-        if (this.props.editingPatient) {
+        if (this.props.editingPatient && this.props.editingPatient.status !== Status.Deleted) {
             content = (<PatientEditor 
                 patient={this.props.editingPatient!}
                 onUpdate={(fieldNameId: number, newValue: string) => 

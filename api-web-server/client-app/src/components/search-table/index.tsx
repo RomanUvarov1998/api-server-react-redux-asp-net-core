@@ -49,6 +49,19 @@ export function SearchTable(props: SearchTableProps): JSX.Element {
     }
 
     tableBodyRows = props.patientsList.map(p => {
+        let deleteControl;
+
+        if (p.status === Status.Deleted) {
+            deleteControl = (<td key={'delete'}>Удаление...</td>);
+        } else {
+            deleteControl = (<td key={'delete'}><Button
+                onClick={() => {
+                    p.status = Status.Deleted;
+                    props.onDelete(p.id);
+                }}
+            >Удалить</Button></td>);
+        }
+
         const cells = p.fields
             .map(f => (<td key={f.nameId}>{f.value}</td>))
             .concat(
@@ -58,12 +71,8 @@ export function SearchTable(props: SearchTableProps): JSX.Element {
                         props.onEnterEditor(p);
                     }}
                 >Редактировать</Button></td>),
-                (<td key={'delete'}><Button
-                onClick={() => {
-                    p.status = Status.Deleted;
-                    props.onDelete(p.id);
-                }}
-            >Удалить</Button></td>));
+                deleteControl
+            );
 
 
         return (<tr key={p.id}>{cells}</tr>)

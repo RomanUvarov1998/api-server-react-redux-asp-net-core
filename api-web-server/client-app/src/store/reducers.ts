@@ -158,13 +158,15 @@ export function onDelete(state: MainContainerState, id: number,
 
     const deletingPatientCopy = deletingPatient!.copy();
     deletingPatientCopy.status = Status.Deleted;
-    const editingPatient = deletingPatientCopy;
+    const searchingList = state.searchingList.map(p =>
+        p.equals(deletingPatientCopy) ? deletingPatientCopy : p);
 
     syncronizePatientWithServer(delayedDispatch, deletingPatientCopy);
 
     return ({
         ...state,
-        editingPatient
+        searchingList,
+        editingPatient: deletingPatientCopy
     });
 }
 export function onExitEditor(state: MainContainerState, save: boolean,
