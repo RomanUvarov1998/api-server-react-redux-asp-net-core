@@ -1,5 +1,5 @@
 import React from 'react';
-import { Button } from 'reactstrap';
+import { Button, ButtonGroup } from 'reactstrap';
 import { PatientVM, PatientFieldDTM } from '../../library/patient';
 import { Status } from '../../library/history';
 

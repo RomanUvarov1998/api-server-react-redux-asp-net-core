@@ -24,7 +24,7 @@ export type MyAction =
     ActionEnterEditor |
     ActionEditPatient |
     ActionDeletePatient |
-    ActionExitEditor| 
+    ActionExitEditor | 
     ActionGetSavingResult;
 
 export type ActionRecievePatientFields = { type: string, patientTemplate: PatientSearchTemplateVM };

@@ -137,6 +137,9 @@ export function onEditPatient(state: MainContainerState, fieldNameId: number,
     newValue: FieldValue): MainContainerState {
     if (!state.editingPatient) throw new Error('Editing patient not found');
 
+    const editedField = state.editingPatient!.fields.find(f => f.nameId === fieldNameId);
+    if (!editedField) throw new Error('field not found');
+
     const editingPatient = state.editingPatient!.updateField(fieldNameId, newValue);
 
     return {
@@ -145,8 +148,7 @@ export function onEditPatient(state: MainContainerState, fieldNameId: number,
     };
 }
 export function onDelete(state: MainContainerState, id: number,
-    delayedDispatch: undefined | ((action: Actions.MyAction) => void)): MainContainerState 
-{
+    delayedDispatch: undefined | ((action: Actions.MyAction) => void)): MainContainerState {
     const deletingPatient = state.searchingList.find(p => p.id === id);
     if (!deletingPatient) throw new Error('deletingPatient not found');
 
@@ -162,8 +164,7 @@ export function onDelete(state: MainContainerState, id: number,
     });
 }
 export function onExitEditor(state: MainContainerState, save: boolean,
-    delayedStoreDispatch: undefined | ((action: Actions.MyAction) => void)): MainContainerState 
-{
+    delayedStoreDispatch: undefined | ((action: Actions.MyAction) => void)): MainContainerState {
     if (save) {
         syncronizePatientWithServer(delayedStoreDispatch, state.editingPatient!.copy());
     }
@@ -178,9 +179,8 @@ export function onExitEditor(state: MainContainerState, save: boolean,
         editingPatient
     };
 }
-export function onGetSavingResult(state: MainContainerState, success: boolean, 
-    message: string): MainContainerState 
-{
+export function onGetSavingResult(state: MainContainerState, success: boolean,
+    message: string): MainContainerState {
     if (!success) {
         console.log('Error occured');
         return state;

@@ -4,10 +4,11 @@ import { Provider } from 'react-redux';
 import { MainContainer, MainContainerState } from './main-container/main-container';
 import { configureStore } from '../store/my-store';
 import * as Actions from '../store/actions';
-import { PatientSearchTemplateVM } from "../library/patient";
+import { PatientSearchTemplateVM, PatientFieldDTM } from "../library/patient";
 import { myFetch } from '../library/fetchHelper';
 import { Store } from 'redux';
 import { loadPatients } from '../store/reducers';
+import { History } from '../library/history';
 
 type AppProps = {
 

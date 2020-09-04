@@ -1,4 +1,4 @@
-import { Status, IHistoryItem } from './history';
+import { Status } from './history';
 
 export type FieldName = string;
 export type FieldValue = string;
@@ -11,6 +11,7 @@ export class PatientFieldDTM {
     }
 
     public copy = (): PatientFieldDTM => new PatientFieldDTM(this.name, this.value, this.nameId);
+    public toString = () => `{ ${this.name}:${this.value} }`;
 
     public value: FieldValue;
     public name: FieldName;
@@ -29,7 +30,7 @@ export enum SavingStatus {
     Saving
 }
 
-export class PatientVM implements IHistoryItem<PatientVM> {
+export class PatientVM {
     constructor(fields: PatientFieldDTM[], id: number,
         status: Status) {
         this.fields = fields;

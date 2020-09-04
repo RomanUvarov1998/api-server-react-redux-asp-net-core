@@ -1,5 +1,5 @@
 import { connect } from 'react-redux'
-import { PatientVM, FieldValue, PatientSearchTemplateVM } from '../../library/patient';
+import { PatientVM, FieldValue, PatientSearchTemplateVM, PatientFieldDTM } from '../../library/patient';
 import * as Actions from '../../store/actions';
 import { PatientManager } from '../patients-manager/patients-manager';
 
@@ -15,10 +15,6 @@ export type MainContainerState = {
     editingPatient: PatientVM | null,
     isSyncronizingPatient: boolean
 }
-export type MainContainerProps = {    
-    
-}
-
 const mapStateToProps = (state: MainContainerState): MainContainerState => {
     return {
         isWaitingPatientFields: state.isWaitingPatientFields,
@@ -56,6 +52,10 @@ const mapDispatchToProps: TableContainerDispatchProps = {
     onDelete: Actions.del,
     onExitEditor: Actions.exitEditor,
 };
+
+export type MainContainerProps = {    
+    
+}
 
 function mergeProps(
     stateProps: MainContainerState,
