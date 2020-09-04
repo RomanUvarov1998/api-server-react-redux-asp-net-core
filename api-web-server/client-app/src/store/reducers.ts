@@ -1,7 +1,8 @@
 import {
     PatientVM, FieldValue, PatientFieldDTM,
     PatientSearchTemplateVM,
-    PatientDTM
+    PatientDTM,
+    SavingStatus
 } from "../library/patient";
 import { Status } from "../library/history";
 import { MainContainerState } from '../components/main-container'
@@ -128,6 +129,8 @@ export function onEnterEditor(state: MainContainerState, patient: PatientVM | un
                 Status.Added
             );
 
+    editingPatient.savingStatus = SavingStatus.NotSaved;
+
     return ({
         ...state,
         editingPatient
@@ -141,6 +144,7 @@ export function onEditPatient(state: MainContainerState, fieldNameId: number,
     if (!editedField) throw new Error('field not found');
 
     const editingPatient = state.editingPatient!.updateField(fieldNameId, newValue);
+    editingPatient.savingStatus = SavingStatus.NotSaved;
 
     return {
         ...state,
@@ -165,17 +169,21 @@ export function onDelete(state: MainContainerState, id: number,
 }
 export function onExitEditor(state: MainContainerState, save: boolean,
     delayedStoreDispatch: undefined | ((action: Actions.MyAction) => void)): MainContainerState {
+    if (!state.editingPatient) throw new Error('editingPatient is null');
+
+    let editingPatient;
+
     if (save) {
-        syncronizePatientWithServer(delayedStoreDispatch, state.editingPatient!.copy());
+        editingPatient = state.editingPatient!.copy();
+        editingPatient.savingStatus = SavingStatus.Saving;
+
+        syncronizePatientWithServer(delayedStoreDispatch, editingPatient!);
+    } else {
+        editingPatient = null;
     }
-
-    const isSyncronizingPatient = save;
-
-    const editingPatient = save ? state.editingPatient : null;
 
     return {
         ...state,
-        isSyncronizingPatient,
         editingPatient
     };
 }
@@ -190,29 +198,39 @@ export function onGetSavingResult(state: MainContainerState, success: boolean,
 
     if (!state.editingPatient) throw new Error('no editing patient');
 
-    const editedPatient = state.editingPatient!.copy();
-    editedPatient.status = Status.Untouched;
+    const editingPatient = state.editingPatient!.copy();
+    const editingPatientCopy = state.editingPatient!.copy();
 
-    switch (state.editingPatient.status) {
+    editingPatient.savingStatus = SavingStatus.Saved;
+    editingPatientCopy.savingStatus = SavingStatus.Saved;
+
+    editingPatient.status = Status.Untouched;
+
+    switch (editingPatientCopy.status) {
         case Status.Added:
-            searchingList = state.searchingList.concat(editedPatient);
+            searchingList = state.searchingList.concat(editingPatient);
             break;
         case Status.Modified:
             searchingList = state.searchingList.map(p =>
-                p.equals(editedPatient) ? editedPatient : p);
+                p.equals(editingPatient) ? editingPatient : p);
             break;
         case Status.Deleted:
             searchingList = state.searchingList.filter(p =>
-                !p.equals(editedPatient));
+                !p.equals(editingPatient));
             break;
         default: throw new Error('patient state is untouched');
     }
 
     return {
         ...state,
-        editingPatient: null,
-        isSyncronizingPatient: false,
+        editingPatient: editingPatientCopy,
         searchingList
+    };
+}
+export function onConfirmSavingResult(state: MainContainerState): MainContainerState {
+    return {
+        ...state,
+        editingPatient: null
     };
 }
 

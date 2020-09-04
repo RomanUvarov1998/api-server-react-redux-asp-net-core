@@ -22,21 +22,20 @@ export type PatientManagerProps = {
     onEditPatient: (fieldNameId: number, newValue: FieldValue) => void,
     onDelete: (id: number) => void,
     onExitEditor: (save: boolean) => void,
-    isSyncronizingPatient: boolean
+    onConfirmSavingResult: () => void,
 }
 
 export class PatientManager extends React.Component<PatientManagerProps, {}, {}> {
     render(): React.ReactNode {
-        let content;        
-        const ep = this.props.editingPatient;
-        
-        if (ep && ep.status !== Status.Deleted && ep.status !== Status.Untouched) {
+        let content;     
+           
+        if (this.props.editingPatient) {
             content = (<PatientEditor 
                 patient={this.props.editingPatient!}
                 onUpdate={(fieldNameId: number, newValue: string) => 
                     this.props.onEditPatient(fieldNameId, newValue)}
                 onExitEditor={this.props.onExitEditor}
-                isSyncronizingPatient={this.props.isSyncronizingPatient}
+                onConfirmSavingResult={this.props.onConfirmSavingResult}
             />);
         } else {
             content = (<SearchTable

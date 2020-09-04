@@ -45,6 +45,9 @@ export function configureStore(initialState: MainContainerState) {
             case Actions.ACTION_GET_SAVING_RESULT:
                 a = (action as Actions.ActionGetSavingResult);
                 return Reducers.onGetSavingResult(state, a.success, a.message);
+            case Actions.ACTION_CONFIRM_SAVING_RESULT:
+                a = (action as Actions.ActionConfirmSavingResult);
+                return Reducers.onConfirmSavingResult(state);
 
             default:
                 return state;

@@ -12,6 +12,7 @@ export const ACTION_EDIT_PATIENT = 'ACTION_EDIT_PATIENT';
 export const ACTION_DELETE_PATIENT = 'ACTION_DELETE_PATIENT';
 export const ACTION_EXIT_EDITOR = 'ACTION_EXIT_EDITOR';
 export const ACTION_GET_SAVING_RESULT = 'ACTION_GET_SAVING_RESULT';
+export const ACTION_CONFIRM_SAVING_RESULT = 'ACTION_CONFIRM_SAVING_RESULT';
 
 export type MyAction =
     ActionRecievePatientFields |
@@ -25,6 +26,7 @@ export type MyAction =
     ActionEditPatient |
     ActionDeletePatient |
     ActionExitEditor | 
+    ActionConfirmSavingResult |
     ActionGetSavingResult;
 
 export type ActionRecievePatientFields = { type: string, patientTemplate: PatientSearchTemplateVM };
@@ -39,6 +41,7 @@ export type ActionEditPatient = { type: string, fieldNameId: number, newValue: F
 export type ActionDeletePatient = { type: string, patientId: number };
 export type ActionExitEditor = { type: string, save: boolean };
 export type ActionGetSavingResult = { type: string, success: boolean, message: string };
+export type ActionConfirmSavingResult = { type: string };
 
 
 export function recievePatientFields(patientTemplate: PatientSearchTemplateVM): ActionRecievePatientFields {
@@ -109,5 +112,10 @@ export function getSavingResult(success: boolean, message: string): ActionGetSav
         type: ACTION_GET_SAVING_RESULT,
         success,
         message
+    };
+}
+export function confirmSavingResult(): ActionConfirmSavingResult {
+    return {
+        type: ACTION_CONFIRM_SAVING_RESULT
     };
 }

@@ -31,8 +31,7 @@ export class App extends React.Component<AppProps, AppState, {}> {
       patientTemplate: null,
       canLoadMore: false,
       loadPortionCount: 10,
-      editingPatient: null,
-      isSyncronizingPatient: false
+      editingPatient: null
     };
     this.state = {
       store: configureStore(tableContainerState),

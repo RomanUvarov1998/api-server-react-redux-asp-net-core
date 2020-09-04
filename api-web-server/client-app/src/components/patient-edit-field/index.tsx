@@ -4,7 +4,6 @@ import { PatientFieldDTM } from '../../library/patient';
 type PatientEditFieldProps = {
     field: PatientFieldDTM,
     onChange: (fieldNameId: number, newValue: string) => void,
-    disabled: boolean,
     autofocus: boolean
 };
 export function PatientEditField(props: PatientEditFieldProps): JSX.Element {

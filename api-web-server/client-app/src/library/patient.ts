@@ -26,8 +26,9 @@ export class PatientFieldDTM {
 }
 
 export enum SavingStatus {
-    Saved,
-    Saving
+    NotSaved,
+    Saving,
+    Saved
 }
 
 export class PatientVM {

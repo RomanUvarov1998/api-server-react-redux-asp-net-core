@@ -13,7 +13,6 @@ export type MainContainerState = {
     loadPortionCount: number,
 
     editingPatient: PatientVM | null,
-    isSyncronizingPatient: boolean
 }
 const mapStateToProps = (state: MainContainerState): MainContainerState => {
     return {
@@ -26,7 +25,6 @@ const mapStateToProps = (state: MainContainerState): MainContainerState => {
         loadPortionCount: state.loadPortionCount, 
 
         editingPatient: state.editingPatient,
-        isSyncronizingPatient: state.isSyncronizingPatient
     }
 };
 
@@ -40,6 +38,7 @@ export type TableContainerDispatchProps = {
     onEditPatient: (fieldNameId: number, newValue: FieldValue) => Actions.ActionEditPatient,
     onDelete: (id: number) => Actions.ActionDeletePatient,
     onExitEditor: (save: boolean) => Actions.ActionExitEditor,
+    onConfirmSavingResult: () => Actions.ActionConfirmSavingResult
 }
 const mapDispatchToProps: TableContainerDispatchProps = {
     onSetSearchTemplate: Actions.setSearchTemplate,
@@ -51,6 +50,7 @@ const mapDispatchToProps: TableContainerDispatchProps = {
     onEditPatient: Actions.editPatient,
     onDelete: Actions.del,
     onExitEditor: Actions.exitEditor,
+    onConfirmSavingResult: Actions.confirmSavingResult
 };
 
 export type MainContainerProps = {    
