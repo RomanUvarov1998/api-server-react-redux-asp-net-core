@@ -1,7 +1,7 @@
 import './App.css';
 import React from 'react';
 import { Provider } from 'react-redux';
-import { TableContainer, TableContainerState } from './table-container/table-container';
+import { MainContainer, MainContainerState } from './main-container/main-container';
 import { configureStore } from '../store/my-store';
 import * as Actions from '../store/actions';
 import { PatientSearchTemplateVM } from "../library/patient";
@@ -15,7 +15,7 @@ type AppProps = {
 export type AppState = {
   store: MyStore
 }
-export type MyStore = Store<TableContainerState, Actions.MyAction>;
+export type MyStore = Store<MainContainerState, Actions.MyAction>;
 
 export class App extends React.Component<AppProps, AppState, {}> {
   state: AppState;
@@ -23,7 +23,7 @@ export class App extends React.Component<AppProps, AppState, {}> {
   constructor(props: AppProps) {
     super(props);
 
-    const tableContainerState: TableContainerState = {
+    const tableContainerState: MainContainerState = {
       isWaitingPatientsList: true,
       isWaitingPatientFields: true,
 
@@ -42,7 +42,7 @@ export class App extends React.Component<AppProps, AppState, {}> {
   render(): React.ReactNode {
     return (
       <Provider store={this.state.store}>
-        <TableContainer />
+        <MainContainer />
       </Provider>
     );
   }

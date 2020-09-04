@@ -23,13 +23,14 @@ export function PatientEditor(props: PatientEditorProps): JSX.Element {
             (<h1>{'Сохранение...'}</h1>) :
             null;
 
-    const fieldEditors = props.patient.fields.map(f => (
+    const fieldEditors = props.patient.fields.map((f, index) => (
         <PatientEditorField
             key={f.nameId}
             field={f}
             onChange={(fieldNameId: number, newValue: string) =>
                 props.onUpdate(fieldNameId, newValue)}
             disabled={props.isSyncronizingPatient}
+            autofocus={index === 0}
         />
     ));
 
@@ -38,11 +39,11 @@ export function PatientEditor(props: PatientEditorProps): JSX.Element {
             {headerOperation}
             {headerSyncronizingStatus}
             <Button
-                onClick={() => props.onExitEditor(true)}
-            >Сохранить</Button>
-            <Button
                 onClick={() => props.onExitEditor(false)}
             >Отмена</Button>
+            <Button
+                onClick={() => props.onExitEditor(true)}
+            >Сохранить</Button>
             <div style={{ margin: 10 }}>
                 {fieldEditors}
             </div>
@@ -53,7 +54,8 @@ export function PatientEditor(props: PatientEditorProps): JSX.Element {
 type PatientEditorFieldProps = {
     field: PatientFieldDTM,
     onChange: (fieldNameId: number, newValue: string) => void,
-    disabled: boolean
+    disabled: boolean,
+    autofocus: boolean
 };
 export function PatientEditorField(props: PatientEditorFieldProps): JSX.Element {
     const inputId = `edit${props.field.nameId}`;
@@ -66,6 +68,7 @@ export function PatientEditorField(props: PatientEditorFieldProps): JSX.Element 
                 value={props.field.value}
                 onChange={e => props.onChange(props.field.nameId, e.currentTarget.value)}
                 style={{ display: 'block' }}
+                autoFocus={props.autofocus}
             />
         </>
     );

@@ -13,10 +13,10 @@ export type SearchBarProps = {
 }
 
 export function SearchBar(props: SearchBarProps) {
-    const searchFields = props.patientTemplate.fields.map((field, ind) => {
+    const searchFields = props.patientTemplate.fields.map((field, index) => {
         return (
             <SearchField
-                key={ind}
+                key={index}
                 frozen={props.frozen}
                 field={field}
                 onInput={newValue => props.onSetSearchTemplate(field.nameId, newValue)}

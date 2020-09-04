@@ -4,21 +4,21 @@ import {
     PatientDTM
 } from "../library/patient";
 import { Status } from "../library/history";
-import { TableContainerState } from '../components/table-container/table-container'
+import { MainContainerState } from '../components/main-container/main-container'
 import { myFetch } from "../library/fetchHelper";
 import * as Actions from '../store/actions';
 
 
-export function onRecievePatientFields(state: TableContainerState, patientTemplate: PatientSearchTemplateVM): TableContainerState {
+export function onRecievePatientFields(state: MainContainerState, patientTemplate: PatientSearchTemplateVM): MainContainerState {
     return {
         ...state,
         patientTemplate,
         isWaitingPatientFields: false
     }
 }
-export function onSetSearchTemplate(state: TableContainerState,
+export function onSetSearchTemplate(state: MainContainerState,
     delayedStoreDispatch: undefined | ((action: Actions.MyAction) => void),
-    newValue: FieldValue, fieldNameId: number): TableContainerState {
+    newValue: FieldValue, fieldNameId: number): MainContainerState {
     if (!state.patientTemplate) throw new Error("template is null");
 
     const patientTemplate = state.patientTemplate.updateField(fieldNameId, newValue);
@@ -46,8 +46,8 @@ export function onSetSearchTemplate(state: TableContainerState,
         patientTemplate
     });
 }
-export function onGiveVariants(state: TableContainerState, fieldNameId: number,
-    variants: string[]): TableContainerState {
+export function onGiveVariants(state: MainContainerState, fieldNameId: number,
+    variants: string[]): MainContainerState {
     if (!state.patientTemplate) throw new Error("template is null");
 
     const patientTemplate = state.patientTemplate.copy();
@@ -64,9 +64,9 @@ export function onGiveVariants(state: TableContainerState, fieldNameId: number,
         patientTemplate
     };
 }
-export function onClearSearchTemplate(state: TableContainerState,
+export function onClearSearchTemplate(state: MainContainerState,
     delayedStoreDispatch: undefined | ((action: Actions.MyAction) => void)
-): TableContainerState {
+): MainContainerState {
     if (!state.patientTemplate) return state;
 
     const patientTemplate = state.patientTemplate.copy();
@@ -83,8 +83,8 @@ export function onClearSearchTemplate(state: TableContainerState,
         patientTemplate
     });
 }
-export function onRecievePatients(state: TableContainerState, patients: PatientVM[],
-    append: boolean): TableContainerState {
+export function onRecievePatients(state: MainContainerState, patients: PatientVM[],
+    append: boolean): MainContainerState {
     let searchingList =
         append ?
             state.searchingList.concat(patients) :
@@ -98,8 +98,8 @@ export function onRecievePatients(state: TableContainerState, patients: PatientV
         isWaitingPatientsList: false
     };
 }
-export function onLoadMorePatients(state: TableContainerState,
-    delayedStoreDispatch: undefined | ((action: Actions.MyAction) => void)): TableContainerState {
+export function onLoadMorePatients(state: MainContainerState,
+    delayedStoreDispatch: undefined | ((action: Actions.MyAction) => void)): MainContainerState {
     const patientTemplate = state.patientTemplate!.copy();
 
     loadPatients(
@@ -115,7 +115,7 @@ export function onLoadMorePatients(state: TableContainerState,
 }
 
 
-export function onEnterEditor(state: TableContainerState, patient: PatientVM | undefined): TableContainerState {
+export function onEnterEditor(state: MainContainerState, patient: PatientVM | undefined): MainContainerState {
     if (!state.patientTemplate) throw new Error('No patient template');
     if (state.editingPatient) throw new Error('editingPatient must be null');
 
@@ -133,8 +133,8 @@ export function onEnterEditor(state: TableContainerState, patient: PatientVM | u
         editingPatient
     })
 }
-export function onEditPatient(state: TableContainerState, fieldNameId: number,
-    newValue: FieldValue): TableContainerState {
+export function onEditPatient(state: MainContainerState, fieldNameId: number,
+    newValue: FieldValue): MainContainerState {
     if (!state.editingPatient) throw new Error('Editing patient not found');
 
     const editingPatient = state.editingPatient!.updateField(fieldNameId, newValue);
@@ -144,8 +144,8 @@ export function onEditPatient(state: TableContainerState, fieldNameId: number,
         editingPatient
     };
 }
-export function onDelete(state: TableContainerState, id: number,
-    delayedDispatch: undefined | ((action: Actions.MyAction) => void)): TableContainerState 
+export function onDelete(state: MainContainerState, id: number,
+    delayedDispatch: undefined | ((action: Actions.MyAction) => void)): MainContainerState 
 {
     const deletingPatient = state.searchingList.find(p => p.id === id);
     if (!deletingPatient) throw new Error('deletingPatient not found');
@@ -161,8 +161,8 @@ export function onDelete(state: TableContainerState, id: number,
         editingPatient
     });
 }
-export function onExitEditor(state: TableContainerState, save: boolean,
-    delayedStoreDispatch: undefined | ((action: Actions.MyAction) => void)): TableContainerState 
+export function onExitEditor(state: MainContainerState, save: boolean,
+    delayedStoreDispatch: undefined | ((action: Actions.MyAction) => void)): MainContainerState 
 {
     if (save) {
         syncronizePatientWithServer(delayedStoreDispatch, state.editingPatient!.copy());
@@ -178,8 +178,8 @@ export function onExitEditor(state: TableContainerState, save: boolean,
         editingPatient
     };
 }
-export function onGetSavingResult(state: TableContainerState, success: boolean, 
-    message: string): TableContainerState 
+export function onGetSavingResult(state: MainContainerState, success: boolean, 
+    message: string): MainContainerState 
 {
     if (!success) {
         console.log('Error occured');

@@ -4,7 +4,7 @@ import { SearchTable } from '../search-table/search-table';
 import { PatientEditor } from '../patient-editor/patient-editor';
 import { Status } from '../../library/history';
 
-export type TableProps = {
+export type PatientManagerProps = {
     isWaitingPatientsList: boolean,
     isWaitingPatientFields: boolean,
 
@@ -25,7 +25,7 @@ export type TableProps = {
     isSyncronizingPatient: boolean
 }
 
-export class Table extends React.Component<TableProps, {}, {}> {
+export class PatientManager extends React.Component<PatientManagerProps, {}, {}> {
     render(): React.ReactNode {
         let content;        
         const ep = this.props.editingPatient;

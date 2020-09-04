@@ -1,9 +1,9 @@
 import { connect } from 'react-redux'
 import { PatientVM, FieldValue, PatientSearchTemplateVM } from '../../library/patient';
 import * as Actions from '../../store/actions';
-import { Table } from '../table/table';
+import { PatientManager } from '../patients-manager/patients-manager';
 
-export type TableContainerState = {
+export type MainContainerState = {
     isWaitingPatientsList: boolean,
     isWaitingPatientFields: boolean,
 
@@ -15,11 +15,11 @@ export type TableContainerState = {
     editingPatient: PatientVM | null,
     isSyncronizingPatient: boolean
 }
-export type TableContainerProps = {    
+export type MainContainerProps = {    
     
 }
 
-const mapStateToProps = (state: TableContainerState): TableContainerState => {
+const mapStateToProps = (state: MainContainerState): MainContainerState => {
     return {
         isWaitingPatientFields: state.isWaitingPatientFields,
         isWaitingPatientsList: state.isWaitingPatientsList, 
@@ -58,9 +58,9 @@ const mapDispatchToProps: TableContainerDispatchProps = {
 };
 
 function mergeProps(
-    stateProps: TableContainerState,
+    stateProps: MainContainerState,
     dispatchProps: TableContainerDispatchProps,
-    ownProps: TableContainerProps
+    ownProps: MainContainerProps
 ) {
     return {
         ...stateProps,
@@ -69,8 +69,8 @@ function mergeProps(
     };
 };
 
-export const TableContainer = connect(
+export const MainContainer = connect(
     mapStateToProps,
     mapDispatchToProps,
     mergeProps
-)(Table);
+)(PatientManager);

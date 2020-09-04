@@ -1,13 +1,13 @@
 import { createStore } from 'redux';
 import * as Actions from './actions';
 import * as Reducers from './reducers';
-import { TableContainerState } from '../components/table-container/table-container';
+import { MainContainerState } from '../components/main-container/main-container';
 
-export function configureStore(initialState: TableContainerState) {
+export function configureStore(initialState: MainContainerState) {
     let delayedDispatch: undefined | ((action: Actions.MyAction) => void) = undefined;
 
     const red = (state = initialState, action: Actions.MyAction)
-        : TableContainerState => {
+        : MainContainerState => {
         let a;
         switch (action.type) {
             case Actions.ACTION_RECIEVE_PATIENT_FIELDS:
