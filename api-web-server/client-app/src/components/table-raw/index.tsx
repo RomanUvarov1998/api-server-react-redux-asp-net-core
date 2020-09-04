@@ -1,5 +1,5 @@
 import React from "react";
-import { RawCell } from "../raw-cell";
+import { FieldEditor } from "../field-editor";
 import { PatientVM, FieldValue, SavingStatus, PatientSearchTemplateVM } from "../../library/patient";
 import { Status } from "../../library/history";
 import { Button } from "reactstrap";
@@ -22,9 +22,10 @@ export function TableRaw(props: TableRawProps) {
 
         return (
             field ?
-                (<RawCell
-                    key={field.name}
-                    setEntityValue={
+                (<FieldEditor
+                    key={field.nameId}
+                    labelText={field.name}
+                    onChange={
                         newValue =>
                             props.onEdit(
                                 props.patient.copy(),
@@ -33,8 +34,9 @@ export function TableRaw(props: TableRawProps) {
                             )
                     }
                     value={field.value}
-                    disabled={props.editState !== RawState.Editing || 
+                    disabled={props.editState !== RawState.Editing ||
                         props.patient.status === Status.Deleted}
+                    autofocus={false}
                 />) :
                 (<div>Не указано</div>)
         );

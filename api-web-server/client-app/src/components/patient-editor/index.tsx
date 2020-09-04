@@ -2,7 +2,7 @@ import React from 'react';
 import { Button } from 'reactstrap';
 import { PatientVM, SavingStatus } from '../../library/patient';
 import { Status } from '../../library/history';
-import { PatientEditField } from '../patient-edit-field';
+import { FieldEditor } from '../field-editor';
 
 type PatientEditorProps = {
     patient: PatientVM,
@@ -23,12 +23,14 @@ export function PatientEditor(props: PatientEditorProps): JSX.Element {
     switch (props.patient.savingStatus) {
         case SavingStatus.NotSaved:
             const fieldEditors = props.patient.fields.map((f, index) => (
-                <PatientEditField
+                <FieldEditor
                     key={f.nameId}
-                    field={f}
-                    onChange={(fieldNameId: number, newValue: string) =>
-                        props.onUpdate(fieldNameId, newValue)}
+                    labelText={f.name}
+                    value={f.value}
+                    onChange={newValue =>
+                        props.onUpdate(f.nameId, newValue)}
                     autofocus={index === 0}
+                    disabled={true}
                 />
             ));
             editingPanel = (

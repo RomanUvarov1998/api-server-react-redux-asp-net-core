@@ -42,6 +42,7 @@ export function SearchTable(props: SearchTableProps): JSX.Element {
                 giveVariants={props.giveVariants}
                 onClearTemplate={props.onClearTemplate}
                 addPatientFromSearchFields={props.addPatientFromSearchFields}
+                onStartEditPatientTemplate={props.onStartEditPatientTemplate}
             />
         );
     } else {

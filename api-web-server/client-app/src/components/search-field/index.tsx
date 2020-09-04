@@ -1,5 +1,6 @@
 import React from 'react'
 import { FieldValue, PatientSearchTemplateFieldVM } from '../../library/patient';
+import { FieldEditor } from '../field-editor';
 
 export type SearchFieldProps = {
     frozen: boolean,

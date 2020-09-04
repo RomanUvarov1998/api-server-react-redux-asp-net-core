@@ -1,46 +1,59 @@
 import React from 'react';
 import { Button } from 'reactstrap';
-import { PatientSearchTemplateVM, PatientSearchTemplateFieldVM } from '../../library/patient';
+import { PatientSearchTemplateVM } from '../../library/patient';
+import { FieldEditor } from '../field-editor';
+import { Dictionary } from 'lodash';
 
 type PatientTemplateEditorProps = {
     initialTemplate: PatientSearchTemplateVM,
     onSave: (save: boolean, newTemplate: PatientSearchTemplateVM) => void
 };
 type PatientTemplateEditorState = {
-    editingTemplate: PatientSearchTemplateVM
+    editingTemplate: PatientSearchTemplateVM,
+    fieldValues: Dictionary<string>
 };
 
 export class PatientTemplateEditor extends React.Component<PatientTemplateEditorProps,
     PatientTemplateEditorState, {}> {
     constructor(props: PatientTemplateEditorProps) {
         super(props);
+
+        const fieldValues: Dictionary<string> = {};
+        props.initialTemplate.fields.forEach(f => 
+            fieldValues[f.nameId] = f.name);
+
         this.state = {
-            editingTemplate: props.initialTemplate.copy()
+            editingTemplate: props.initialTemplate.copy(),
+            fieldValues
         };
     }
 
     render(): JSX.Element {
+
         const editFields = this.state.editingTemplate.fields.map((f, index) =>
-            (<PatientTemplateEditField
+            (<FieldEditor
                 key={index}
-                initialName={this.props.initialTemplate.fields.find(fi =>
-                    fi.nameId === f.nameId)!.name}
-                field={f}
-                onEdit={this.onEdit}
+                labelText={this.state.fieldValues[f.nameId] + ':'}
+                value={f.name}
+                onChange={newValue => this.onEdit(f.nameId, newValue)}
+                disabled={false}
                 autofocus={index === 0}
             />)
         );
 
         return (
-            <>
+            <div
+                style={{ margin: 10 }}
+            >
+                <h1>Редактирования списка полей пациента</h1>
                 <Button
                     onClick={() => this.props.onSave(true, this.state.editingTemplate)}
-                >Сохранить</Button>
+                >Сохранить (пока что не сохранится в бд)</Button>
                 <Button
                     onClick={() => this.props.onSave(false, this.state.editingTemplate)}
                 >Отмена</Button>
                 {editFields}
-            </>
+            </div>
         );
     }
 
@@ -57,27 +70,4 @@ export class PatientTemplateEditor extends React.Component<PatientTemplateEditor
 
         this.setState({ editingTemplate: newTemplate });
     }
-}
-
-type PatientTemplateEditFieldProps = {
-    initialName: string,
-    field: PatientSearchTemplateFieldVM,
-    onEdit: (nameId: number, newName: string) => void,
-    autofocus: boolean
-}
-function PatientTemplateEditField(props: PatientTemplateEditFieldProps): JSX.Element {
-    const inputId = `ptef${props.field.nameId}`;
-    return (
-        <>
-            <label
-                htmlFor={inputId}
-                style={{ display: 'block' }}
-            >{`${props.initialName}:`}</label>
-            <input
-                value={props.field.name}
-                onChange={e => props.onEdit(props.field.nameId, e.currentTarget.value)}
-                autoFocus={props.autofocus}
-            />
-        </>
-    );
 }
