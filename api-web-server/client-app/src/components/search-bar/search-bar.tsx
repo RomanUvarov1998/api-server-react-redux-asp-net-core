@@ -9,7 +9,7 @@ export type SearchBarProps = {
     onSetSearchTemplate: (fieldNameId: number, newValue: FieldValue) => void,
     giveVariants: (fieldNameId: number, variants: string[]) => void,
     onClearTemplate: () => void,
-    onAdd: (template: PatientSearchTemplateVM) => void
+    addPatientFromSearchFields: (template: PatientSearchTemplateVM) => void
 }
 
 export function SearchBar(props: SearchBarProps) {
@@ -28,7 +28,7 @@ export function SearchBar(props: SearchBarProps) {
             <h1>Поиск</h1>
             <ButtonToolbar>
                 <Button onClick={() => clearTemplateHandler(props)}>Очистить фильтр</Button>
-                <Button onClick={() => props.onAdd(props.patientTemplate)}>Добавить</Button>
+                <Button onClick={() => props.addPatientFromSearchFields(props.patientTemplate)}>Добавить</Button>
             </ButtonToolbar>
             <table><thead><tr>{searchFields}</tr></thead></table>
         </>

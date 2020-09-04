@@ -1,22 +1,23 @@
 import React from 'react';
 import { PatientVM, PatientSearchTemplateVM } from '../../library/patient'
 import { SearchBar } from '../search-bar/search-bar';
-import { Button } from 'reactstrap';
+import { Button, Table } from 'reactstrap';
+import { Status } from '../../library/history';
 
 export type SearchTableProps = {
-    addToEditingList: (patient: PatientVM) => void,
     isWaitingPatientsList: boolean,
     isWaitingPatientFields: boolean,
     patientsList: PatientVM[],
-    isInEditingList: (patient: PatientVM) => boolean,
     patientTemplate: PatientSearchTemplateVM | null,
     canLoadMore: boolean,
-    loadCount: number,
+    loadPortionCount: number,
     onSetSearchTemplate: (fieldNameId: number, newValue: string) => void,
     giveVariants: (fieldNameId: number, variants: string[]) => void,
     onClearTemplate: () => void,
     onLoadMore: (template: PatientSearchTemplateVM, loadedCount: number, pageLength: number) => void,
-    onAdd: (template: PatientSearchTemplateVM) => void
+    addPatientFromSearchFields: (patient: PatientSearchTemplateVM) => void,
+    onEnterEditor: (patient: PatientVM | undefined) => void,
+    onDelete: (id: number) => void
 }
 
 export function SearchTable(props: SearchTableProps): JSX.Element {
@@ -39,7 +40,7 @@ export function SearchTable(props: SearchTableProps): JSX.Element {
                 onSetSearchTemplate={props.onSetSearchTemplate}
                 giveVariants={props.giveVariants}
                 onClearTemplate={props.onClearTemplate}
-                onAdd={props.onAdd}
+                addPatientFromSearchFields={props.addPatientFromSearchFields}
             />
         );
     } else {
@@ -48,16 +49,21 @@ export function SearchTable(props: SearchTableProps): JSX.Element {
     }
 
     tableBodyRows = props.patientsList.map(p => {
-        let btnEdit =
-            props.isInEditingList(p) ?
-                ('Редактируется') :
-                (<Button
-                    onClick={() => props.addToEditingList(p)}
-                >Редактировать</Button>);
-
         const cells = p.fields
             .map(f => (<td key={f.nameId}>{f.value}</td>))
-            .concat(<td key={'edit'}>{btnEdit}</td>);
+            .concat(
+                (<td key={'edit'}><Button
+                    onClick={() => {
+                        p.status = Status.Modified;
+                        props.onEnterEditor(p);
+                    }}
+                >Редактировать</Button></td>),
+                (<td key={'delete'}><Button
+                onClick={() => {
+                    p.status = Status.Deleted;
+                    props.onDelete(p.id);
+                }}
+            >Удалить</Button></td>));
 
 
         return (<tr key={p.id}>{cells}</tr>)
@@ -71,7 +77,7 @@ export function SearchTable(props: SearchTableProps): JSX.Element {
     let noPatientsLable = null;
     if (tableBodyRows.length === 0 && !props.isWaitingPatientsList) {
         noPatientsLable = (
-            <tr key={'noPatientsLable'}>
+            <tr key={'noPatientsLabel'}>
                 <td colSpan={columnsCount}>Список пуст</td >
             </tr >
         );
@@ -85,21 +91,21 @@ export function SearchTable(props: SearchTableProps): JSX.Element {
         >Загрузка списка пациентов...</td></tr>);
     }
 
-    let loadMoreControl = null
+    let loadMoreControl = null;
     if (!props.isWaitingPatientsList && props.patientsList.length) {
         loadMoreControl =
             props.canLoadMore ?
                 (<Button onClick={() => onLoadMore(props)}>Загрузить ещё</Button>) :
-                (<strong>Загружены все найденные результаты</strong>)
+                (<strong>Загружены все найденные результаты</strong>);
     }
 
     return (
         <div style={{ margin: 10 }}>
             {searchBar}
             <div
-                style={{ maxHeight: 300, overflowY: 'auto', margin: 10 }}
+                style={{ marginTop: 10 }}
             >
-                <table className={"table table-responsive table-striped table-bordered table-normal"}>
+                <Table className={"table table-responsive table-striped table-bordered table-normal"}>
                     <thead className={"thead-dark"}>
                         {tableHeadRow}
                     </thead>
@@ -108,7 +114,7 @@ export function SearchTable(props: SearchTableProps): JSX.Element {
                         {noPatientsLable}
                         {loadingLable}
                     </tbody>
-                </table>
+                </Table>
                 {loadMoreControl}
             </div>
         </div>
@@ -122,5 +128,5 @@ function onLoadMore(props: SearchTableProps) {
 
     console.log(`search more ${patientTemplate.toString()}`);
 
-    props.onLoadMore(patientTemplate, props.patientsList.length, props.loadCount);
+    props.onLoadMore(patientTemplate, props.patientsList.length, props.loadPortionCount);
 }

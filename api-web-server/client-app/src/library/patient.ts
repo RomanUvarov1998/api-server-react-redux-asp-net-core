@@ -160,6 +160,13 @@ export class PatientSearchTemplateVM {
 
         return copy;
     }
+    public toPatientVM = () => {
+        return new PatientVM(
+            this.fields.map(f => new PatientFieldDTM(f.name, f.value, f.nameId)),
+            0,
+            Status.Added
+        );
+    }
 
     public static from(obj: any): PatientSearchTemplateVM {
         let fields: PatientFieldDTM[] = obj.fields.map(

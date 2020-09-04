@@ -1,34 +1,19 @@
 import { connect } from 'react-redux'
 import { PatientVM, FieldValue, PatientSearchTemplateVM } from '../../library/patient';
 import * as Actions from '../../store/actions';
-import { Table, TabNums } from '../table/table';
+import { Table } from '../table/table';
 
 export type TableContainerState = {
-    tabNum: TabNums,
-
     isWaitingPatientsList: boolean,
     isWaitingPatientFields: boolean,
 
     searchingList: PatientVM[],
     patientTemplate: PatientSearchTemplateVM | null,
     canLoadMore: boolean,
-    loadCount: number,
+    loadPortionCount: number,
 
-    editingList: PatientVM[]
-}
-export type TableContainerDispatchProps = {
-    onTabChange: (newTabNum: TabNums) => void,
-
-    onLoadMore: (template: PatientSearchTemplateVM, loadedCount: number, pageLength: number) => void,
-    onSetSearchTemplate: (fieldNameId: number, newValue: FieldValue) => void,
-    giveVariants: (fieldNameId: number, variants: string[]) => void,
-    onClearTemplate: () => void,
-    addToEditingList: (patient: PatientVM) => void,
-
-    onAdd: (filledTemplate?: PatientSearchTemplateVM | undefined) => Actions.ActionAddPatient,
-    onEdit: (patientCopy: PatientVM, fieldNameId: number, newValue: FieldValue) => Actions.ActionEditPatient,
-    onDelete: (id: number) => Actions.ActionDeletePatient,
-    savePatients: (patients: PatientVM[]) => Actions.ActionStartSaving,
+    editingPatient: PatientVM | null,
+    isSyncronizingPatient: boolean
 }
 export type TableContainerProps = {    
     
@@ -36,33 +21,40 @@ export type TableContainerProps = {
 
 const mapStateToProps = (state: TableContainerState): TableContainerState => {
     return {
-        tabNum: state.tabNum,
-
         isWaitingPatientFields: state.isWaitingPatientFields,
         isWaitingPatientsList: state.isWaitingPatientsList, 
 
         searchingList: state.searchingList,
         patientTemplate: state.patientTemplate,
         canLoadMore: state.canLoadMore, 
-        loadCount: state.loadCount, 
+        loadPortionCount: state.loadPortionCount, 
 
-        editingList: state.editingList
+        editingPatient: state.editingPatient,
+        isSyncronizingPatient: state.isSyncronizingPatient
     }
 };
 
-const mapDispatchToProps: TableContainerDispatchProps = {
-    onTabChange: Actions.changeTab,
+export type TableContainerDispatchProps = {
+    onSetSearchTemplate: (fieldNameId: number, newValue: FieldValue) => Actions.ActionSetSearchTemplate,
+    giveVariants: (fieldNameId: number, variants: string[]) => Actions.ActionGiveVariants,
+    onClearSearchTemplate: () => Actions.ActionClearSearchTemplate,
+    onLoadMorePatients: (template: PatientSearchTemplateVM, loadedCount: number, pageLength: number) => Actions.ActionLoadMorePatients,
 
-    onLoadMore: Actions.loadMorePatients,
+    onEnterEditor: (patient: PatientVM | undefined) => Actions.ActionEnterEditor,
+    onEditPatient: (fieldNameId: number, newValue: FieldValue) => Actions.ActionEditPatient,
+    onDelete: (id: number) => Actions.ActionDeletePatient,
+    onExitEditor: (save: boolean) => Actions.ActionExitEditor,
+}
+const mapDispatchToProps: TableContainerDispatchProps = {
     onSetSearchTemplate: Actions.setSearchTemplate,
     giveVariants: Actions.giveVariants,
-    onClearTemplate: Actions.clearSearchTemplate,
-    addToEditingList: Actions.addPatientToEditList,
+    onClearSearchTemplate: Actions.clearSearchTemplate,
+    onLoadMorePatients: Actions.loadMorePatients,
 
-    onAdd: Actions.add,
-    onEdit: Actions.edit,
+    onEnterEditor: Actions.enterEditor,
+    onEditPatient: Actions.editPatient,
     onDelete: Actions.del,
-    savePatients: Actions.startSaving,
+    onExitEditor: Actions.exitEditor,
 };
 
 function mergeProps(

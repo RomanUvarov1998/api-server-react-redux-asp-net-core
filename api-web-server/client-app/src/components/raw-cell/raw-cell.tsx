@@ -1,4 +1,4 @@
-import React from "react"
+import React from "react";
 
 export type RawCellProps = {
     setEntityValue: (v: string) => void,
@@ -6,7 +6,7 @@ export type RawCellProps = {
     disabled: boolean
 }
 
-export function RawCell(props: RawCellProps) {
+export function RawCell(props: RawCellProps): JSX.Element {
     return (
         <td>
             <input

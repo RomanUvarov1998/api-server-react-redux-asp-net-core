@@ -7,7 +7,6 @@ import * as Actions from '../store/actions';
 import { PatientSearchTemplateVM } from "../library/patient";
 import { myFetch } from '../library/fetchHelper';
 import { Store } from 'redux';
-import { TabNums } from './table/table';
 import { loadPatients } from '../store/reducers';
 
 type AppProps = {
@@ -25,17 +24,15 @@ export class App extends React.Component<AppProps, AppState, {}> {
     super(props);
 
     const tableContainerState: TableContainerState = {
-      tabNum: TabNums.Searching,
-
       isWaitingPatientsList: true,
       isWaitingPatientFields: true,
 
       searchingList: [],
       patientTemplate: null,
       canLoadMore: false,
-      loadCount: 10,
-
-      editingList: [],
+      loadPortionCount: 10,
+      editingPatient: null,
+      isSyncronizingPatient: false
     };
     this.state = {
       store: configureStore(tableContainerState),
@@ -70,7 +67,7 @@ export class App extends React.Component<AppProps, AppState, {}> {
           action => store.dispatch(action),
           patientTemplate,
           curState.searchingList.length,
-          curState.loadCount);
+          curState.loadPortionCount);
       }
     );
   }
