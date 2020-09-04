@@ -1,8 +1,8 @@
 import React from 'react';
-import { PatientVM, FieldValue, PatientSearchTemplateVM, PatientFieldDTM } from "../../library/patient";
-import { SearchTable } from '../search-table/search-table';
-import { PatientEditor } from '../patient-editor/patient-editor';
-import { Status, History } from '../../library/history';
+import { PatientVM, FieldValue, PatientSearchTemplateVM } from "../../library/patient";
+import { SearchTable } from '../search-table';
+import { PatientEditor } from '../patient-editor';
+import { Status } from '../../library/history';
 
 export type PatientManagerProps = {
     isWaitingPatientsList: boolean,

@@ -1,6 +1,6 @@
 import React from 'react';
 import { PatientVM, PatientSearchTemplateVM } from '../../library/patient'
-import { SearchBar } from '../search-bar/search-bar';
+import { SearchBar } from '../search-bar';
 import { Button, Table } from 'reactstrap';
 import { Status } from '../../library/history';
 

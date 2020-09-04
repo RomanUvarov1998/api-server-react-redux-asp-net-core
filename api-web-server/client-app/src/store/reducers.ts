@@ -4,7 +4,7 @@ import {
     PatientDTM
 } from "../library/patient";
 import { Status } from "../library/history";
-import { MainContainerState } from '../components/main-container/main-container'
+import { MainContainerState } from '../components/main-container'
 import { myFetch } from "../library/fetchHelper";
 import * as Actions from '../store/actions';
 

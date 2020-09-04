@@ -1,7 +1,8 @@
 import React from 'react';
-import { Button, ButtonGroup } from 'reactstrap';
-import { PatientVM, PatientFieldDTM } from '../../library/patient';
+import { Button } from 'reactstrap';
+import { PatientVM } from '../../library/patient';
 import { Status } from '../../library/history';
+import { PatientEditField } from '../patient-edit-field';
 
 type PatientEditorProps = {
     patient: PatientVM,
@@ -24,7 +25,7 @@ export function PatientEditor(props: PatientEditorProps): JSX.Element {
             null;
 
     const fieldEditors = props.patient.fields.map((f, index) => (
-        <PatientEditorField
+        <PatientEditField
             key={f.nameId}
             field={f}
             onChange={(fieldNameId: number, newValue: string) =>
@@ -48,28 +49,5 @@ export function PatientEditor(props: PatientEditorProps): JSX.Element {
                 {fieldEditors}
             </div>
         </div>
-    );
-}
-
-type PatientEditorFieldProps = {
-    field: PatientFieldDTM,
-    onChange: (fieldNameId: number, newValue: string) => void,
-    disabled: boolean,
-    autofocus: boolean
-};
-export function PatientEditorField(props: PatientEditorFieldProps): JSX.Element {
-    const inputId = `edit${props.field.nameId}`;
-    return (
-        <>
-            <label htmlFor={inputId}>{props.field.name}</label>
-            <input
-                id={inputId}
-                type={'text'}
-                value={props.field.value}
-                onChange={e => props.onChange(props.field.nameId, e.currentTarget.value)}
-                style={{ display: 'block' }}
-                autoFocus={props.autofocus}
-            />
-        </>
     );
 }

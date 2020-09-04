@@ -1,7 +1,7 @@
 import { connect } from 'react-redux'
-import { PatientVM, FieldValue, PatientSearchTemplateVM, PatientFieldDTM } from '../../library/patient';
+import { PatientVM, FieldValue, PatientSearchTemplateVM } from '../../library/patient';
 import * as Actions from '../../store/actions';
-import { PatientManager } from '../patients-manager/patients-manager';
+import { PatientManager } from '../patients-manager';
 
 export type MainContainerState = {
     isWaitingPatientsList: boolean,

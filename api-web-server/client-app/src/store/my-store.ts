@@ -1,7 +1,7 @@
 import { createStore } from 'redux';
 import * as Actions from './actions';
 import * as Reducers from './reducers';
-import { MainContainerState } from '../components/main-container/main-container';
+import { MainContainerState } from '../components/main-container';
 
 export function configureStore(initialState: MainContainerState) {
     let delayedDispatch: undefined | ((action: Actions.MyAction) => void) = undefined;

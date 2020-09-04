@@ -1,6 +1,6 @@
 import React from 'react'
 import { FieldValue, PatientSearchTemplateVM, PatientSearchTemplateFieldVM } from '../../library/patient'
-import { SearchField } from '../search-field/search-field'
+import { SearchField } from '../search-field'
 import { Button, ButtonToolbar } from 'reactstrap';
 
 export type SearchBarProps = {

@@ -1,14 +1,13 @@
 import './App.css';
 import React from 'react';
 import { Provider } from 'react-redux';
-import { MainContainer, MainContainerState } from './main-container/main-container';
+import { MainContainer, MainContainerState } from './main-container';
 import { configureStore } from '../store/my-store';
 import * as Actions from '../store/actions';
-import { PatientSearchTemplateVM, PatientFieldDTM } from "../library/patient";
+import { PatientSearchTemplateVM } from "../library/patient";
 import { myFetch } from '../library/fetchHelper';
 import { Store } from 'redux';
 import { loadPatients } from '../store/reducers';
-import { History } from '../library/history';
 
 type AppProps = {
 

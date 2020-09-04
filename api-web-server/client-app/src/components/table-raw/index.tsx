@@ -1,5 +1,5 @@
 import React from "react";
-import { RawCell } from "../raw-cell/raw-cell";
+import { RawCell } from "../raw-cell";
 import { PatientVM, FieldValue, SavingStatus, PatientSearchTemplateVM } from "../../library/patient";
 import { Status } from "../../library/history";
 import { Button } from "reactstrap";
