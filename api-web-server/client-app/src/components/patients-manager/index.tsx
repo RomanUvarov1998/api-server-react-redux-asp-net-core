@@ -20,9 +20,8 @@ export type PatientManagerProps = {
     onLoadMorePatients: (template: PatientSearchTemplateVM, loadedCount: number, pageLength: number) => void,
 
     editingPatient: PatientVM | null,
-    onEnterEditor: (patient: PatientVM | undefined) => void,
+    onEnterEditor: (patient: PatientVM | undefined, status: Status) => void,
     onEditPatient: (fieldNameId: number, newValue: FieldValue) => void,
-    onDelete: (id: number) => void,
     onExitEditor: (save: boolean) => void,
     onConfirmSavingResult: () => void,
 
@@ -39,7 +38,7 @@ export class PatientManager extends React.Component<PatientManagerProps, {}, {}>
                 initialTemplate={this.props.patientTemplate!.copy()}
                 onSave={this.props.onFinishEditPatientTemplate}
             />);
-        } else if (this.props.editingPatient && this.props.editingPatient.status !== Status.Deleted) {
+        } else if (this.props.editingPatient) {
             content = (<PatientEditor
                 patient={this.props.editingPatient!}
                 onUpdate={(fieldNameId: number, newValue: string) =>
@@ -50,7 +49,7 @@ export class PatientManager extends React.Component<PatientManagerProps, {}, {}>
         } else {
             content = (<SearchTable
                 addPatientFromSearchFields={(patient: PatientSearchTemplateVM) =>
-                    this.props.onEnterEditor(patient.toPatientVM())}
+                    this.props.onEnterEditor(patient.toPatientVM(), Status.Added)}
                 isWaitingPatientsList={this.props.isWaitingPatientsList}
                 isWaitingPatientFields={this.props.isWaitingPatientFields}
                 patientsList={this.props.searchingList}
@@ -62,7 +61,6 @@ export class PatientManager extends React.Component<PatientManagerProps, {}, {}>
                 onClearTemplate={this.props.onClearSearchTemplate}
                 onLoadMore={this.props.onLoadMorePatients}
                 onEnterEditor={this.props.onEnterEditor}
-                onDelete={this.props.onDelete}
                 onStartEditPatientTemplate={this.props.onStartEditPatientTemplate}
             />);
         }

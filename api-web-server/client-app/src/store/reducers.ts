@@ -116,7 +116,7 @@ export function onLoadMorePatients(state: MainContainerState,
 }
 
 
-export function onEnterEditor(state: MainContainerState, patient: PatientVM | undefined): MainContainerState {
+export function onEnterEditor(state: MainContainerState, patient: PatientVM | undefined, status: Status): MainContainerState {
     if (!state.patientTemplate) throw new Error('No patient template');
     if (state.editingPatient) throw new Error('editingPatient must be null');
 
@@ -129,6 +129,7 @@ export function onEnterEditor(state: MainContainerState, patient: PatientVM | un
                 Status.Added
             );
 
+    editingPatient.status = status;
     editingPatient.savingStatus = SavingStatus.NotSaved;
 
     return ({
@@ -150,24 +151,6 @@ export function onEditPatient(state: MainContainerState, fieldNameId: number,
         ...state,
         editingPatient
     };
-}
-export function onDelete(state: MainContainerState, id: number,
-    delayedDispatch: undefined | ((action: Actions.MyAction) => void)): MainContainerState {
-    const deletingPatient = state.searchingList.find(p => p.id === id);
-    if (!deletingPatient) throw new Error('deletingPatient not found');
-
-    const deletingPatientCopy = deletingPatient!.copy();
-    deletingPatientCopy.status = Status.Deleted;
-    const searchingList = state.searchingList.map(p =>
-        p.equals(deletingPatientCopy) ? deletingPatientCopy : p);
-
-    syncronizePatientWithServer(delayedDispatch, deletingPatientCopy);
-
-    return ({
-        ...state,
-        searchingList,
-        editingPatient: deletingPatientCopy
-    });
 }
 export function onExitEditor(state: MainContainerState, save: boolean,
     delayedStoreDispatch: undefined | ((action: Actions.MyAction) => void)): MainContainerState {
@@ -201,10 +184,10 @@ export function onGetSavingResult(state: MainContainerState, success: boolean,
     if (!state.editingPatient) throw new Error('no editing patient');
 
     const editingPatient = state.editingPatient!.copy();
-    const editingPatientCopy = state.editingPatient!.copy();
+    const editingPatientCopy: PatientVM = state.editingPatient!.copy();
 
     editingPatient.savingStatus = SavingStatus.Saved;
-    editingPatientCopy.savingStatus = SavingStatus.Saved;
+    editingPatientCopy!.savingStatus = SavingStatus.Saved;
 
     editingPatient.status = Status.Untouched;
 
@@ -232,9 +215,10 @@ export function onGetSavingResult(state: MainContainerState, success: boolean,
 export function onConfirmSavingResult(state: MainContainerState): MainContainerState {
     return {
         ...state,
-        editingPatient: null
+        editingPatient: null,
     };
 }
+
 
 export function onStartEditPatientTemplate(state: MainContainerState): MainContainerState {
     return {
@@ -244,7 +228,7 @@ export function onStartEditPatientTemplate(state: MainContainerState): MainConta
 }
 export function onFinishEditPatientTemplate(state: MainContainerState, save: boolean, newTemplate: PatientSearchTemplateVM): MainContainerState {
     const patientTemplate = save ? newTemplate : state.patientTemplate;
-    
+
     return {
         ...state,
         isEditingPatientTemplate: false,

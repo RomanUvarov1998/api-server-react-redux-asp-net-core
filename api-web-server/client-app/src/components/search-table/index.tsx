@@ -1,7 +1,7 @@
 import React from 'react';
 import { PatientVM, PatientSearchTemplateVM } from '../../library/patient'
 import { SearchBar } from '../search-bar';
-import { Button, Table } from 'reactstrap';
+import { Button, Table, Fade } from 'reactstrap';
 import { Status } from '../../library/history';
 
 export type SearchTableProps = {
@@ -16,8 +16,7 @@ export type SearchTableProps = {
     onClearTemplate: () => void,
     onLoadMore: (template: PatientSearchTemplateVM, loadedCount: number, pageLength: number) => void,
     addPatientFromSearchFields: (patient: PatientSearchTemplateVM) => void,
-    onEnterEditor: (patient: PatientVM | undefined) => void,
-    onDelete: (id: number) => void
+    onEnterEditor: (patient: PatientVM | undefined, status: Status) => void,
     onStartEditPatientTemplate: () => void
 }
 
@@ -57,10 +56,7 @@ export function SearchTable(props: SearchTableProps): JSX.Element {
             deleteControl = (<td key={'delete'}>Удаление...</td>);
         } else {
             deleteControl = (<td key={'delete'}><Button
-                onClick={() => {
-                    p.status = Status.Deleted;
-                    props.onDelete(p.id);
-                }}
+                onClick={() => props.onEnterEditor(p, Status.Deleted)}
             >Удалить</Button></td>);
         }
 
@@ -68,10 +64,7 @@ export function SearchTable(props: SearchTableProps): JSX.Element {
             .map(f => (<td key={f.nameId}>{f.value}</td>))
             .concat(
                 (<td key={'edit'}><Button
-                    onClick={() => {
-                        p.status = Status.Modified;
-                        props.onEnterEditor(p);
-                    }}
+                    onClick={() => props.onEnterEditor(p, Status.Modified)}
                 >Редактировать</Button></td>),
                 deleteControl
             );
@@ -111,12 +104,9 @@ export function SearchTable(props: SearchTableProps): JSX.Element {
     }
 
     return (
-        <div style={{ margin: 10 }}>
-            <Button onClick={props.onStartEditPatientTemplate}>Изменить шаблон</Button>
+        <div style={{ margin: 10 }} >
             {searchBar}
-            <div
-                style={{ marginTop: 10 }}
-            >
+            <div style={{ marginTop: 10 }} >
                 <Table className={"table table-responsive table-striped table-bordered table-normal"}>
                     <thead className={"thead-dark"}>
                         {tableHeadRow}

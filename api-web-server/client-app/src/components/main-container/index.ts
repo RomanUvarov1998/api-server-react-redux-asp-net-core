@@ -2,6 +2,7 @@ import { connect } from 'react-redux'
 import { PatientVM, FieldValue, PatientSearchTemplateVM } from '../../library/patient';
 import * as Actions from '../../store/actions';
 import { PatientManager } from '../patients-manager';
+import { Status } from '../../library/history';
 
 export type MainContainerState = {
     isWaitingPatientsList: boolean,
@@ -36,9 +37,8 @@ export type TableContainerDispatchProps = {
     onClearSearchTemplate: () => Actions.ActionClearSearchTemplate,
     onLoadMorePatients: (template: PatientSearchTemplateVM, loadedCount: number, pageLength: number) => Actions.ActionLoadMorePatients,
 
-    onEnterEditor: (patient: PatientVM | undefined) => Actions.ActionEnterEditor,
+    onEnterEditor: (patient: PatientVM | undefined, status: Status) => Actions.ActionEnterEditor,
     onEditPatient: (fieldNameId: number, newValue: FieldValue) => Actions.ActionEditPatient,
-    onDelete: (id: number) => Actions.ActionDeletePatient,
     onExitEditor: (save: boolean) => Actions.ActionExitEditor,
     onConfirmSavingResult: () => Actions.ActionConfirmSavingResult
 
@@ -53,7 +53,6 @@ const mapDispatchToProps: TableContainerDispatchProps = {
 
     onEnterEditor: Actions.enterEditor,
     onEditPatient: Actions.editPatient,
-    onDelete: Actions.del,
     onExitEditor: Actions.exitEditor,
     onConfirmSavingResult: Actions.confirmSavingResult,
 
