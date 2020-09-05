@@ -17,11 +17,11 @@ export function myFetch(
             }
             catch (e) {
                 let rootElement = document.getElementById("root");
+                const message = `text:\n${text}\n\ne:\n${e.toString()}`;
                 if (rootElement) {
-                    rootElement.innerHTML = `text:\n${text}\n\ne:\n${e.toString()}`;
-                } else {
-                    console.log(text);
+                    rootElement.innerHTML = message
                 }
+                console.log(message);
             }
         });
 }

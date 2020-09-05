@@ -1,7 +1,7 @@
 import React from 'react';
 import { PatientVM, PatientSearchTemplateVM } from '../../library/patient'
 import { SearchBar } from '../search-bar';
-import { Button, Table, Fade } from 'reactstrap';
+import { Button, Table } from 'reactstrap';
 import { Status } from '../../library/history';
 
 export type SearchTableProps = {
@@ -107,7 +107,7 @@ export function SearchTable(props: SearchTableProps): JSX.Element {
         <div style={{ margin: 10 }} >
             {searchBar}
             <div style={{ marginTop: 10 }} >
-                <Table className={"table table-responsive table-striped table-bordered table-normal"}>
+                <Table className={"table table-responsive table-striped table-bordered"}>
                     <thead className={"thead-dark"}>
                         {tableHeadRow}
                     </thead>

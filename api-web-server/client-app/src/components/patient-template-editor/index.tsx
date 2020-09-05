@@ -29,7 +29,6 @@ export class PatientTemplateEditor extends React.Component<PatientTemplateEditor
     }
 
     render(): JSX.Element {
-
         const editFields = this.state.editingTemplate.fields.map((f, index) =>
             (<FieldEditor
                 key={index}

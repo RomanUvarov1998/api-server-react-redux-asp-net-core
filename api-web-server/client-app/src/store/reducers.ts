@@ -1,5 +1,5 @@
 import {
-    PatientVM, FieldValue, PatientFieldDTM,
+    PatientVM, FieldValue,
     PatientSearchTemplateVM,
     PatientDTM,
     SavingStatus
@@ -123,11 +123,7 @@ export function onEnterEditor(state: MainContainerState, patient: PatientVM | un
     const editingPatient =
         patient ?
             patient.copy() :
-            new PatientVM(
-                state.patientTemplate.fields.map(f => new PatientFieldDTM(f.name, '', f.nameId)),
-                0,
-                Status.Added
-            );
+            state.patientTemplate.copyToPatientVM();
 
     editingPatient.status = status;
     editingPatient.savingStatus = SavingStatus.NotSaved;
@@ -137,29 +133,14 @@ export function onEnterEditor(state: MainContainerState, patient: PatientVM | un
         editingPatient
     })
 }
-export function onEditPatient(state: MainContainerState, fieldNameId: number,
-    newValue: FieldValue): MainContainerState {
-    if (!state.editingPatient) throw new Error('Editing patient not found');
-
-    const editedField = state.editingPatient!.fields.find(f => f.nameId === fieldNameId);
-    if (!editedField) throw new Error('field not found');
-
-    const editingPatient = state.editingPatient!.updateField(fieldNameId, newValue);
-    editingPatient.savingStatus = SavingStatus.NotSaved;
-
-    return {
-        ...state,
-        editingPatient
-    };
-}
-export function onExitEditor(state: MainContainerState, save: boolean,
+export function onExitEditor(state: MainContainerState, patient: PatientVM | undefined,
     delayedStoreDispatch: undefined | ((action: Actions.MyAction) => void)): MainContainerState {
     if (!state.editingPatient) throw new Error('editingPatient is null');
 
     let editingPatient;
 
-    if (save) {
-        editingPatient = state.editingPatient!.copy();
+    if (patient) {
+        editingPatient = patient.copy();
         editingPatient.savingStatus = SavingStatus.Saving;
 
         syncronizePatientWithServer(delayedStoreDispatch, editingPatient!);
@@ -272,7 +253,8 @@ function syncronizePatientWithServer(delayedStoreDispatch: undefined | ((action:
                 const addedPatient = PatientVM.from(parsedModel);
 
                 if (delayedStoreDispatch) {
-                    delayedStoreDispatch(Actions.getSavingResult(true, `added '${addedPatient.toString()}'`));
+                    delayedStoreDispatch(Actions
+                        .getSavingResult(true, `added '${addedPatient.toString()}'`));
                 }
             };
             break;

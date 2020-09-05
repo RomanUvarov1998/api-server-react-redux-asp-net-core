@@ -33,11 +33,11 @@ export enum SavingStatus {
 
 export class PatientVM {
     constructor(fields: PatientFieldDTM[], id: number,
-        status: Status) {
+        status: Status, savingStatus: SavingStatus) {
         this.fields = fields;
         this.id = id;
         this.status = status;
-        this.savingStatus = SavingStatus.Saved;
+        this.savingStatus = savingStatus;
     }
 
     public fields: PatientFieldDTM[];
@@ -45,47 +45,36 @@ export class PatientVM {
     public status: Status;
     public savingStatus: SavingStatus;
 
-    public updateField = (fieldNameId: number, newFieldValue: FieldValue) => {
-        const newFields = this.fields.map(field => {
-            if (field.nameId === fieldNameId) {
-                return new PatientFieldDTM(field.name, newFieldValue, field.nameId);
-            } else {
-                return field;
-            }
-        });
+    public getUpdatedCopy = (fieldNameId: number, newFieldValue: FieldValue) => {
+        const newFields = this.fields.map(field =>
+            field.nameId === fieldNameId ?
+                new PatientFieldDTM(field.name, newFieldValue, field.nameId) :
+                field);
 
-        let newStatus;
-        switch (this.status) {
-            case Status.Added: newStatus = Status.Added; break;
-            case Status.Modified: newStatus = Status.Modified; break;
-            case Status.Deleted: throw new Error("Status is deleted");
-            case Status.Untouched: newStatus = Status.Modified; break;
-            default: throw new Error("Unknown status");
-        }
-
-        return new PatientVM(newFields, this.id, newStatus);
+        return new PatientVM(newFields, this.id, this.status, this.savingStatus);
     }
 
-    public updateWhole = (template: PatientVM) => {
-        const newFields = template.fields.map(field => field.copy());
+    // public updateWhole = (template: PatientVM) => {
+    //     const newFields = template.fields.map(field => field.copy());
 
-        let newStatus;
-        switch (this.status) {
-            case Status.Added: newStatus = Status.Added; break;
-            case Status.Modified: newStatus = Status.Modified; break;
-            case Status.Deleted: throw new Error("Status is deleted");
-            case Status.Untouched: newStatus = Status.Modified; break;
-            default: throw new Error("Unknown status");
-        }
+    //     let newStatus;
+    //     switch (this.status) {
+    //         case Status.Added: newStatus = Status.Added; break;
+    //         case Status.Modified: newStatus = Status.Modified; break;
+    //         case Status.Deleted: throw new Error("Status is deleted");
+    //         case Status.Untouched: newStatus = Status.Modified; break;
+    //         default: throw new Error("Unknown status");
+    //     }
 
-        return new PatientVM(newFields, this.id, newStatus);
-    }
+    //     return new PatientVM(newFields, this.id, newStatus);
+    // }
 
     public copy = (): PatientVM => {
         return new PatientVM(
             this.fields.map(f => f.copy()),
             this.id,
-            this.status
+            this.status,
+            this.savingStatus
         );
     }
     public equals = (item: PatientVM): boolean => item.id === this.id;
@@ -115,7 +104,8 @@ export class PatientVM {
             (f: any) => PatientFieldDTM.from(f));
         let id = obj.id as number;
         let status = obj.status as Status;
-        return new PatientVM(fields, id, status);
+        let savingStatus = obj.status as SavingStatus;
+        return new PatientVM(fields, id, status, savingStatus);
     }
 }
 
@@ -162,11 +152,12 @@ export class PatientSearchTemplateVM {
 
         return copy;
     }
-    public toPatientVM = () => {
+    public copyToPatientVM = () => {
         return new PatientVM(
             this.fields.map(f => new PatientFieldDTM(f.name, f.value, f.nameId)),
             0,
-            Status.Added
+            Status.Added,
+            SavingStatus.NotSaved
         );
     }
 

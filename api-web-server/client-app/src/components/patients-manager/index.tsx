@@ -21,8 +21,7 @@ export type PatientManagerProps = {
 
     editingPatient: PatientVM | null,
     onEnterEditor: (patient: PatientVM | undefined, status: Status) => void,
-    onEditPatient: (fieldNameId: number, newValue: FieldValue) => void,
-    onExitEditor: (save: boolean) => void,
+    onExitEditor: (patient: PatientVM | undefined) => void,
     onConfirmSavingResult: () => void,
 
     onStartEditPatientTemplate: () => void,
@@ -41,15 +40,13 @@ export class PatientManager extends React.Component<PatientManagerProps, {}, {}>
         } else if (this.props.editingPatient) {
             content = (<PatientEditor
                 patient={this.props.editingPatient!}
-                onUpdate={(fieldNameId: number, newValue: string) =>
-                    this.props.onEditPatient(fieldNameId, newValue)}
                 onExitEditor={this.props.onExitEditor}
                 onConfirmSavingResult={this.props.onConfirmSavingResult}
             />);
         } else {
             content = (<SearchTable
                 addPatientFromSearchFields={(patient: PatientSearchTemplateVM) =>
-                    this.props.onEnterEditor(patient.toPatientVM(), Status.Added)}
+                    this.props.onEnterEditor(patient.copyToPatientVM(), Status.Added)}
                 isWaitingPatientsList={this.props.isWaitingPatientsList}
                 isWaitingPatientFields={this.props.isWaitingPatientFields}
                 patientsList={this.props.searchingList}

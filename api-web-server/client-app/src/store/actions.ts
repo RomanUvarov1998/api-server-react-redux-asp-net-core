@@ -9,7 +9,6 @@ export const ACTION_RECIEVE_PATIENTS = 'ACTION_RECIEVE_PATIENTS';
 export const ACTION_LOAD_MORE_PATIENTS = 'ACTION_LOAD_MORE_PATIENTS';
 
 export const ACTION_ENTER_EDITOR = 'ACTION_ENTER_EDITOR';
-export const ACTION_EDIT_PATIENT = 'ACTION_EDIT_PATIENT';
 export const ACTION_EXIT_EDITOR = 'ACTION_EXIT_EDITOR';
 export const ACTION_GET_SAVING_RESULT = 'ACTION_GET_SAVING_RESULT';
 export const ACTION_CONFIRM_SAVING_RESULT = 'ACTION_CONFIRM_SAVING_RESULT';
@@ -26,7 +25,6 @@ export type MyAction =
     ActionLoadMorePatients |
 
     ActionEnterEditor |
-    ActionEditPatient |
     ActionExitEditor | 
     ActionConfirmSavingResult |
     ActionGetSavingResult;
@@ -39,8 +37,7 @@ export type ActionRecievePatients = { type: string, patients: PatientVM[], appen
 export type ActionLoadMorePatients = { type: string };
 
 export type ActionEnterEditor = { type: string, patient: PatientVM | undefined, status: Status };
-export type ActionEditPatient = { type: string, fieldNameId: number, newValue: FieldValue };
-export type ActionExitEditor = { type: string, save: boolean };
+export type ActionExitEditor = { type: string, patient: PatientVM | undefined };
 export type ActionGetSavingResult = { type: string, success: boolean, message: string };
 export type ActionConfirmSavingResult = { type: string };
 
@@ -93,17 +90,10 @@ export function enterEditor(patient: PatientVM | undefined, status: Status): Act
         status
     };
 }
-export function editPatient(fieldNameId: number, newValue: FieldValue): ActionEditPatient {
-    return {
-        type: ACTION_EDIT_PATIENT,
-        fieldNameId,
-        newValue,
-    }
-}
-export function exitEditor(save: boolean): ActionExitEditor {
+export function exitEditor(patient: PatientVM | undefined): ActionExitEditor {
     return {
         type: ACTION_EXIT_EDITOR,
-        save
+        patient
     };
 }
 export function getSavingResult(success: boolean, message: string): ActionGetSavingResult {

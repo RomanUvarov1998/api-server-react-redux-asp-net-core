@@ -33,12 +33,9 @@ export function configureStore(initialState: MainContainerState) {
             case Actions.ACTION_ENTER_EDITOR:
                 a = action as Actions.ActionEnterEditor;
                 return Reducers.onEnterEditor(state, a.patient, a.status);
-            case Actions.ACTION_EDIT_PATIENT:
-                a = (action as Actions.ActionEditPatient);
-                return Reducers.onEditPatient(state, a.fieldNameId, a.newValue);
             case Actions.ACTION_EXIT_EDITOR:
                 a = (action as Actions.ActionExitEditor);
-                return Reducers.onExitEditor(state, a.save, delayedDispatch);
+                return Reducers.onExitEditor(state, a.patient, delayedDispatch);
             case Actions.ACTION_GET_SAVING_RESULT:
                 a = (action as Actions.ActionGetSavingResult);
                 return Reducers.onGetSavingResult(state, a.success, a.message);
