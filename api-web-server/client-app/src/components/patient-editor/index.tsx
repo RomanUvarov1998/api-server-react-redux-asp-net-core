@@ -1,8 +1,9 @@
 import React from 'react';
-import { Button, ButtonToolbar } from 'reactstrap';
+import { Button, ButtonToolbar, Container, Row, Col } from 'reactstrap';
 import { PatientVM, SavingStatus } from '../../library/patient';
 import { Status } from '../../library/history';
 import { FieldEditor } from '../field-editor';
+import { CustomCancelBtn, CustomSaveBtn } from '../custom-buttons';
 
 type PatientEditorProps = {
     patient: PatientVM,
@@ -17,7 +18,7 @@ export class PatientEditor extends React.Component<PatientEditorProps, PatientEd
         super(props);
 
         const patient = props.patient.copy();
-        patient.savingStatus= SavingStatus.NotSaved;
+        patient.savingStatus = SavingStatus.NotSaved;
 
         this.state = {
             patient
@@ -28,41 +29,41 @@ export class PatientEditor extends React.Component<PatientEditorProps, PatientEd
         let content;
         switch (this.props.patient.savingStatus) {
             case SavingStatus.NotSaved:
-                content = (
-                    <div style={{ margin: 10 }}>
-                        {this.createHeader(this.state.patient.status)}
-                        <ButtonToolbar>
-                            <Button onClick={() => this.props.onExitEditor(undefined)} >
-                                Отмена
-                        </Button>
-                            <Button onClick={() => this.props.onExitEditor(this.state.patient.copy())}>
-                                {this.getSaveButtonText(this.state.patient.status)}
-                            </Button>
-                        </ButtonToolbar >
-                        {this.createEditingPanel()}
-                    </div >
-                );
+                content = (<>
+                    {this.createHeader(this.state.patient.status)}
+                    <ButtonToolbar>
+                        <CustomCancelBtn onClick={() => this.props.onExitEditor(undefined)} />
+                        <CustomSaveBtn
+                            onClick={() => this.props.onExitEditor(this.state.patient.copy())}
+                            btnText={this.getSaveButtonText(this.state.patient.status)}
+                            noTooltip={true}
+                        />
+                    </ButtonToolbar >
+                    {this.createEditingPanel()}
+                </>);
                 break;
             case SavingStatus.Saving:
-                content = (
-                    <div style={{ margin: 10 }}>
-                        {this.createHeader(this.state.patient.status)}
-                        <h3>{this.getSavingName(this.state.patient.status)}</h3>
-                    </div>
-                );
+                content = (<>
+                    {this.createHeader(this.state.patient.status)}
+                    <h3>{this.getSavingName(this.state.patient.status)}</h3>
+                </>);
                 break;
             case SavingStatus.Saved:
-                content = (
-                    <div style={{ margin: 10 }}>
-                        {this.createHeader(this.state.patient.status)}
-                        <h3>{this.getCompletionName(this.state.patient.status)}</h3>
-                        <Button onClick={this.props.onConfirmSavingResult}>Ок</Button>
-                    </div>
-                );
+                content = (<>
+                    {this.createHeader(this.state.patient.status)}
+                    <h3>{this.getCompletionName(this.state.patient.status)}</h3>
+                    <Button onClick={this.props.onConfirmSavingResult}>Ок</Button>
+                </>);
                 break;
             default: throw new Error('unknown savingStatus');
         }
-        return content;
+        return (<Container>
+            <Row className={'justify-content-xl-center'}>
+                <Col className={'auto'}>
+                    {content}
+                </Col>
+            </Row>
+        </Container>);
     }
 
     private createEditingPanel = (): JSX.Element | null => {
@@ -71,16 +72,17 @@ export class PatientEditor extends React.Component<PatientEditorProps, PatientEd
             case Status.Added:
             case Status.Modified:
                 const fieldEditors = this.state.patient.fields.map((f, index) => (
-                    <FieldEditor
-                        key={f.nameId}
-                        labelText={f.name}
-                        value={f.value}
-                        onChange={newValue => this.onEditPatient(f.nameId, newValue)}
-                        autofocus={index === 0}
-                        disabled={false}
-                    />
+                    <Col key={f.nameId}>
+                        <FieldEditor
+                            labelText={f.name}
+                            value={f.value}
+                            onChange={newValue => this.onEditPatient(f.nameId, newValue)}
+                            autofocus={index === 0}
+                            disabled={false}
+                        />
+                    </Col>
                 ));
-                return (<div style={{ margin: 10 }}> {fieldEditors} </div>);
+                return (<Container><Row>{fieldEditors}</Row></Container>);
             default:
                 throw new Error('unknown status');
         }
@@ -100,7 +102,7 @@ export class PatientEditor extends React.Component<PatientEditorProps, PatientEd
             default: throw new Error('Invalid state to display');
         }
     }
-    
+
     private getSaveButtonText(status: Status): string {
         switch (status) {
             case Status.Added: return 'Добавить';
@@ -109,7 +111,7 @@ export class PatientEditor extends React.Component<PatientEditorProps, PatientEd
             default: throw new Error('Invalid state to display');
         }
     }
-    
+
     private getSavingName(status: Status): string {
         switch (status) {
             case Status.Added: return 'Добавление...';
@@ -118,7 +120,7 @@ export class PatientEditor extends React.Component<PatientEditorProps, PatientEd
             default: throw new Error('Invalid state to display');
         }
     }
-    
+
     private getCompletionName(status: Status): string {
         switch (status) {
             case Status.Added: return 'Добавлено';

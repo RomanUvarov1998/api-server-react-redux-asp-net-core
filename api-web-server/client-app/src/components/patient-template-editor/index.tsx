@@ -1,8 +1,9 @@
 import React from 'react';
-import { Button } from 'reactstrap';
+import { Button, Container, ButtonToolbar, Col, Row } from 'reactstrap';
 import { PatientSearchTemplateVM } from '../../library/patient';
 import { FieldEditor } from '../field-editor';
 import { Dictionary } from 'lodash';
+import { CustomCancelBtn, CustomSaveBtn } from '../custom-buttons';
 
 type PatientTemplateEditorProps = {
     initialTemplate: PatientSearchTemplateVM,
@@ -19,7 +20,7 @@ export class PatientTemplateEditor extends React.Component<PatientTemplateEditor
         super(props);
 
         const fieldValues: Dictionary<string> = {};
-        props.initialTemplate.fields.forEach(f => 
+        props.initialTemplate.fields.forEach(f =>
             fieldValues[f.nameId] = f.name);
 
         this.state = {
@@ -30,29 +31,30 @@ export class PatientTemplateEditor extends React.Component<PatientTemplateEditor
 
     render(): JSX.Element {
         const editFields = this.state.editingTemplate.fields.map((f, index) =>
-            (<FieldEditor
-                key={index}
-                labelText={this.state.fieldValues[f.nameId] + ':'}
-                value={f.name}
-                onChange={newValue => this.onEdit(f.nameId, newValue)}
-                disabled={false}
-                autofocus={index === 0}
-            />)
+            (<Col key={index}>
+                <FieldEditor
+                    labelText={this.state.fieldValues[f.nameId] + ':'}
+                    value={f.name}
+                    onChange={newValue => this.onEdit(f.nameId, newValue)}
+                    disabled={false}
+                    autofocus={index === 0}
+                />
+            </Col>)
         );
 
         return (
-            <div
-                style={{ margin: 10 }}
-            >
-                <h1>Редактирования списка полей пациента</h1>
-                <Button
-                    onClick={() => this.props.onSave(true, this.state.editingTemplate)}
-                >Сохранить (пока что не сохранится в бд)</Button>
-                <Button
-                    onClick={() => this.props.onSave(false, this.state.editingTemplate)}
-                >Отмена</Button>
-                {editFields}
-            </div>
+            <Container>
+                <h1>Редактирование списка полей пациента</h1>
+                <ButtonToolbar>
+                    <CustomCancelBtn onClick={() => this.props.onSave(false, this.state.editingTemplate)} />
+                    <CustomSaveBtn
+                        onClick={() => this.props.onSave(true, this.state.editingTemplate)}
+                        btnText={'Сохранить (пока что не сохранится в бд)'}
+                        noTooltip={true}
+                    />
+                </ButtonToolbar>
+                <Row>{editFields}</Row>
+            </Container>
         );
     }
 

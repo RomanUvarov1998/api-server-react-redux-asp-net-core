@@ -1,8 +1,9 @@
 import React from 'react';
 import { PatientVM, PatientSearchTemplateVM } from '../../library/patient'
 import { SearchBar } from '../search-bar';
-import { Button, Table } from 'reactstrap';
+import { Button, Table, Container, Row, Col } from 'reactstrap';
 import { Status } from '../../library/history';
+import { CustomEditBtn, CustomDeleteBtn } from '../custom-buttons';
 
 export type SearchTableProps = {
     isWaitingPatientsList: boolean,
@@ -50,25 +51,24 @@ export function SearchTable(props: SearchTableProps): JSX.Element {
     }
 
     tableBodyRows = props.patientsList.map(p => {
-        let deleteControl;
-
-        if (p.status === Status.Deleted) {
-            deleteControl = (<td key={'delete'}>Удаление...</td>);
-        } else {
-            deleteControl = (<td key={'delete'}><Button
-                onClick={() => props.onEnterEditor(p, Status.Deleted)}
-            >Удалить</Button></td>);
-        }
+        const controls = (<Container>
+            <Row>
+                <Col>
+                    <CustomEditBtn
+                        onClick={() => props.onEnterEditor(p, Status.Modified)}
+                    />
+                </Col>
+                <Col>
+                    <CustomDeleteBtn
+                        onClick={() => props.onEnterEditor(p, Status.Deleted)}
+                    />
+                </Col>
+            </Row>
+        </Container>);
 
         const cells = p.fields
             .map(f => (<td key={f.nameId}>{f.value}</td>))
-            .concat(
-                (<td key={'edit'}><Button
-                    onClick={() => props.onEnterEditor(p, Status.Modified)}
-                >Редактировать</Button></td>),
-                deleteControl
-            );
-
+            .concat(<td key={'controls'}>{controls}</td>);
 
         return (<tr key={p.id}>{cells}</tr>)
     });
@@ -78,20 +78,20 @@ export function SearchTable(props: SearchTableProps): JSX.Element {
             props.patientTemplate.fields.length :
             1;
 
-    let noPatientsLable = null;
+    let noPatientsLabel = null;
     if (tableBodyRows.length === 0 && !props.isWaitingPatientsList) {
-        noPatientsLable = (
+        noPatientsLabel = (
             <tr key={'noPatientsLabel'}>
                 <td colSpan={columnsCount}>Список пуст</td >
             </tr >
         );
     }
 
-    let loadingLable = null;
+    let loadingLabel = null;
     if (props.isWaitingPatientsList) {
-        loadingLable = (<tr><td
+        loadingLabel = (<tr><td
             colSpan={columnsCount}
-            key={'loadingLable'}
+            key={'loadingLabel'}
         >Загрузка списка пациентов...</td></tr>);
     }
 
@@ -104,22 +104,22 @@ export function SearchTable(props: SearchTableProps): JSX.Element {
     }
 
     return (
-        <div style={{ margin: 10 }} >
-            {searchBar}
-            <div style={{ marginTop: 10 }} >
+        <Container>
+            <Row><Col>{searchBar}</Col></Row>
+            <Row><Col>
                 <Table className={"table table-responsive table-striped table-bordered"}>
                     <thead className={"thead-dark"}>
                         {tableHeadRow}
                     </thead>
                     <tbody>
                         {tableBodyRows}
-                        {noPatientsLable}
-                        {loadingLable}
+                        {noPatientsLabel}
+                        {loadingLabel}
                     </tbody>
                 </Table>
-                {loadMoreControl}
-            </div>
-        </div>
+            </Col></Row>
+            <Row><Col>{loadMoreControl}</Col></Row>
+        </Container>
     );
 }
 

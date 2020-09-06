@@ -20,7 +20,7 @@ export function SearchField(props: SearchFieldProps) {
     const datalistId = `datalist${props.field.nameId}`;
 
     return (
-        <td>        
+        <>        
             <label 
                 htmlFor={inputId}
                 style={{display: "block"}}
@@ -37,6 +37,6 @@ export function SearchField(props: SearchFieldProps) {
             <datalist id={datalistId}>
                 {items}
             </datalist>
-        </td>
+        </>
     );
 }

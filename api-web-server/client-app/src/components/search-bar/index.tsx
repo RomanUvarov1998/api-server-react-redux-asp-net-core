@@ -1,7 +1,8 @@
 import React, { useState } from 'react'
 import { FieldValue, PatientSearchTemplateVM, PatientSearchTemplateFieldVM } from '../../library/patient'
 import { SearchField } from '../search-field'
-import { Button, ButtonToolbar, DropdownMenu, DropdownItem, DropdownToggle, Dropdown } from 'reactstrap';
+import { Button, ButtonToolbar, DropdownMenu, DropdownItem, DropdownToggle, Dropdown, Container, Row, Col } from 'reactstrap';
+import { CustomAddBtn, SettingsPicture, CustomClearBtn } from '../custom-buttons';
 
 export type SearchBarProps = {
     frozen: boolean,
@@ -16,12 +17,13 @@ export type SearchBarProps = {
 export function SearchBar(props: SearchBarProps) {
     const searchFields = props.patientTemplate.fields.map((field, index) => {
         return (
-            <SearchField
-                key={index}
-                frozen={props.frozen}
-                field={field}
-                onInput={newValue => props.onSetSearchTemplate(field.nameId, newValue)}
-            />
+            <Col key={index}>
+                <SearchField
+                    frozen={props.frozen}
+                    field={field}
+                    onInput={newValue => props.onSetSearchTemplate(field.nameId, newValue)}
+                />
+            </Col>
         );
     });
 
@@ -31,13 +33,16 @@ export function SearchBar(props: SearchBarProps) {
         <>
             <h1>Поиск</h1>
             <ButtonToolbar>
-                <Button onClick={() => clearTemplateHandler(props)}>Очистить фильтр</Button>
-                <Button onClick={() => props.addPatientFromSearchFields(props.patientTemplate)}>Добавить</Button>
+                <CustomClearBtn
+                    onClick={() => clearTemplateHandler(props)}
+                    tooltipText={'Очистить фильтр'}
+                />
+                <CustomAddBtn onClick={() => props.addPatientFromSearchFields(props.patientTemplate)} />
                 <Dropdown
                     isOpen={isSettingsDropdownOpen}
                     toggle={() => setSettingsDropdownOpen(!isSettingsDropdownOpen)}
                 >
-                    <DropdownToggle caret>Настройки</DropdownToggle>
+                    <DropdownToggle caret>{SettingsPicture}</DropdownToggle>
                     <DropdownMenu>
                         <DropdownItem
                             onClick={props.onStartEditPatientTemplate}
@@ -45,7 +50,9 @@ export function SearchBar(props: SearchBarProps) {
                     </DropdownMenu>
                 </Dropdown>
             </ButtonToolbar>
-            <table><thead><tr>{searchFields}</tr></thead></table>
+            <Container style={{margin: 10}}>
+                <Row>{searchFields}</Row>
+            </Container>
         </>
     );
 }
