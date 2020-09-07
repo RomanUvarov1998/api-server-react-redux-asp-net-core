@@ -1,15 +1,15 @@
 import React from 'react';
-import { PatientVM, PatientSearchTemplateVM } from '../../library/patient'
+import { PatientVM, PatientSearchTemplateVM, PatientEditingVM } from '../../library/patient'
 import { SearchBar } from '../search-bar';
 import { Button, Table, Container, Row, Col } from 'reactstrap';
 import { Status } from '../../library/history';
-import { CustomEditBtn, CustomDeleteBtn } from '../custom-buttons';
+import { CustomButton, PictureEdit, PictureDelete } from '../custom-button';
 
 export type SearchTableProps = {
     isWaitingPatientsList: boolean,
     isWaitingPatientFields: boolean,
     patientsList: PatientVM[],
-    patientTemplate: PatientSearchTemplateVM | null,
+    patientTemplate?: PatientSearchTemplateVM,
     canLoadMore: boolean,
     loadPortionCount: number,
     onSetSearchTemplate: (fieldNameId: number, newValue: string) => void,
@@ -17,7 +17,7 @@ export type SearchTableProps = {
     onClearTemplate: () => void,
     onLoadMore: (template: PatientSearchTemplateVM, loadedCount: number, pageLength: number) => void,
     addPatientFromSearchFields: (patient: PatientSearchTemplateVM) => void,
-    onEnterEditor: (patient: PatientVM | undefined, status: Status) => void,
+    onEnterEditor: (patient: PatientEditingVM) => void,
     onStartEditPatientTemplate: () => void
 }
 
@@ -54,13 +54,19 @@ export function SearchTable(props: SearchTableProps): JSX.Element {
         const controls = (<Container>
             <Row>
                 <Col>
-                    <CustomEditBtn
-                        onClick={() => props.onEnterEditor(p, Status.Modified)}
+                    <CustomButton
+                        onClick={() => props.onEnterEditor(
+                            PatientEditingVM.newFromPatientVM(p, Status.Modified))}
+                        svgPicture={PictureEdit}
+                        tooltipText={'Редактировать'}
                     />
                 </Col>
                 <Col>
-                    <CustomDeleteBtn
-                        onClick={() => props.onEnterEditor(p, Status.Deleted)}
+                    <CustomButton
+                        onClick={() => props.onEnterEditor(
+                            PatientEditingVM.newFromPatientVM(p, Status.Deleted))}
+                        svgPicture={PictureDelete}
+                        tooltipText={'Удалить'}
                     />
                 </Col>
             </Row>

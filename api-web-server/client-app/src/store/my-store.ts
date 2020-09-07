@@ -1,10 +1,10 @@
-import { createStore } from 'redux';
+import { createStore, Store } from 'redux';
 import * as Actions from './actions';
 import * as Reducers from './reducers';
 import { MainContainerState } from '../components/main-container';
 
 export function configureStore(initialState: MainContainerState) {
-    let delayedDispatch: undefined | ((action: Actions.MyAction) => void) = undefined;
+    let store: Store<MainContainerState, Actions.MyAction>;
 
     const red = (state = initialState, action: Actions.MyAction)
         : MainContainerState => {
@@ -15,33 +15,31 @@ export function configureStore(initialState: MainContainerState) {
                 return Reducers.onRecievePatientFields(state, a.patientTemplate);
             case Actions.ACTION_SET_SEARCH_TEMPLATE:
                 a = (action as Actions.ActionSetSearchTemplate);
-                return Reducers.onSetSearchTemplate(state, delayedDispatch, a.newValue, a.fieldNameId);
+                return Reducers.onSetSearchTemplate(state, a.newValue, 
+                    a.fieldNameId, 
+                    action => store.dispatch(action));
             case Actions.ACTION_GIVE_VARIANTS:
                 a = (action as Actions.ActionGiveVariants);
                 return Reducers.onGiveVariants(state, a.fieldNameId, a.variants);
             case Actions.ACTION_CLEAR_SEARCH_TEMPLATE:
                 a = (action as Actions.ActionSetSearchTemplate);
-                return Reducers.onClearSearchTemplate(state, delayedDispatch);
+                return Reducers.onClearSearchTemplate(state, 
+                    action => store.dispatch(action));
             case Actions.ACTION_RECIEVE_PATIENTS:
                 a = action as Actions.ActionRecievePatients;
                 return Reducers.onRecievePatients(state, a.patients, a.append);
             case Actions.ACTION_LOAD_MORE_PATIENTS:
-                return Reducers.onLoadMorePatients(state, delayedDispatch);
+                return Reducers.onLoadMorePatients(state, 
+                    action => store.dispatch(action));
 
 
 
             case Actions.ACTION_ENTER_EDITOR:
                 a = action as Actions.ActionEnterEditor;
-                return Reducers.onEnterEditor(state, a.patient, a.status);
+                return Reducers.onEnterEditor(state, a.patient);
             case Actions.ACTION_EXIT_EDITOR:
                 a = (action as Actions.ActionExitEditor);
-                return Reducers.onExitEditor(state, a.patient, delayedDispatch);
-            case Actions.ACTION_GET_SAVING_RESULT:
-                a = (action as Actions.ActionGetSavingResult);
-                return Reducers.onGetSavingResult(state, a.success, a.message);
-            case Actions.ACTION_CONFIRM_SAVING_RESULT:
-                a = (action as Actions.ActionConfirmSavingResult);
-                return Reducers.onConfirmSavingResult(state);
+                return Reducers.onExitEditor(state, a.patient);
 
             case Actions.ACTION_START_EDIT_PATIENT_TEMPLATE:
                 a = (action as Actions.ActionStartEditPatientTemplate);
@@ -50,14 +48,19 @@ export function configureStore(initialState: MainContainerState) {
                 a = (action as Actions.ActionFinishEditPatientTemplate);
                 return Reducers.onFinishEditPatientTemplate(state, a.save, a.newTemplate);
 
+            case Actions.ACTION_NOTIFY_BAD_RESPONSE:
+                a = (action as Actions.ActionNotifyBadResponse);
+                return Reducers.onNotifyBadResponse(state, a.response);
+            case Actions.ACTION_NOTIFY_RESPONSE_PROCESSING_ERROR:
+                a = (action as Actions.ActionNotifyResponseProcessingError);
+                return Reducers.onNotifyResponseProcessingError(state, a.error);
+
             default:
                 return state;
         }
     };
 
-    const store = createStore(red);
-
-    delayedDispatch = (action: Actions.MyAction) => store.dispatch(action);
+    store = createStore(red);
 
     return store;
 }

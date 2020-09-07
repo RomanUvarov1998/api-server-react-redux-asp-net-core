@@ -1,5 +1,5 @@
 export enum Status {
-    Added,
+    Added = 1,
     Modified,
     Deleted,
     Untouched

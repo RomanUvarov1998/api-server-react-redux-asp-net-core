@@ -1,9 +1,9 @@
 import React from 'react';
-import { Button, Container, ButtonToolbar, Col, Row } from 'reactstrap';
+import { Container, ButtonToolbar, Col, Row } from 'reactstrap';
 import { PatientSearchTemplateVM } from '../../library/patient';
 import { FieldEditor } from '../field-editor';
 import { Dictionary } from 'lodash';
-import { CustomCancelBtn, CustomSaveBtn } from '../custom-buttons';
+import { CustomButton, PictureCansel, PictureSave } from '../custom-button';
 
 type PatientTemplateEditorProps = {
     initialTemplate: PatientSearchTemplateVM,
@@ -46,11 +46,17 @@ export class PatientTemplateEditor extends React.Component<PatientTemplateEditor
             <Container>
                 <h1>Редактирование списка полей пациента</h1>
                 <ButtonToolbar>
-                    <CustomCancelBtn onClick={() => this.props.onSave(false, this.state.editingTemplate)} />
-                    <CustomSaveBtn
-                        onClick={() => this.props.onSave(true, this.state.editingTemplate)}
+                    <CustomButton
+                        onClick={() => this.props.onSave(
+                            false, this.state.editingTemplate)}
+                        svgPicture={PictureCansel}
+                        tooltipText={'Отменить'}
+                    />
+                    <CustomButton
+                        onClick={() => this.props.onSave(
+                            true, this.state.editingTemplate)}
+                            svgPicture={PictureSave}
                         btnText={'Сохранить (пока что не сохранится в бд)'}
-                        noTooltip={true}
                     />
                 </ButtonToolbar>
                 <Row>{editFields}</Row>

@@ -1,5 +1,5 @@
 import React from 'react';
-import { PatientVM, FieldValue, PatientSearchTemplateVM  } from "../../library/patient";
+import { PatientVM, FieldValue, PatientSearchTemplateVM, PatientEditingVM  } from "../../library/patient";
 import { SearchTable } from '../search-table';
 import { PatientEditor } from '../patient-editor';
 import { PatientTemplateEditor } from '../patient-template-editor';
@@ -10,7 +10,7 @@ export type PatientManagerProps = {
     isWaitingPatientFields: boolean,
 
     isEditingPatientTemplate: boolean,
-    patientTemplate: PatientSearchTemplateVM | null,
+    patientTemplate?: PatientSearchTemplateVM,
     searchingList: PatientVM[],
     canLoadMore: boolean,
     loadPortionCount: number,
@@ -19,13 +19,14 @@ export type PatientManagerProps = {
     onClearSearchTemplate: () => void,
     onLoadMorePatients: (template: PatientSearchTemplateVM, loadedCount: number, pageLength: number) => void,
 
-    editingPatient: PatientVM | null,
-    onEnterEditor: (patient: PatientVM | undefined, status: Status) => void,
-    onExitEditor: (patient: PatientVM | undefined) => void,
-    onConfirmSavingResult: () => void,
+    editingPatient?: PatientEditingVM,
+    onEnterEditor: (patient: PatientEditingVM) => void,
+    onExitEditor: (status?: Status, patient?: PatientVM) => void,
 
     onStartEditPatientTemplate: () => void,
     onFinishEditPatientTemplate: (save: boolean, newTemplate: PatientSearchTemplateVM) => void,
+
+    errorsLog: string
 }
 
 export class PatientManager extends React.Component<PatientManagerProps, {}, {}> {
@@ -41,12 +42,12 @@ export class PatientManager extends React.Component<PatientManagerProps, {}, {}>
             content = (<PatientEditor
                 patient={this.props.editingPatient!}
                 onExitEditor={this.props.onExitEditor}
-                onConfirmSavingResult={this.props.onConfirmSavingResult}
             />);
         } else {
             content = (<SearchTable
-                addPatientFromSearchFields={(patient: PatientSearchTemplateVM) =>
-                    this.props.onEnterEditor(patient.copyToPatientVM(), Status.Added)}
+                addPatientFromSearchFields={patient =>
+                    this.props.onEnterEditor(
+                        PatientEditingVM.newFromPatientSearchTemplateVM(patient))}
                 isWaitingPatientsList={this.props.isWaitingPatientsList}
                 isWaitingPatientFields={this.props.isWaitingPatientFields}
                 patientsList={this.props.searchingList}
@@ -62,6 +63,11 @@ export class PatientManager extends React.Component<PatientManagerProps, {}, {}>
             />);
         }
 
-        return content;
+        return (
+            <>
+            <h1>{this.props.errorsLog}</h1>
+            {content}
+            </>
+        );
     }
 }

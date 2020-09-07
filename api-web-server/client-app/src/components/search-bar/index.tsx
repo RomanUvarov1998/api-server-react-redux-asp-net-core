@@ -1,8 +1,8 @@
 import React, { useState } from 'react'
 import { FieldValue, PatientSearchTemplateVM, PatientSearchTemplateFieldVM } from '../../library/patient'
 import { SearchField } from '../search-field'
-import { Button, ButtonToolbar, DropdownMenu, DropdownItem, DropdownToggle, Dropdown, Container, Row, Col } from 'reactstrap';
-import { CustomAddBtn, SettingsPicture, CustomClearBtn } from '../custom-buttons';
+import { ButtonToolbar, DropdownMenu, DropdownItem, DropdownToggle, Dropdown, Container, Row, Col } from 'reactstrap';
+import { CustomButton, PictureClear, PictureAdd, PictureSettings } from '../custom-button';
 
 export type SearchBarProps = {
     frozen: boolean,
@@ -33,16 +33,22 @@ export function SearchBar(props: SearchBarProps) {
         <>
             <h1>Поиск</h1>
             <ButtonToolbar>
-                <CustomClearBtn
+                <CustomButton
                     onClick={() => clearTemplateHandler(props)}
                     tooltipText={'Очистить фильтр'}
+                    svgPicture={PictureClear}
                 />
-                <CustomAddBtn onClick={() => props.addPatientFromSearchFields(props.patientTemplate)} />
+                <CustomButton
+                    onClick={() => props.addPatientFromSearchFields(
+                        props.patientTemplate)}
+                    tooltipText={'Добавить из полей поиска'}
+                    svgPicture={PictureAdd}
+                />
                 <Dropdown
                     isOpen={isSettingsDropdownOpen}
                     toggle={() => setSettingsDropdownOpen(!isSettingsDropdownOpen)}
                 >
-                    <DropdownToggle caret>{SettingsPicture}</DropdownToggle>
+                    <DropdownToggle caret>{PictureSettings}</DropdownToggle>
                     <DropdownMenu>
                         <DropdownItem
                             onClick={props.onStartEditPatientTemplate}
@@ -50,7 +56,7 @@ export function SearchBar(props: SearchBarProps) {
                     </DropdownMenu>
                 </Dropdown>
             </ButtonToolbar>
-            <Container style={{margin: 10}}>
+            <Container style={{ margin: 10 }}>
                 <Row>{searchFields}</Row>
             </Container>
         </>

@@ -5,9 +5,9 @@ import { MainContainer, MainContainerState } from './main-container';
 import { configureStore } from '../store/my-store';
 import * as Actions from '../store/actions';
 import { PatientSearchTemplateVM } from "../library/patient";
-import { myFetch } from '../library/fetchHelper';
+import { fetchPatientTemplate } from '../library/fetchHelper';
 import { Store } from 'redux';
-import { loadPatients } from '../store/reducers';
+import { fetchPatientsList } from '../library/fetchHelper';
 
 type AppProps = {
 
@@ -29,10 +29,12 @@ export class App extends React.Component<AppProps, AppState, {}> {
 
       isEditingPatientTemplate: false,
       searchingList: [],
-      patientTemplate: null,
+      patientTemplate: undefined,
       canLoadMore: false,
       loadPortionCount: 10,
-      editingPatient: null
+      editingPatient: undefined,
+
+      errorsLog: ''
     };
     this.state = {
       store: configureStore(tableContainerState),
@@ -47,29 +49,23 @@ export class App extends React.Component<AppProps, AppState, {}> {
     );
   }
 
-  componentDidMount() {
-    this.loadPatientFieldsAndList(this.state.store);
-  }
-
-  private loadPatientFieldsAndList(store: MyStore) {
-    myFetch(
-      'patients/template',
-      'GET',
-      undefined,
-      value => {
-        const parsedModel = JSON.parse(value) as PatientSearchTemplateVM;
+  componentDidMount = () => {
+    fetchPatientTemplate(
+      serializedData => {
+        const parsedModel = JSON.parse(serializedData) as PatientSearchTemplateVM;
         const patientTemplate = PatientSearchTemplateVM.from(parsedModel);
-        store.dispatch(Actions.recievePatientFields(patientTemplate));
+        this.state.store.dispatch(Actions.recievePatientFields(patientTemplate));
 
-        const curState = store.getState();
+        const curState: MainContainerState = this.state.store.getState();
 
-        loadPatients(
-          action => store.dispatch(action),
+        fetchPatientsList(
           patientTemplate,
           curState.searchingList.length,
-          curState.loadPortionCount);
-      }
-    );
+          curState.loadPortionCount,
+          action => this.state.store.dispatch(action));
+      },
+      response => this.state.store.dispatch(Actions.notifyBadResponse(response)),
+      error => this.state.store.dispatch(Actions.notifyResponseProcessingError(error)));  
   }
 }
 

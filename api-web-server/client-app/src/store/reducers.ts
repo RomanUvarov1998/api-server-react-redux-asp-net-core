@@ -1,12 +1,12 @@
 import {
     PatientVM, FieldValue,
     PatientSearchTemplateVM,
-    PatientDTM,
-    SavingStatus
+    SavingStatus,
+    PatientEditingVM
 } from "../library/patient";
 import { Status } from "../library/history";
 import { MainContainerState } from '../components/main-container'
-import { myFetch } from "../library/fetchHelper";
+import { fetchPatientsList, fetchVariants } from "../library/fetchHelper";
 import * as Actions from '../store/actions';
 
 
@@ -18,36 +18,31 @@ export function onRecievePatientFields(state: MainContainerState, patientTemplat
     }
 }
 export function onSetSearchTemplate(state: MainContainerState,
-    delayedStoreDispatch: undefined | ((action: Actions.MyAction) => void),
-    newValue: FieldValue, fieldNameId: number): MainContainerState {
+    newValue: FieldValue, fieldNameId: number,
+    delayedStoreDispatch: (action: Actions.MyAction) => void
+): MainContainerState {
     if (!state.patientTemplate) throw new Error("template is null");
 
-    const patientTemplate = state.patientTemplate.updateField(fieldNameId, newValue);
+    const patientTemplate = state.patientTemplate.getUpdatedCopy(fieldNameId, newValue);
 
-    loadPatients(
-        delayedStoreDispatch,
+    fetchPatientsList(
         patientTemplate,
         0,
-        state.loadPortionCount);
+        state.loadPortionCount,
+        delayedStoreDispatch);
 
-    myFetch(
-        `patients/variants?fieldNameId=${fieldNameId}&maxCount=${5}`,
-        'POST',
-        JSON.stringify(patientTemplate),
-        value => {
-            const variants = JSON.parse(value) as string[];
-            if (delayedStoreDispatch) {
-                delayedStoreDispatch(Actions.giveVariants(fieldNameId, variants));
-            }
-        }
-    );
+    fetchVariants(
+        fieldNameId,
+        patientTemplate,
+        delayedStoreDispatch);
 
     return ({
         ...state,
         patientTemplate
     });
 }
-export function onGiveVariants(state: MainContainerState, fieldNameId: number,
+export function onGiveVariants(state: MainContainerState,
+    fieldNameId: number,
     variants: string[]): MainContainerState {
     if (!state.patientTemplate) throw new Error("template is null");
 
@@ -66,18 +61,18 @@ export function onGiveVariants(state: MainContainerState, fieldNameId: number,
     };
 }
 export function onClearSearchTemplate(state: MainContainerState,
-    delayedStoreDispatch: undefined | ((action: Actions.MyAction) => void)
+    delayedStoreDispatch: (action: Actions.MyAction) => void
 ): MainContainerState {
     if (!state.patientTemplate) return state;
 
     const patientTemplate = state.patientTemplate.copy();
     patientTemplate.fields.forEach(f => f.value = '');
 
-    loadPatients(
-        delayedStoreDispatch,
+    fetchPatientsList(
         patientTemplate,
         0,
-        state.loadPortionCount);
+        state.loadPortionCount,
+        delayedStoreDispatch);
 
     return ({
         ...state,
@@ -100,14 +95,15 @@ export function onRecievePatients(state: MainContainerState, patients: PatientVM
     };
 }
 export function onLoadMorePatients(state: MainContainerState,
-    delayedStoreDispatch: undefined | ((action: Actions.MyAction) => void)): MainContainerState {
+    delayedStoreDispatch: (action: Actions.MyAction) => void
+): MainContainerState {
     const patientTemplate = state.patientTemplate!.copy();
 
-    loadPatients(
-        delayedStoreDispatch,
+    fetchPatientsList(
         patientTemplate,
         state.searchingList.length,
-        state.loadPortionCount);
+        state.loadPortionCount,
+        delayedStoreDispatch);
 
     return {
         ...state,
@@ -116,16 +112,11 @@ export function onLoadMorePatients(state: MainContainerState,
 }
 
 
-export function onEnterEditor(state: MainContainerState, patient: PatientVM | undefined, status: Status): MainContainerState {
+export function onEnterEditor(state: MainContainerState, patient: PatientEditingVM): MainContainerState {
     if (!state.patientTemplate) throw new Error('No patient template');
     if (state.editingPatient) throw new Error('editingPatient must be null');
 
-    const editingPatient =
-        patient ?
-            patient.copy() :
-            state.patientTemplate.copyToPatientVM();
-
-    editingPatient.status = status;
+    const editingPatient = patient.copy();
     editingPatient.savingStatus = SavingStatus.NotSaved;
 
     return ({
@@ -133,70 +124,39 @@ export function onEnterEditor(state: MainContainerState, patient: PatientVM | un
         editingPatient
     })
 }
-export function onExitEditor(state: MainContainerState, patient: PatientVM | undefined,
-    delayedStoreDispatch: undefined | ((action: Actions.MyAction) => void)): MainContainerState {
-    if (!state.editingPatient) throw new Error('editingPatient is null');
-
-    let editingPatient;
-
-    if (patient) {
-        editingPatient = patient.copy();
-        editingPatient.savingStatus = SavingStatus.Saving;
-
-        syncronizePatientWithServer(delayedStoreDispatch, editingPatient!);
-    } else {
-        editingPatient = null;
-    }
-
-    return {
+export function onExitEditor(state: MainContainerState, patient?: PatientVM,
+    status?: Status): MainContainerState {
+    if (!patient || !status) return {
         ...state,
-        editingPatient
+        editingPatient: undefined
     };
-}
-export function onGetSavingResult(state: MainContainerState, success: boolean,
-    message: string): MainContainerState {
-    if (!success) {
-        console.log('Error occured');
-        return state;
-    }
 
-    let searchingList: PatientVM[];
-
-    if (!state.editingPatient) throw new Error('no editing patient');
-
-    const editingPatient = state.editingPatient!.copy();
-    const editingPatientCopy: PatientVM = state.editingPatient!.copy();
-
-    editingPatient.savingStatus = SavingStatus.Saved;
-    editingPatientCopy!.savingStatus = SavingStatus.Saved;
-
-    editingPatient.status = Status.Untouched;
-
-    switch (editingPatientCopy.status) {
+    let searchingList;
+    switch (status) {
         case Status.Added:
-            searchingList = state.searchingList.concat(editingPatient);
+            searchingList = state.searchingList.concat(patient!);
             break;
         case Status.Modified:
             searchingList = state.searchingList.map(p =>
-                p.equals(editingPatient) ? editingPatient : p);
+                p.equals(patient!) ? (patient!) : p);
             break;
         case Status.Deleted:
             searchingList = state.searchingList.filter(p =>
-                !p.equals(editingPatient));
+                !p.equals(patient!));
             break;
         default: throw new Error('patient state is untouched');
+    }
+    if (patient) {
+        searchingList = state.searchingList.map(p =>
+            p.equals(patient) ? patient : p);
+    } else {
+        searchingList = state.searchingList;
     }
 
     return {
         ...state,
-        editingPatient: editingPatientCopy,
+        editingPatient: undefined,
         searchingList
-    };
-}
-export function onConfirmSavingResult(state: MainContainerState): MainContainerState {
-    return {
-        ...state,
-        editingPatient: null,
     };
 }
 
@@ -218,74 +178,17 @@ export function onFinishEditPatientTemplate(state: MainContainerState, save: boo
 }
 
 
-
-export function loadPatients(
-    delayedStoreDispatch: undefined | ((action: Actions.MyAction) => void),
-    currentTemplate: PatientSearchTemplateVM, currentListLength: number,
-    currentLoadCount: number) {
-    myFetch(
-        `patients/list?skip=${currentListLength}&take=${currentLoadCount}`,
-        'POST',
-        JSON.stringify(currentTemplate),
-        (value: string) => {
-            const data = JSON.parse(value) as PatientVM[];
-            const append = currentListLength > 0;
-            const patients = data.map(el => PatientVM.from(el));
-            if (delayedStoreDispatch) {
-                delayedStoreDispatch(Actions.recievePatients(patients, append));
-            }
-        });
-}
-
-function syncronizePatientWithServer(delayedStoreDispatch: undefined | ((action: Actions.MyAction) => void),
-    patient: PatientVM) {
-    const patientCopy = patient.copy();
-
-    if (patientCopy.status === Status.Untouched) throw new Error('patient is untouched');
-
-    let action;
-    let processResponseBody: (value: string) => void;
-    switch (patient.status) {
-        case Status.Added:
-            action = 'add';
-            processResponseBody = (value: string) => {
-                const parsedModel = JSON.parse(value) as PatientVM;
-                const addedPatient = PatientVM.from(parsedModel);
-
-                if (delayedStoreDispatch) {
-                    delayedStoreDispatch(Actions
-                        .getSavingResult(true, `added '${addedPatient.toString()}'`));
-                }
-            };
-            break;
-        case Status.Modified:
-            action = 'update';
-            processResponseBody = (value: string) => {
-                const parsedModel = JSON.parse(value) as PatientVM;
-                const updatedPatient = PatientVM.from(parsedModel);
-
-                if (delayedStoreDispatch) {
-                    delayedStoreDispatch(Actions.getSavingResult(true, `updated '${updatedPatient.toString()}'`));
-                }
-            };
-            break;
-        case Status.Deleted:
-            action = 'delete';
-            processResponseBody = (value: string) => {
-                const deletedId = JSON.parse(value) as number;
-
-                if (delayedStoreDispatch) {
-                    delayedStoreDispatch(Actions.getSavingResult(true, `deleted '${deletedId}'`));
-                }
-            };
-            break;
-        default: throw new Error(`unknown action ${action} on patient ${patientCopy}`);
+export function onNotifyBadResponse(state: MainContainerState, response: Response): MainContainerState {
+    const previousLog = state.errorsLog;
+    return {
+        ...state,
+        errorsLog: `${previousLog}\nBad response: ${response?.statusText}`
     }
-
-    myFetch(
-        `patients/${action}`,
-        'POST',
-        JSON.stringify(PatientDTM.from(patientCopy)),
-        (value: string) => processResponseBody(value)
-    );
+}
+export function onNotifyResponseProcessingError(state: MainContainerState, error: any): MainContainerState {
+    const previousLog = state.errorsLog;
+    return {
+        ...state,
+        errorsLog: `${previousLog}\nResponseProcessingError: ${error}`
+    }
 }

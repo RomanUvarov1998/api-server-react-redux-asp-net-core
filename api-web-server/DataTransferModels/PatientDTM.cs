@@ -15,7 +15,6 @@ namespace api_web_server.DataTransferModels
                 .ToList();
 
             Id = instance.Id;
-            Status = Status.Untouched;
         }
         public static PatientDTM CreateEmpty(List<FieldName> fieldNames)
         {
@@ -65,13 +64,5 @@ namespace api_web_server.DataTransferModels
         public List<PatientFieldDTM> Fields { get; set; }
 
         public int Id { get; set; }
-        public Status Status { get; set; }
-    }
-    public enum Status
-    {
-        Added,
-        Modified,
-        Deleted,
-        Untouched
     }
 }

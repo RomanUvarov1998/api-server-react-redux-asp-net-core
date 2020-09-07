@@ -1,5 +1,5 @@
 import { connect } from 'react-redux'
-import { PatientVM, FieldValue, PatientSearchTemplateVM } from '../../library/patient';
+import { PatientVM, FieldValue, PatientSearchTemplateVM, PatientEditingVM } from '../../library/patient';
 import * as Actions from '../../store/actions';
 import { PatientManager } from '../patients-manager';
 import { Status } from '../../library/history';
@@ -10,11 +10,13 @@ export type MainContainerState = {
 
     isEditingPatientTemplate: boolean,
     searchingList: PatientVM[],
-    patientTemplate: PatientSearchTemplateVM | null,
+    patientTemplate?: PatientSearchTemplateVM,
     canLoadMore: boolean,
     loadPortionCount: number,
 
-    editingPatient: PatientVM | null,
+    editingPatient?: PatientEditingVM
+
+    errorsLog: string
 }
 const mapStateToProps = (state: MainContainerState): MainContainerState => {
     return {
@@ -28,6 +30,8 @@ const mapStateToProps = (state: MainContainerState): MainContainerState => {
         loadPortionCount: state.loadPortionCount, 
 
         editingPatient: state.editingPatient,
+
+        errorsLog: state.errorsLog
     }
 };
 
@@ -37,9 +41,8 @@ export type TableContainerDispatchProps = {
     onClearSearchTemplate: () => Actions.ActionClearSearchTemplate,
     onLoadMorePatients: (template: PatientSearchTemplateVM, loadedCount: number, pageLength: number) => Actions.ActionLoadMorePatients,
 
-    onEnterEditor: (patient: PatientVM | undefined, status: Status) => Actions.ActionEnterEditor,
-    onExitEditor: (patient: PatientVM | undefined) => Actions.ActionExitEditor,
-    onConfirmSavingResult: () => Actions.ActionConfirmSavingResult
+    onEnterEditor: (patient: PatientEditingVM) => Actions.ActionEnterEditor,
+    onExitEditor: (status?: Status, patient?: PatientVM) => Actions.ActionExitEditor,
 
     onStartEditPatientTemplate: () => Actions.ActionStartEditPatientTemplate,
     onFinishEditPatientTemplate: (save: boolean, newTemplate: PatientSearchTemplateVM) => Actions.ActionFinishEditPatientTemplate,
@@ -52,7 +55,6 @@ const mapDispatchToProps: TableContainerDispatchProps = {
 
     onEnterEditor: Actions.enterEditor,
     onExitEditor: Actions.exitEditor,
-    onConfirmSavingResult: Actions.confirmSavingResult,
 
     onStartEditPatientTemplate: Actions.startEditPatientTemplate,
     onFinishEditPatientTemplate: Actions.finishEditPatientTemplate

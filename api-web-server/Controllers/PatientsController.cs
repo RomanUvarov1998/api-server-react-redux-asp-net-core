@@ -1,17 +1,14 @@
 using System.Collections.Generic;
 using System.Linq;
-using System.IO;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Http;
-using Newtonsoft.Json;
 using database;
 using database.Models;
 using api_web_server.DataTransferModels;
 using api_web_server.ContextHelpers;
 
-namespace api_web_server
+namespace api_web_server.Controllers
 {
     [ApiController]
     [Route("patients")]
@@ -22,35 +19,11 @@ namespace api_web_server
             this.dbContext = dbContext;
         }
 
-        [HttpGet("list")]
-        public IEnumerable<PatientDTM> GetPatients()
-        {
-            List<Patient> ps = Patient
-                .IncludeFields(dbContext.Patients)
-                .OrderBy(p => p.CreatedDate)
-                .ToList();
-
-            return ps
-                .Select(p => new PatientDTM(p))
-                .ToList();
-        }
-
-        [HttpGet("template")]
-        public PatientSearchTemplateDTM GetTemplate()
-        {
-            List<FieldName> fns = dbContext.FieldNames.ToList();
-
-            var searchTemplate = new PatientSearchTemplateDTM(fns);
-
-            return searchTemplate;
-        }
-
         [HttpPost("add")]
         public async Task<IActionResult> Add()
         {
-            var patientDTM = await ReadModelFromBodyAsync<PatientDTM>();
-
-            if (patientDTM.Status != Status.Added) return BadRequest("Status must be Added (0)");
+            var patientDTM = await ControllerHelpers
+                .ReadModelFromBodyAsync<PatientDTM>(this.Request.Body);
 
             List<FieldName> existingFieldNames = dbContext.FieldNames.ToList();
             Patient patient = new Patient();
@@ -67,9 +40,8 @@ namespace api_web_server
         [HttpPost("update")]
         public async Task<IActionResult> Update()
         {
-            var patientDTM = await ReadModelFromBodyAsync<PatientDTM>();
-
-            if (patientDTM.Status != Status.Modified) return BadRequest();
+            var patientDTM = await ControllerHelpers
+                .ReadModelFromBodyAsync<PatientDTM>(this.Request.Body);
 
             List<FieldName> existingFieldNames = dbContext.FieldNames.ToList();
             Patient patient = dbContext.Patients
@@ -89,9 +61,8 @@ namespace api_web_server
         [HttpPost("delete")]
         public async Task<IActionResult> Delete()
         {
-            var patientDTM = await ReadModelFromBodyAsync<PatientDTM>();
-
-            if (patientDTM.Status != Status.Deleted) return BadRequest();
+            var patientDTM = await ControllerHelpers
+                .ReadModelFromBodyAsync<PatientDTM>(this.Request.Body);
 
             Patient patient = dbContext.Patients
                 .FirstOrDefault(p => p.Id == patientDTM.Id);
@@ -111,7 +82,8 @@ namespace api_web_server
             if (skip < 0) return BadRequest("skip must be >= 0");
             if (take < 0) return BadRequest("take must be >= 0");
 
-            var template = await ReadModelFromBodyAsync<PatientSearchTemplateDTM>();
+            var template = await ControllerHelpers
+                .ReadModelFromBodyAsync<PatientSearchTemplateDTM>(this.Request.Body);
 
             var patients = MyContexthelper
                 .GetPatientsByTemplate(dbContext, template, skip, take);
@@ -121,32 +93,6 @@ namespace api_web_server
                 .ToList();
 
             return Ok(patientsDTM);
-        }
-
-        [HttpPost("variants")]
-        public async Task<IActionResult> GetVariants(int fieldNameId, int maxCount)
-        {
-            var template = await ReadModelFromBodyAsync<PatientSearchTemplateDTM>();
-
-            var fieldNames = MyContexthelper
-                .GetVariantsByTemplate(dbContext, template, fieldNameId, maxCount);
-
-            return Ok(fieldNames);
-        }
-
-        private async Task<T> ReadModelFromBodyAsync<T>()
-        {
-            HttpRequest request = this.Request;
-            StreamReader stream = new StreamReader(request.Body);
-            string json = await stream.ReadToEndAsync();
-
-            var serializerSettings = new JsonSerializerSettings();
-            serializerSettings.MissingMemberHandling = MissingMemberHandling.Error;
-
-            T model = JsonConvert
-                .DeserializeObject<T>(json, serializerSettings);
-
-            return model;
         }
 
         private readonly MyContext dbContext;
