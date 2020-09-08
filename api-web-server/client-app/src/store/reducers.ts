@@ -11,9 +11,11 @@ import * as Actions from '../store/actions';
 
 
 export function onRecievePatientFields(state: MainContainerState, patientTemplate: PatientSearchTemplateVM): MainContainerState {
+    const patientTemplateCopy = patientTemplate.copy();
+    patientTemplateCopy.sortFieldsByNameId();
     return {
         ...state,
-        patientTemplate,
+        patientTemplate: patientTemplateCopy,
         isWaitingPatientFields: false
     }
 }
@@ -167,8 +169,9 @@ export function onStartEditPatientTemplate(state: MainContainerState): MainConta
         isEditingPatientTemplate: true
     };
 }
-export function onFinishEditPatientTemplate(state: MainContainerState, save: boolean, newTemplate: PatientSearchTemplateVM): MainContainerState {
-    const patientTemplate = save ? newTemplate : state.patientTemplate;
+export function onFinishEditPatientTemplate(state: MainContainerState, newTemplate?: PatientSearchTemplateVM): MainContainerState {
+    const patientTemplate = newTemplate ? newTemplate : state.patientTemplate;
+    patientTemplate!.sortFieldsByNameId()
 
     return {
         ...state,

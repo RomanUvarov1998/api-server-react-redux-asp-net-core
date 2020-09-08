@@ -17,6 +17,11 @@ export class PatientFieldDTM {
     public name: FieldName;
     public nameId: number;
 
+    public toPatientSearchTemplateFieldVM = () => {
+        return new PatientSearchTemplateFieldVM(
+            this.name, this.nameId, [], '');
+    }
+
     public static from(obj: any): PatientFieldDTM {
         let name = obj.name as string;
         let value = obj.value as string;
@@ -86,11 +91,11 @@ export class PatientVM {
 }
 
 export class PatientSearchTemplateFieldVM {
-    constructor({ name, nameId }: PatientFieldDTM) {
+    constructor(name: string, nameId: number, variants: string[], value: string) {
         this.name = name;
         this.nameId = nameId;
-        this.variants = [];
-        this.value = '';
+        this.variants = variants;
+        this.value = value;
     }
 
     public name: FieldName;
@@ -100,7 +105,7 @@ export class PatientSearchTemplateFieldVM {
 }
 export class PatientSearchTemplateVM {
     constructor(fields: PatientFieldDTM[]) {
-        this.fields = fields.map(f => new PatientSearchTemplateFieldVM(f));
+        this.fields = fields.map(f => f.toPatientSearchTemplateFieldVM());
     }
 
     public fields: PatientSearchTemplateFieldVM[];
@@ -133,6 +138,10 @@ export class PatientSearchTemplateVM {
             this.fields.map(f => new PatientFieldDTM(f.name, f.value, f.nameId)),
             0
         );
+    }
+
+    public sortFieldsByNameId = (): void => {
+        this.fields.sort((f1, f2) => f1.nameId - f2.nameId);
     }
 
     public static from(obj: any): PatientSearchTemplateVM {
@@ -182,7 +191,7 @@ export class PatientEditingVM {
         );
         return pvm;
     }
-    public static newFromPatientVM(pvm: PatientVM, status: Status, 
+    public static newFromPatientVM(pvm: PatientVM, status: Status,
         savingStatus: SavingStatus = SavingStatus.NotSaved): PatientEditingVM {
         return new PatientEditingVM(
             pvm.id,

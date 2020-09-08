@@ -16,6 +16,21 @@ export function fetchPatientTemplate(
     );
 }
 
+export function fetchUpdatedPatientTemplate(
+    updatedTemplate: PatientSearchTemplateVM,
+    onRecieve: (serializedData: string) => void,
+    badResponseHandler: (response: Response) => void,
+    responseParceHandler: (error: any) => void) {
+    myFetch(
+        'patient_fields/template',
+        'POST',
+        JSON.stringify(updatedTemplate),
+        onRecieve,
+        badResponseHandler,
+        responseParceHandler
+    );
+}
+
 export function fetchPatientsList(
     currentTemplate: PatientSearchTemplateVM, currentListLength: number,
     currentLoadCount: number,

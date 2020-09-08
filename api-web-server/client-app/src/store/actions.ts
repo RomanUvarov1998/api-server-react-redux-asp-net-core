@@ -42,7 +42,7 @@ export type ActionEnterEditor = { type: string, patient: PatientEditingVM };
 export type ActionExitEditor = { type: string, patient?: PatientVM, status?: Status };
 
 export type ActionStartEditPatientTemplate = { type: string };
-export type ActionFinishEditPatientTemplate = { type: string, save: boolean, newTemplate: PatientSearchTemplateVM };
+export type ActionFinishEditPatientTemplate = { type: string, newTemplate?: PatientSearchTemplateVM };
 
 export type ActionNotifyBadResponse = { type: string, response: Response };
 export type ActionNotifyResponseProcessingError = { type: string, error: any };
@@ -105,10 +105,9 @@ export function startEditPatientTemplate(): ActionStartEditPatientTemplate {
         type: ACTION_START_EDIT_PATIENT_TEMPLATE
     };
 }
-export function finishEditPatientTemplate(save: boolean, newTemplate: PatientSearchTemplateVM, ): ActionFinishEditPatientTemplate {
+export function finishEditPatientTemplate(newTemplate?: PatientSearchTemplateVM): ActionFinishEditPatientTemplate {
     return {
         type: ACTION_FINISH_EDIT_PATIENT_TEMPLATE,
-        save,
         newTemplate
     };
 }

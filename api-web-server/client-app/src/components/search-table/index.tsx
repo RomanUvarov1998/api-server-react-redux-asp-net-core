@@ -72,8 +72,19 @@ export function SearchTable(props: SearchTableProps): JSX.Element {
             </Row>
         </Container>);
 
-        const cells = p.fields
-            .map(f => (<td key={f.nameId}>{f.value}</td>))
+        const cells = props.patientTemplate!.fields
+            .map(tf => {
+                const pf = p.fields.find(_pf => _pf.nameId === tf.nameId);
+                const content: string = pf ? pf.value : '[Не указано]';
+                const color: string = pf ? 'black' : 'gray';
+                return (
+                    <td
+                        key={tf.nameId}
+                        style={{ color: color }}
+                    >
+                        {content}
+                    </td>);
+            })
             .concat(<td key={'controls'}>{controls}</td>);
 
         return (<tr key={p.id}>{cells}</tr>)

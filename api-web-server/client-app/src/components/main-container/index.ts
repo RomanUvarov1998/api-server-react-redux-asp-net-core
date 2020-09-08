@@ -45,7 +45,7 @@ export type TableContainerDispatchProps = {
     onExitEditor: (status?: Status, patient?: PatientVM) => Actions.ActionExitEditor,
 
     onStartEditPatientTemplate: () => Actions.ActionStartEditPatientTemplate,
-    onFinishEditPatientTemplate: (save: boolean, newTemplate: PatientSearchTemplateVM) => Actions.ActionFinishEditPatientTemplate,
+    onFinishEditPatientTemplate: (newTemplate?: PatientSearchTemplateVM) => Actions.ActionFinishEditPatientTemplate,
 }
 const mapDispatchToProps: TableContainerDispatchProps = {
     onSetSearchTemplate: Actions.setSearchTemplate,

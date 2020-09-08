@@ -46,7 +46,7 @@ export function configureStore(initialState: MainContainerState) {
                 return Reducers.onStartEditPatientTemplate(state);
             case Actions.ACTION_FINISH_EDIT_PATIENT_TEMPLATE:
                 a = (action as Actions.ActionFinishEditPatientTemplate);
-                return Reducers.onFinishEditPatientTemplate(state, a.save, a.newTemplate);
+                return Reducers.onFinishEditPatientTemplate(state, a.newTemplate);
 
             case Actions.ACTION_NOTIFY_BAD_RESPONSE:
                 a = (action as Actions.ActionNotifyBadResponse);

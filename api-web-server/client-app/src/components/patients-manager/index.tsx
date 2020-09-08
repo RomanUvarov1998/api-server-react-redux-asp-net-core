@@ -24,7 +24,7 @@ export type PatientManagerProps = {
     onExitEditor: (status?: Status, patient?: PatientVM) => void,
 
     onStartEditPatientTemplate: () => void,
-    onFinishEditPatientTemplate: (save: boolean, newTemplate: PatientSearchTemplateVM) => void,
+    onFinishEditPatientTemplate: (newTemplate?: PatientSearchTemplateVM) => void,
 
     errorsLog: string
 }
@@ -36,7 +36,7 @@ export class PatientManager extends React.Component<PatientManagerProps, {}, {}>
         if (this.props.isEditingPatientTemplate) {
             content = (<PatientTemplateEditor
                 initialTemplate={this.props.patientTemplate!.copy()}
-                onSave={this.props.onFinishEditPatientTemplate}
+                onExit={this.props.onFinishEditPatientTemplate}
             />);
         } else if (this.props.editingPatient) {
             content = (<PatientEditor
