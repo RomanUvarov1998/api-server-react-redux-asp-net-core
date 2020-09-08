@@ -41,8 +41,8 @@ export type TableContainerDispatchProps = {
     onClearSearchTemplate: () => Actions.ActionClearSearchTemplate,
     onLoadMorePatients: (template: PatientSearchTemplateVM, loadedCount: number, pageLength: number) => Actions.ActionLoadMorePatients,
 
-    onEnterEditor: (patient: PatientEditingVM) => Actions.ActionEnterEditor,
-    onExitEditor: (status?: Status, patient?: PatientVM) => Actions.ActionExitEditor,
+    onEnterPatientEditor: (patient: PatientEditingVM) => Actions.ActionEnterPatientEditor,
+    onExitPatientEditor: (status?: Status, patient?: PatientVM) => Actions.ActionExitPatientEditor,
 
     onStartEditPatientTemplate: () => Actions.ActionStartEditPatientTemplate,
     onFinishEditPatientTemplate: (newTemplate?: PatientSearchTemplateVM) => Actions.ActionFinishEditPatientTemplate,
@@ -53,8 +53,8 @@ const mapDispatchToProps: TableContainerDispatchProps = {
     onClearSearchTemplate: Actions.clearSearchTemplate,
     onLoadMorePatients: Actions.loadMorePatients,
 
-    onEnterEditor: Actions.enterEditor,
-    onExitEditor: Actions.exitEditor,
+    onEnterPatientEditor: Actions.enterPatientEditor,
+    onExitPatientEditor: Actions.exitPatientEditor,
 
     onStartEditPatientTemplate: Actions.startEditPatientTemplate,
     onFinishEditPatientTemplate: Actions.finishEditPatientTemplate

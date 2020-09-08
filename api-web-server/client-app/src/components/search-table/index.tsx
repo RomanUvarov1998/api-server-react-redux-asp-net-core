@@ -17,7 +17,7 @@ export type SearchTableProps = {
     onClearTemplate: () => void,
     onLoadMore: (template: PatientSearchTemplateVM, loadedCount: number, pageLength: number) => void,
     addPatientFromSearchFields: (patient: PatientSearchTemplateVM) => void,
-    onEnterEditor: (patient: PatientEditingVM) => void,
+    onEnterPatientEditor: (patient: PatientEditingVM) => void,
     onStartEditPatientTemplate: () => void
 }
 
@@ -55,7 +55,7 @@ export function SearchTable(props: SearchTableProps): JSX.Element {
             <Row>
                 <Col>
                     <CustomButton
-                        onClick={() => props.onEnterEditor(
+                        onClick={() => props.onEnterPatientEditor(
                             PatientEditingVM.newFromPatientVM(p, Status.Modified))}
                         svgPicture={PictureEdit}
                         tooltipText={'Редактировать'}
@@ -63,7 +63,7 @@ export function SearchTable(props: SearchTableProps): JSX.Element {
                 </Col>
                 <Col>
                     <CustomButton
-                        onClick={() => props.onEnterEditor(
+                        onClick={() => props.onEnterPatientEditor(
                             PatientEditingVM.newFromPatientVM(p, Status.Deleted))}
                         svgPicture={PictureDelete}
                         tooltipText={'Удалить'}

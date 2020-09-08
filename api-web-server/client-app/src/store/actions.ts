@@ -8,8 +8,8 @@ export const ACTION_CLEAR_SEARCH_TEMPLATE = 'ACTION_CLEAR_SEARCH_TEMPLATE';
 export const ACTION_RECIEVE_PATIENTS = 'ACTION_RECIEVE_PATIENTS';
 export const ACTION_LOAD_MORE_PATIENTS = 'ACTION_LOAD_MORE_PATIENTS';
 
-export const ACTION_ENTER_EDITOR = 'ACTION_ENTER_EDITOR';
-export const ACTION_EXIT_EDITOR = 'ACTION_EXIT_EDITOR';
+export const ACTION_ENTER_PATIENT_EDITOR = 'ACTION_ENTER_PATIENT_EDITOR';
+export const ACTION_EXIT_PATIENT_EDITOR = 'ACTION_EXIT_PATIENT_EDITOR';
 
 export const ACTION_START_EDIT_PATIENT_TEMPLATE = 'ACTION_START_EDIT_PATIENT_TEMPLATE';
 export const ACTION_FINISH_EDIT_PATIENT_TEMPLATE = 'ACTION_FINISH_EDIT_PATIENT_TEMPLATE';
@@ -25,8 +25,8 @@ export type MyAction =
     ActionRecievePatients |
     ActionLoadMorePatients |
 
-    ActionEnterEditor |
-    ActionExitEditor |
+    ActionEnterPatientEditor |
+    ActionExitPatientEditor |
     
     ActionNotifyBadResponse|
     ActionNotifyResponseProcessingError;
@@ -38,8 +38,8 @@ export type ActionClearSearchTemplate = { type: string };
 export type ActionRecievePatients = { type: string, patients: PatientVM[], append: boolean };
 export type ActionLoadMorePatients = { type: string };
 
-export type ActionEnterEditor = { type: string, patient: PatientEditingVM };
-export type ActionExitEditor = { type: string, patient?: PatientVM, status?: Status };
+export type ActionEnterPatientEditor = { type: string, patient: PatientEditingVM };
+export type ActionExitPatientEditor = { type: string, patient?: PatientVM, status?: Status };
 
 export type ActionStartEditPatientTemplate = { type: string };
 export type ActionFinishEditPatientTemplate = { type: string, newTemplate?: PatientSearchTemplateVM };
@@ -86,15 +86,15 @@ export function loadMorePatients(): ActionLoadMorePatients {
     };
 }
 
-export function enterEditor(patient: PatientEditingVM): ActionEnterEditor {
+export function enterPatientEditor(patient: PatientEditingVM): ActionEnterPatientEditor {
     return {
-        type: ACTION_ENTER_EDITOR,
+        type: ACTION_ENTER_PATIENT_EDITOR,
         patient
     };
 }
-export function exitEditor(status?: Status, patient?: PatientVM): ActionExitEditor {
+export function exitPatientEditor(status?: Status, patient?: PatientVM): ActionExitPatientEditor {
     return {
-        type: ACTION_EXIT_EDITOR,
+        type: ACTION_EXIT_PATIENT_EDITOR,
         patient,
         status
     };

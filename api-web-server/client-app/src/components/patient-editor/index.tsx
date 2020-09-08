@@ -1,6 +1,6 @@
 import React from 'react';
 import { Button, ButtonToolbar, Container, Row, Col } from 'reactstrap';
-import { PatientVM, SavingStatus, PatientEditingVM } from '../../library/patient';
+import { PatientVM, SavingStatus, PatientEditingVM, PatientSearchTemplateVM } from '../../library/patient';
 import { Status } from '../../library/history';
 import { FieldEditor } from '../field-editor';
 import { CustomButton, PictureSave, PictureCansel } from '../custom-button';
@@ -8,6 +8,7 @@ import { fetchSyncPatient } from '../../library/fetchHelper';
 
 type PatientEditorProps = {
     patient: PatientEditingVM,
+    template: PatientSearchTemplateVM,
     onExitEditor: (status?: Status, patient?: PatientVM) => void
 };
 type PatientEditorState = {
@@ -30,10 +31,10 @@ export class PatientEditor extends React.Component<PatientEditorProps, PatientEd
                 content = (<>
                     {this.createHeader(this.state.patient.status)}
                     <ButtonToolbar>
-                        <CustomButton 
-                        onClick={() => this.props.onExitEditor()} 
-                        svgPicture={PictureCansel}
-                        tooltipText={'Отменить'}
+                        <CustomButton
+                            onClick={() => this.props.onExitEditor()}
+                            svgPicture={PictureCansel}
+                            tooltipText={'Отменить'}
                         />
                         <CustomButton
                             onClick={this.handleSubmit}
@@ -85,17 +86,20 @@ export class PatientEditor extends React.Component<PatientEditorProps, PatientEd
             case Status.Deleted: return null;
             case Status.Added:
             case Status.Modified:
-                const fieldEditors = this.state.patient.fields.map((f, index) => (
-                    <Col key={f.nameId}>
+                const fieldEditors = this.props.template.fields.map((tf, index) => {
+                    const pf = this.state.patient.fields
+                        .find(_pf => _pf.nameId === tf.nameId);
+                    const content = pf ? pf.value : '';
+                    return (<Col key={tf.nameId}>
                         <FieldEditor
-                            labelText={f.name}
-                            value={f.value}
-                            onChange={newValue => this.onEditPatient(f.nameId, newValue)}
+                            labelText={tf.name}
+                            value={content}
+                            onChange={newValue => this.onEditPatient(tf.nameId, newValue)}
                             autofocus={index === 0}
                             disabled={false}
                         />
-                    </Col>
-                ));
+                    </Col>);
+                });
                 return (<Container><Row>{fieldEditors}</Row></Container>);
             default:
                 throw new Error('unknown status');

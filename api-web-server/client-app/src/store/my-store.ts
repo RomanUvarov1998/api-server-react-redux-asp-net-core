@@ -34,11 +34,11 @@ export function configureStore(initialState: MainContainerState) {
 
 
 
-            case Actions.ACTION_ENTER_EDITOR:
-                a = action as Actions.ActionEnterEditor;
+            case Actions.ACTION_ENTER_PATIENT_EDITOR:
+                a = action as Actions.ActionEnterPatientEditor;
                 return Reducers.onEnterEditor(state, a.patient);
-            case Actions.ACTION_EXIT_EDITOR:
-                a = (action as Actions.ActionExitEditor);
+            case Actions.ACTION_EXIT_PATIENT_EDITOR:
+                a = (action as Actions.ActionExitPatientEditor);
                 return Reducers.onExitEditor(state, a.patient);
 
             case Actions.ACTION_START_EDIT_PATIENT_TEMPLATE:

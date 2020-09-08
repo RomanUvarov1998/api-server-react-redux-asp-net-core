@@ -20,8 +20,8 @@ export type PatientManagerProps = {
     onLoadMorePatients: (template: PatientSearchTemplateVM, loadedCount: number, pageLength: number) => void,
 
     editingPatient?: PatientEditingVM,
-    onEnterEditor: (patient: PatientEditingVM) => void,
-    onExitEditor: (status?: Status, patient?: PatientVM) => void,
+    onEnterPatientEditor: (patient: PatientEditingVM) => void,
+    onExitPatientEditor: (status?: Status, patient?: PatientVM) => void,
 
     onStartEditPatientTemplate: () => void,
     onFinishEditPatientTemplate: (newTemplate?: PatientSearchTemplateVM) => void,
@@ -41,12 +41,13 @@ export class PatientManager extends React.Component<PatientManagerProps, {}, {}>
         } else if (this.props.editingPatient) {
             content = (<PatientEditor
                 patient={this.props.editingPatient!}
-                onExitEditor={this.props.onExitEditor}
+                template={this.props.patientTemplate!.copy()}
+                onExitEditor={this.props.onExitPatientEditor}
             />);
         } else {
             content = (<SearchTable
                 addPatientFromSearchFields={patient =>
-                    this.props.onEnterEditor(
+                    this.props.onEnterPatientEditor(
                         PatientEditingVM.newFromPatientSearchTemplateVM(patient))}
                 isWaitingPatientsList={this.props.isWaitingPatientsList}
                 isWaitingPatientFields={this.props.isWaitingPatientFields}
@@ -58,7 +59,7 @@ export class PatientManager extends React.Component<PatientManagerProps, {}, {}>
                 giveVariants={this.props.giveVariants}
                 onClearTemplate={this.props.onClearSearchTemplate}
                 onLoadMore={this.props.onLoadMorePatients}
-                onEnterEditor={this.props.onEnterEditor}
+                onEnterPatientEditor={this.props.onEnterPatientEditor}
                 onStartEditPatientTemplate={this.props.onStartEditPatientTemplate}
             />);
         }
