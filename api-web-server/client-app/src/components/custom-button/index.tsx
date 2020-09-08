@@ -1,6 +1,6 @@
 import React from 'react';
-import { Button, UncontrolledTooltip } from 'reactstrap';
-// import OverlayTrigger from "react-bootstrap/OverlayTrigger";
+import { Button } from 'reactstrap'
+import { OverlayTrigger, Tooltip, TooltipProps } from "react-bootstrap";
 
 type BtnProps = {
     onClick: (event: React.MouseEvent<any, MouseEvent>) => void,
@@ -9,31 +9,25 @@ type BtnProps = {
     tooltipText?: string
 };
 
+let huiId = 0;
+
 export class CustomButton extends React.Component<BtnProps, {}, {}> {
-    private btnRef: React.RefObject<HTMLDivElement> | null = null;
-
     render(): JSX.Element {
-        this.btnRef = React.createRef<HTMLDivElement> ();
-
-        console.log(this.btnRef.current);
+        huiId += 1;
 
         return (
-            <div ref={this.btnRef}>
-                {/* <OverlayTrigger>
-
-                </OverlayTrigger> */}
+            <OverlayTrigger
+                placement={'auto'}
+                overlay={props =>
+                    (<Tooltip {...props} id={`pizda${huiId}`}>
+                        {this.props.tooltipText}
+                    </Tooltip>)}
+                    delay={{ show: 1000, hide: 500 }}
+            >
                 <Button onClick={this.props.onClick}>
                     {this.props.svgPicture} {' '} {this.props.btnText}
                 </Button>
-
-                {/* {this.props.tooltipText !== undefined &&
-                    (<UncontrolledTooltip
-                        target={this.btnRef!}
-                        placement={'auto'}
-                    >
-                        {this.props.tooltipText}
-                    </UncontrolledTooltip>)} */}
-            </div>
+            </OverlayTrigger>
         );
     }
 }
