@@ -3,7 +3,7 @@ import { PatientVM, PatientSearchTemplateVM, PatientEditingVM } from '../../libr
 import { SearchBar } from '../search-bar';
 import { Button, Table, Container, Row, Col } from 'reactstrap';
 import { Status } from '../../library/history';
-import { CustomButton, PictureEdit, PictureDelete } from '../custom-button';
+import { CustomButton, PictureEdit, PictureDelete, BtnColors } from '../custom-button';
 
 export type SearchTableProps = {
     isWaitingPatientsList: boolean,
@@ -51,27 +51,6 @@ export function SearchTable(props: SearchTableProps): JSX.Element {
     }
 
     tableBodyRows = props.patientsList.map(p => {
-        const controls = (<Container>
-            <Row>
-                <Col>
-                    <CustomButton
-                        onClick={() => props.onEnterPatientEditor(
-                            PatientEditingVM.newFromPatientVM(p, Status.Modified))}
-                        svgPicture={PictureEdit}
-                        tooltipText={'Редактировать'}
-                    />
-                </Col>
-                <Col>
-                    <CustomButton
-                        onClick={() => props.onEnterPatientEditor(
-                            PatientEditingVM.newFromPatientVM(p, Status.Deleted))}
-                        svgPicture={PictureDelete}
-                        tooltipText={'Удалить'}
-                    />
-                </Col>
-            </Row>
-        </Container>);
-
         const cells = props.patientTemplate!.fields
             .map(tf => {
                 const pf = p.fields.find(_pf => _pf.nameId === tf.nameId);
@@ -85,7 +64,22 @@ export function SearchTable(props: SearchTableProps): JSX.Element {
                         {content}
                     </td>);
             })
-            .concat(<td key={'controls'}>{controls}</td>);
+            .concat(<td key={'controls'}>
+                <CustomButton
+                    onClick={() => props.onEnterPatientEditor(
+                        PatientEditingVM.newFromPatientVM(p, Status.Modified))}
+                    svgPicture={PictureEdit}
+                    tooltipText={'Редактировать'}
+                    color={BtnColors.Primary}
+                />
+                <CustomButton
+                    onClick={() => props.onEnterPatientEditor(
+                        PatientEditingVM.newFromPatientVM(p, Status.Deleted))}
+                    svgPicture={PictureDelete}
+                    tooltipText={'Удалить'}
+                    color={BtnColors.Danger}
+                />
+            </td>);
 
         return (<tr key={p.id}>{cells}</tr>)
     });

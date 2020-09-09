@@ -2,7 +2,7 @@ import React, { useState } from 'react'
 import { FieldValue, PatientSearchTemplateVM, PatientSearchTemplateFieldVM } from '../../library/patient'
 import { SearchField } from '../search-field'
 import { ButtonToolbar, DropdownMenu, DropdownItem, DropdownToggle, Dropdown, Container, Row, Col } from 'reactstrap';
-import { CustomButton, PictureClear, PictureAdd, PictureSettings } from '../custom-button';
+import { CustomButton, PictureClear, PictureAdd, PictureSettings, BtnColors } from '../custom-button';
 
 export type SearchBarProps = {
     frozen: boolean,
@@ -37,12 +37,14 @@ export function SearchBar(props: SearchBarProps) {
                     onClick={() => clearTemplateHandler(props)}
                     tooltipText={'Очистить фильтр'}
                     svgPicture={PictureClear}
+                    color={BtnColors.Danger}
                 />
                 <CustomButton
                     onClick={() => props.addPatientFromSearchFields(
                         props.patientTemplate)}
                     tooltipText={'Добавить из полей поиска'}
                     svgPicture={PictureAdd}
+                    color={BtnColors.Success}
                 />
                 <Dropdown
                     isOpen={isSettingsDropdownOpen}

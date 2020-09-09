@@ -4,14 +4,14 @@ import { Status } from '../library/history';
 
 export function fetchPatientTemplate(
     onRecieve: (serializedData: string) => void,
-    badResponseHandler: (response: Response) => void,
+    notOkResponseHandler: (response: Response) => void,
     responseParceHandler: (error: any) => void) {
     myFetch(
         'patient_fields/template',
         'GET',
         undefined,
         onRecieve,
-        badResponseHandler,
+        notOkResponseHandler,
         responseParceHandler
     );
 }
@@ -19,14 +19,14 @@ export function fetchPatientTemplate(
 export function fetchUpdatedPatientTemplate(
     updatedTemplate: PatientSearchTemplateVM,
     onRecieve: (serializedData: string) => void,
-    badResponseHandler: (response: Response) => void,
+    notOkResponseHandler: (response: Response) => void,
     responseParceHandler: (error: any) => void) {
     myFetch(
         'patient_fields/template',
         'POST',
         JSON.stringify(updatedTemplate),
         onRecieve,
-        badResponseHandler,
+        notOkResponseHandler,
         responseParceHandler
     );
 }
@@ -74,7 +74,7 @@ export function fetchSyncPatient(
     myThen: (serializedData: string) => void,
     patient: PatientVM,
     status: Status,
-    badResponseHandler: (response: Response) => void,
+    notOkResponseHandler: (response: Response) => void,
     responseParceHandler: (error: any) => void) {
     const patientCopy = patient.copy();
 
@@ -93,24 +93,24 @@ export function fetchSyncPatient(
         'POST',
         JSON.stringify(PatientDTM.from(patientCopy)),
         myThen,
-        badResponseHandler,
+        notOkResponseHandler,
         responseParceHandler
     );
 }
 
 function myFetch(
     url: string,
-    method: string | undefined = 'GET',
-    body: string | undefined = undefined,
+    method: 'GET' | 'POST',
+    body: string | undefined,
     myThen: (value: string) => void | null,
-    badResponseHandler: (response: Response) => void,
+    notOkResponseHandler: (response: Response) => void,
     responseParceHandler: (error: any) => void,
 ) {
     fetch(url, { method, body })
         .then(response => {
             if (!response.ok) {
                 console.error(response.statusText);
-                badResponseHandler(response);
+                notOkResponseHandler(response);
                 return null;
             } else {
                 return response.text();

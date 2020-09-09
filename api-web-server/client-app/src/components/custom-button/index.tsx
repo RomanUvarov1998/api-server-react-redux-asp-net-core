@@ -1,13 +1,25 @@
 import React from 'react';
-import { Button } from 'reactstrap'
-import { OverlayTrigger, Tooltip, TooltipProps } from "react-bootstrap";
+import { Button, OverlayTrigger, Tooltip } from "react-bootstrap";
 
 type BtnProps = {
     onClick: (event: React.MouseEvent<any, MouseEvent>) => void,
     svgPicture: React.SVGProps<SVGSVGElement>,
     btnText?: string,
-    tooltipText?: string
+    tooltipText?: string,
+    color?: BtnColors | string
 };
+
+export enum BtnColors {
+    Primary = 'btn btn-primary',
+    Secondary = 'btn btn-secondary',
+    Success = 'btn btn-success',
+    Danger = 'btn btn-danger',
+    Warning = 'btn btn-warning',
+    Info = 'btn btn-info',
+    Light = 'btn btn-light',
+    Dark = 'btn btn-dark',
+    Link = 'btn btn-link'
+}
 
 let huiId = 0;
 
@@ -22,9 +34,12 @@ export class CustomButton extends React.Component<BtnProps, {}, {}> {
                     (<Tooltip {...props} id={`pizda${huiId}`}>
                         {this.props.tooltipText}
                     </Tooltip>)}
-                    delay={{ show: 1000, hide: 500 }}
+                delay={{ show: 1000, hide: 500 }}
             >
-                <Button onClick={this.props.onClick}>
+                <Button
+                    onClick={this.props.onClick}
+                    className={this.props.color || BtnColors.Secondary}
+                >
                     {this.props.svgPicture} {' '} {this.props.btnText}
                 </Button>
             </OverlayTrigger>

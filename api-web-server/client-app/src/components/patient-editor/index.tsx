@@ -1,9 +1,9 @@
 import React from 'react';
-import { Button, ButtonToolbar, Container, Row, Col } from 'reactstrap';
+import { ButtonToolbar, Container, Row, Col } from 'reactstrap';
 import { PatientVM, SavingStatus, PatientEditingVM, PatientSearchTemplateVM } from '../../library/patient';
 import { Status } from '../../library/history';
 import { FieldEditor } from '../field-editor';
-import { CustomButton, PictureSave, PictureCansel } from '../custom-button';
+import { CustomButton, PictureSave, PictureCansel as PictureBack, BtnColors } from '../custom-button';
 import { fetchSyncPatient } from '../../library/fetchHelper';
 
 type PatientEditorProps = {
@@ -33,13 +33,14 @@ export class PatientEditor extends React.Component<PatientEditorProps, PatientEd
                     <ButtonToolbar>
                         <CustomButton
                             onClick={() => this.props.onExitEditor()}
-                            svgPicture={PictureCansel}
+                            svgPicture={PictureBack}
                             tooltipText={'Отменить'}
                         />
                         <CustomButton
                             onClick={this.handleSubmit}
                             btnText={this.getSaveButtonText(this.state.patient.status)}
                             svgPicture={PictureSave}
+                            color={this.getSaveButtonColor(this.state.patient.status)}
                         />
                     </ButtonToolbar >
                     {this.createEditingPanel()}
@@ -58,11 +59,13 @@ export class PatientEditor extends React.Component<PatientEditorProps, PatientEd
                         {this.getCompletionName(this.state.patient.status)}
                         {PictureSave}
                     </h3>
-                    <Button
+                    <CustomButton
                         onClick={() => this.props.onExitEditor(
                             this.state.patient.status,
                             this.state.patient.toPatientVM())}
-                    >Ок</Button>
+                        svgPicture={PictureBack}
+                        btnText={'Ок'}
+                    />
                 </>);
                 break;
             default: throw new Error('unknown savingStatus');
@@ -121,10 +124,10 @@ export class PatientEditor extends React.Component<PatientEditorProps, PatientEd
             },
             savingEVM.toPatientVM(),
             savingEVM.status,
-            this.badResponseHandler,
+            this.notOkResponseHandler,
             this.responseParceHandler);
     }
-    private badResponseHandler = (response: Response) => {
+    private notOkResponseHandler = (response: Response) => {
         this.setState({
             notifyMessage: `Bad response: ${response.statusText}`
         });
@@ -153,6 +156,14 @@ export class PatientEditor extends React.Component<PatientEditorProps, PatientEd
             case Status.Added: return 'Добавить';
             case Status.Modified: return 'Сохранить изменения';
             case Status.Deleted: return 'Подтвердить удаление';
+            default: throw new Error('Invalid state to display');
+        }
+    }
+    private getSaveButtonColor(status: Status): BtnColors {
+        switch (status) {
+            case Status.Added: return BtnColors.Success;
+            case Status.Modified: return BtnColors.Primary;
+            case Status.Deleted: return BtnColors.Danger;
             default: throw new Error('Invalid state to display');
         }
     }

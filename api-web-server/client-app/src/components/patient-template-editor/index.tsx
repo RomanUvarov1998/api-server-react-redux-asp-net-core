@@ -3,7 +3,7 @@ import { Container, ButtonToolbar, Col, Row, Button } from 'reactstrap';
 import { PatientSearchTemplateVM, SavingStatus, PatientSearchTemplateFieldVM } from '../../library/patient';
 import { FieldEditor } from '../field-editor';
 import { Dictionary } from 'lodash';
-import { CustomButton, PictureCansel, PictureSave, PictureAdd } from '../custom-button';
+import { CustomButton, PictureCansel, PictureSave, PictureAdd, BtnColors } from '../custom-button';
 import { fetchUpdatedPatientTemplate } from '../../library/fetchHelper';
 
 type PatientTemplateEditorProps = {
@@ -118,11 +118,13 @@ export class PatientTemplateEditor extends React.Component<PatientTemplateEditor
                         svgPicture={PictureAdd}
                         btnText={'Добавить поле'}
                         tooltipText={'Добавить новое название поля'}
+                        color={BtnColors.Success}
                     />
                     <CustomButton
                         onClick={() => this.saveToDB()}
                         svgPicture={PictureSave}
                         btnText={'Сохранить'}
+                        color={BtnColors.Primary}
                     />
                 </>);
             case SavingStatus.Saving:
