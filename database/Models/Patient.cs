@@ -15,10 +15,5 @@ namespace database.Models
         }
 
         public ICollection<PatientField> Fields { get; set; }
-
-        public static IQueryable<Patient> IncludeFields(DbSet<Patient> query) =>
-            query
-                .Include(p => p.Fields)
-                    .ThenInclude(f => f.Name);
     }
 }

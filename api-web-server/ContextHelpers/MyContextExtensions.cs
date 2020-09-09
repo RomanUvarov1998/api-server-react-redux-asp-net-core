@@ -2,52 +2,51 @@ using System;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Collections.Generic;
+using Microsoft.EntityFrameworkCore;
 using api_web_server.DataTransferModels;
 using database;
 using database.Models;
 
-namespace api_web_server.ContextHelpers
+namespace api_web_server.ContextExtensions
 {
-    public static class MyContexthelper
+    public static class MyContextExtensions
     {
-        public static List<Patient> GetPatientsByTemplate(
-            MyContext dbContext,
+        public static List<Patient> MyExt_GetListByTemplate(
+            this DbSet<Patient> patientsTable,
             PatientSearchTemplateDTM template,
             int skip, int take)
         {
-            var query = Patient.IncludeFields(dbContext.Patients);
-
-            query = GetPatientsQueryByTemplate(query, template);
-
-            query = GetPortion<Patient>(query, skip, take, p => p.CreatedDate);
-
-            var patients = query.ToList();
+            var patients = patientsTable
+                .IncludeFields()
+                .AddWhereConditionsFromTemplate(template)
+                .GetPortion<Patient>(skip, take, p => p.CreatedDate)
+                .ToList();
 
             return patients;
         }
 
-        public static List<string> GetVariantsByTemplate(
-            MyContext dbContext,
+        public static List<string> MyExt_GetFieldValuesForTemplate(
+            this DbSet<Patient> patientsTable,
             PatientSearchTemplateDTM template,
             int fieldNameId,
             int maxCount)
         {
-            var query = Patient.IncludeFields(dbContext.Patients);
-
-            query = GetPatientsQueryByTemplate(query, template);
-
-            query = GetPortion<Patient>(query, 0, maxCount, p => p.CreatedDate);
-
-            var fieldNamesQuery = query
-                .Select(p => p.Fields.First(f => f.NameId == fieldNameId).Value);
-
-            var fieldNames = fieldNamesQuery.ToList();
+            var fieldNames = patientsTable
+                .AddWhereConditionsFromTemplate(template)
+                .GetPortion(0, maxCount, p => p.CreatedDate)
+                .Select(p => p.Fields.First(f => f.NameId == fieldNameId).Value)
+                .ToList();
 
             return fieldNames;
         }
 
-        private static IQueryable<Patient> GetPatientsQueryByTemplate(
-            IQueryable<Patient> query,
+
+
+        private static IQueryable<Patient> IncludeFields(this DbSet<Patient> query) =>
+            query.Include(p => p.Fields).ThenInclude(f => f.Name);
+
+        private static IQueryable<Patient> AddWhereConditionsFromTemplate(
+            this IQueryable<Patient> query,
             PatientSearchTemplateDTM template)
         {
             foreach (var field in template.Fields)
@@ -68,8 +67,8 @@ namespace api_web_server.ContextHelpers
         }
 
         private static IQueryable<T> GetPortion<T>(
-            IQueryable<T> query,
-            int skip, int take, 
+            this IQueryable<T> query,
+            int skip, int take,
             Expression<Func<T, object>> getSortField)
         {
             return query

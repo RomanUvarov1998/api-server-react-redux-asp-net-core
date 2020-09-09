@@ -6,7 +6,7 @@ using Microsoft.AspNetCore.Mvc;
 using database;
 using database.Models;
 using api_web_server.DataTransferModels;
-using api_web_server.ContextHelpers;
+using api_web_server.ContextExtensions;
 
 namespace api_web_server.Controllers
 {
@@ -85,8 +85,8 @@ namespace api_web_server.Controllers
             var template = await ControllerHelpers
                 .ReadModelFromBodyAsync<PatientSearchTemplateDTM>(this.Request.Body);
 
-            var patients = MyContexthelper
-                .GetPatientsByTemplate(dbContext, template, skip, take);
+            var patients = dbContext.Patients
+                .MyExt_GetListByTemplate(template, skip, take);
 
             var patientsDTM = patients
                 .Select(p => new PatientDTM(p))
