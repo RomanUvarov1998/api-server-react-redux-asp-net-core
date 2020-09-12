@@ -16,7 +16,7 @@ namespace api_web_server.Controllers
     {
         public PatientsController(MyContext dbContext)
         {
-            this.dbContext = dbContext;
+            this._dbContext = dbContext;
         }
 
         [HttpPost("add")]
@@ -25,13 +25,13 @@ namespace api_web_server.Controllers
             var patientDTM = await ControllerHelpers
                 .ReadModelFromBodyAsync<PatientDTM>(this.Request.Body);
 
-            List<FieldName> existingFieldNames = dbContext.FieldNames.ToList();
+            List<FieldName> existingFieldNames = _dbContext.FieldNames.ToList();
             Patient patient = new Patient();
             patientDTM.UpdateModel(patient, existingFieldNames);
-            dbContext.Patients.Add(patient);
+            _dbContext.Patients.Add(patient);
 
             // save changes and update 'patient.Id' according to database 
-            dbContext.SaveChanges(true);
+            _dbContext.SaveChanges(true);
             patientDTM.UpdateDatabaseId(patient);
 
             return Ok(patientDTM);
@@ -43,8 +43,8 @@ namespace api_web_server.Controllers
             var patientDTM = await ControllerHelpers
                 .ReadModelFromBodyAsync<PatientDTM>(this.Request.Body);
 
-            List<FieldName> existingFieldNames = dbContext.FieldNames.ToList();
-            Patient patient = dbContext.Patients
+            List<FieldName> existingFieldNames = _dbContext.FieldNames.ToList();
+            Patient patient = _dbContext.Patients
                 .Include(p => p.Fields)
                 .ThenInclude(f => f.Name)
                 .FirstOrDefault(p => p.Id == patientDTM.Id);
@@ -53,7 +53,7 @@ namespace api_web_server.Controllers
 
             patientDTM.UpdateModel(patient, existingFieldNames);
 
-            dbContext.SaveChanges(true);
+            _dbContext.SaveChanges(true);
 
             return Ok(patientDTM);
         }
@@ -64,14 +64,14 @@ namespace api_web_server.Controllers
             var patientDTM = await ControllerHelpers
                 .ReadModelFromBodyAsync<PatientDTM>(this.Request.Body);
 
-            Patient patient = dbContext.Patients
+            Patient patient = _dbContext.Patients
                 .FirstOrDefault(p => p.Id == patientDTM.Id);
 
             if (patient == null) return NotFound();
 
-            dbContext.Patients.Remove(patient);
+            _dbContext.Patients.Remove(patient);
 
-            dbContext.SaveChanges();
+            _dbContext.SaveChanges();
 
             return Ok(patient.Id);
         }
@@ -85,7 +85,7 @@ namespace api_web_server.Controllers
             var template = await ControllerHelpers
                 .ReadModelFromBodyAsync<PatientSearchTemplateDTM>(this.Request.Body);
 
-            var patients = dbContext.Patients
+            var patients = _dbContext.Patients
                 .MyExt_GetListByTemplate(template, skip, take);
 
             var patientsDTM = patients
@@ -95,6 +95,6 @@ namespace api_web_server.Controllers
             return Ok(patientsDTM);
         }
 
-        private readonly MyContext dbContext;
+        private readonly MyContext _dbContext;
     }
 }

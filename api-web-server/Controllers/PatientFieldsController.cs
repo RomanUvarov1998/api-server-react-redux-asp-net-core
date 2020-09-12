@@ -15,13 +15,13 @@ namespace api_web_server.Controllers
     {
         public PatientFieldsController(MyContext dbContext)
         {
-            this.dbContext = dbContext;
+            _dbContext = dbContext;
         }
 
         [HttpGet("template")]
         public PatientSearchTemplateDTM GetTemplate()
         {
-            List<FieldName> fns = dbContext.FieldNames.ToList();
+            List<FieldName> fns = _dbContext.FieldNames.ToList();
 
             var searchTemplate = new PatientSearchTemplateDTM(fns);
 
@@ -40,15 +40,15 @@ namespace api_web_server.Controllers
                     field.Name
                 );
                 if (field.NameId > 0) {
-                    dbContext.Update(fieldNameModel);
+                    _dbContext.Update(fieldNameModel);
                 } else {
-                    dbContext.Add(fieldNameModel);
+                    _dbContext.Add(fieldNameModel);
                 }
             }
 
-            dbContext.SaveChanges();
+            _dbContext.SaveChanges();
 
-            List<FieldName> fns = dbContext.FieldNames.ToList();
+            List<FieldName> fns = _dbContext.FieldNames.ToList();
 
             var loadedTemplate = new PatientSearchTemplateDTM(fns);
 
@@ -61,13 +61,13 @@ namespace api_web_server.Controllers
             var template = await ControllerHelpers
                 .ReadModelFromBodyAsync<PatientSearchTemplateDTM>(this.Request.Body);
 
-            var fieldNames = dbContext.Patients
+            var fieldNames = _dbContext.Patients
                 .MyExt_GetFieldValuesForTemplate(template, fieldNameId, maxCount);
 
             return Ok(fieldNames);
         }
 
 
-        private readonly MyContext dbContext;
+        private readonly MyContext _dbContext;
     }
 }

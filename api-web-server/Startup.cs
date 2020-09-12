@@ -16,11 +16,11 @@ namespace api_web_server
     {
         public Startup(IConfiguration configuration)
         {
-            Configuration = configuration;
+            _configuration = configuration;
         }
         // This method gets called by the runtime. Use this method to add services to the container.
         // For more information on how to configure your application, visit https://go.microsoft.com/fwlink/?LinkID=398940
-        public void ConfigureServices(IServiceCollection services)
+        public void ConfigureServices(IServiceCollection services, IWebHostEnvironment env)
         {
             services.AddControllersWithViews(mvcOptions =>
             {
@@ -33,33 +33,40 @@ namespace api_web_server
                 configuration.RootPath = "client-app/build";
             });
 
-            string databaseProvider = Configuration["CustomChosenDB"];
-            string connectionString = Configuration.GetConnectionString(databaseProvider);
-            DbContextOptionsBuilder setDatabase(DbContextOptionsBuilder options)
-            {
-                switch (databaseProvider)
-                {
-                    case "SQLite":
-                        var connection = new SqliteConnection(connectionString);
-                        // replace standart lower() function with the new one
-                        connection.CreateFunction("lower",
-                            (string s) => s.ToLowerInvariant());
-                        return options.UseSqlite(connection);
-                    case "MSSqlServer": return options.UseSqlServer(connectionString);
-                    default:
-                        throw new Exception("Необходимо установить строку подключения в appsettings.json в поле 'CustomChosenDB'");
-                }
-            }
+            string databaseProvider = _configuration["CustomChosenDB"];
+            string connectionString = _configuration.GetConnectionString(databaseProvider);
 
             services.AddDbContext<MyContext>(
-                options => setDatabase(options)
-                .UseLoggerFactory(MyLoggerFactory)
-                .EnableSensitiveDataLogging());
+                options =>
+                {
+                    switch (databaseProvider)
+                    {
+                        case "SQLite":
+                            var connection = new SqliteConnection(connectionString);
+                            // replace standart lower() function with the new one
+                            connection.CreateFunction("lower",
+                                (string s) => s.ToLowerInvariant());
+                            options = options.UseSqlite(connection);
+                            break;
+                        case "MSSqlServer":
+                            options = options.UseSqlServer(connectionString);
+                            break;
+                        default:
+                            throw new Exception("Необходимо установить строку подключения в appsettings.json в поле 'CustomChosenDB'");
+                    }
+
+                    if (env.IsDevelopment())
+                    {
+                        options = options
+                            .UseLoggerFactory(MyLoggerFactory)
+                            .EnableSensitiveDataLogging();
+                    }
+                });
 
             services.AddCors();
         }
-        public IConfiguration Configuration { get; }
-        public static readonly ILoggerFactory MyLoggerFactory
+        private readonly IConfiguration _configuration;
+        private static readonly ILoggerFactory MyLoggerFactory
             = LoggerFactory.Create(builder =>
             {
                 builder.AddConsole();
@@ -78,15 +85,14 @@ namespace api_web_server
             app.UseCors(builder =>
                 builder
                     .AllowAnyOrigin()
-                    .AllowAnyHeader()
-            );
+                    .AllowAnyHeader());
 
             app.UseRouting();
 
             app.UseFileServer();
             // for:
-            // app.UseDefaultFiles();
-            // app.UseStaticFiles();
+            //  app.UseDefaultFiles();
+            //  app.UseStaticFiles();
 
             app.UseEndpoints(endpoints =>
             {
