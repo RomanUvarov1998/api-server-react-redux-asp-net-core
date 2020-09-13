@@ -9,6 +9,7 @@ using Microsoft.AspNetCore.SpaServices.ReactDevelopmentServer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using database;
+using api_web_server.Controllers;
 
 namespace api_web_server
 {
@@ -20,12 +21,15 @@ namespace api_web_server
         }
         // This method gets called by the runtime. Use this method to add services to the container.
         // For more information on how to configure your application, visit https://go.microsoft.com/fwlink/?LinkID=398940
-        public void ConfigureServices(IServiceCollection services, IWebHostEnvironment env)
+        public void ConfigureServices(IServiceCollection services)
         {
             services.AddControllersWithViews(mvcOptions =>
             {
                 mvcOptions.EnableEndpointRouting = false;
             });
+            services.AddControllers(options =>
+                options.Filters
+                    .Add<Controllers.ActionFilters.ResponseErrorFilter>());
 
             // In production, the React files will be served from this directory
             services.AddSpaStaticFiles(configuration =>
@@ -43,9 +47,11 @@ namespace api_web_server
                     {
                         case "SQLite":
                             var connection = new SqliteConnection(connectionString);
-                            // replace standart lower() function with the new one
+
+                            // replacing standart lower() function with the new one
                             connection.CreateFunction("lower",
                                 (string s) => s.ToLowerInvariant());
+
                             options = options.UseSqlite(connection);
                             break;
                         case "MSSqlServer":
@@ -55,12 +61,9 @@ namespace api_web_server
                             throw new Exception("Необходимо установить строку подключения в appsettings.json в поле 'CustomChosenDB'");
                     }
 
-                    if (env.IsDevelopment())
-                    {
-                        options = options
-                            .UseLoggerFactory(MyLoggerFactory)
-                            .EnableSensitiveDataLogging();
-                    }
+                    options = options
+                        .UseLoggerFactory(MyLoggerFactory)
+                        .EnableSensitiveDataLogging();
                 });
 
             services.AddCors();
@@ -75,13 +78,15 @@ namespace api_web_server
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
         public void Configure(
             IApplicationBuilder app,
-            IWebHostEnvironment env
-            )
+            IWebHostEnvironment env)
         {
             if (env.IsDevelopment())
             {
                 app.UseDeveloperExceptionPage();
             }
+
+            app.UseExceptionHandler($"/{Constants.ROUTE_ERROR_HANDLER}");
+
             app.UseCors(builder =>
                 builder
                     .AllowAnyOrigin()
@@ -98,7 +103,7 @@ namespace api_web_server
             {
                 endpoints.MapControllerRoute(
                     name: "default",
-                    pattern: "{controller=Patients}/{action}");
+                    pattern: $"{{ controller={Constants.ROUTE_CONTROLLER_PATIENTS} }}/{{ action }}");
             });
 
             app.UseSpa(spa =>

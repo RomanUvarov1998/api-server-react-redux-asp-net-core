@@ -4,10 +4,10 @@ import { Status } from '../library/history';
 
 export function fetchPatientTemplate(
     onRecieve: (serializedData: string) => void,
-    notOkResponseHandler: (response: Response) => void,
+    notOkResponseHandler: (response: Response, msg: string) => void,
     responseParceHandler: (error: any) => void) {
     myFetch(
-        'patient_fields/template',
+        'field_names/template',
         'GET',
         undefined,
         onRecieve,
@@ -19,10 +19,10 @@ export function fetchPatientTemplate(
 export function fetchUpdatedPatientTemplate(
     updatedTemplate: PatientSearchTemplateVM,
     onRecieve: (serializedData: string) => void,
-    notOkResponseHandler: (response: Response) => void,
+    notOkResponseHandler: (response: Response, msg: string) => void,
     responseParceHandler: (error: any) => void) {
     myFetch(
-        'patient_fields/template',
+        'field_names/template',
         'POST',
         JSON.stringify(updatedTemplate),
         onRecieve,
@@ -48,7 +48,7 @@ export function fetchPatientsList(
                 delayedStoreDispatch(Actions.recievePatients(patients, append));
             }
         },
-        response => delayedStoreDispatch(Actions.notifyBadResponse(response)),
+        (response, msg) => delayedStoreDispatch(Actions.notifyBadResponse(response, msg)),
         error => delayedStoreDispatch(Actions.notifyResponseProcessingError(error)));
 }
 
@@ -57,7 +57,7 @@ export function fetchVariants(fieldNameId: number,
     delayedStoreDispatch: (action: Actions.MyAction) => void
 ) {
     myFetch(
-        `patient_fields/variants?fieldNameId=${fieldNameId}&maxCount=${5}`,
+        `field_names/variants?fieldNameId=${fieldNameId}&maxCount=${5}`,
         'POST',
         JSON.stringify(patientTemplate),
         serializedData => {
@@ -66,7 +66,7 @@ export function fetchVariants(fieldNameId: number,
                 delayedStoreDispatch(Actions.giveVariants(fieldNameId, variants));
             }
         },
-        response => delayedStoreDispatch(Actions.notifyBadResponse(response)),
+        (response, msg)=> delayedStoreDispatch(Actions.notifyBadResponse(response, msg)),
         error => delayedStoreDispatch(Actions.notifyResponseProcessingError(error)));
 }
 
@@ -74,8 +74,9 @@ export function fetchSyncPatient(
     myThen: (serializedData: string) => void,
     patient: PatientVM,
     status: Status,
-    notOkResponseHandler: (response: Response) => void,
-    responseParceHandler: (error: any) => void) {
+    notOkResponseHandler: (response: Response, msg: string) => void,
+    responseParceHandler: (error: any) => void) 
+{
     const patientCopy = patient.copy();
 
     if (status === Status.Untouched) throw new Error('status cant be untouched');
@@ -103,21 +104,28 @@ function myFetch(
     method: 'GET' | 'POST',
     body: string | undefined,
     myThen: (value: string) => void | null,
-    notOkResponseHandler: (response: Response) => void,
+    notOkResponseHandler: (response: Response, msg: string) => void,
     responseParceHandler: (error: any) => void,
 ) {
+    let isOk = true;
+    let notOkResponse: Response;
     fetch(url, { method, body })
         .then(response => {
             if (!response.ok) {
                 console.error(response.statusText);
-                notOkResponseHandler(response);
-                return null;
+                isOk = false;
+                notOkResponse = response.clone();
+                return response.text();
             } else {
                 return response.text();
             }
         })
         .then(text => {
             if (text === null) return;
+            if (!isOk) {
+                notOkResponseHandler(notOkResponse, text);
+                return;
+            }
             try {
                 myThen(text);
             } catch (error) {

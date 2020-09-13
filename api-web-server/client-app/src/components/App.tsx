@@ -34,7 +34,7 @@ export class App extends React.Component<AppProps, AppState, {}> {
       loadPortionCount: 10,
       editingPatient: undefined,
 
-      errorsLog: ''
+      errorsLog: []
     };
     this.state = {
       store: configureStore(tableContainerState),
@@ -64,7 +64,7 @@ export class App extends React.Component<AppProps, AppState, {}> {
           curState.loadPortionCount,
           action => this.state.store.dispatch(action));
       },
-      response => this.state.store.dispatch(Actions.notifyBadResponse(response)),
+      (response, msg) => this.state.store.dispatch(Actions.notifyBadResponse(response, msg)),
       error => this.state.store.dispatch(Actions.notifyResponseProcessingError(error)));  
   }
 }

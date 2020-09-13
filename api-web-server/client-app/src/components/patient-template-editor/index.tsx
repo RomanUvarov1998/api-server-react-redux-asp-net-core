@@ -1,10 +1,10 @@
 import React from 'react';
-import { Container, ButtonToolbar, Col, Row, Button } from 'reactstrap';
+import { Container, ButtonToolbar, Col, Row } from 'react-bootstrap';
 import { PatientSearchTemplateVM, SavingStatus, PatientSearchTemplateFieldVM } from '../../library/patient';
 import { FieldEditor } from '../field-editor';
-import { Dictionary } from 'lodash';
-import { CustomButton, PictureCansel, PictureSave, PictureAdd, BtnColors } from '../custom-button';
+import { CustomButton, PictureCansel, PictureSave, PictureAdd, BtnColors, PictureDelete } from '../custom-button';
 import { fetchUpdatedPatientTemplate } from '../../library/fetchHelper';
+import { KeyedCollection } from '../../library/myDictionary';
 
 type PatientTemplateEditorProps = {
     initialTemplate: PatientSearchTemplateVM,
@@ -13,8 +13,8 @@ type PatientTemplateEditorProps = {
 type PatientTemplateEditorState = {
     editingTemplate: PatientSearchTemplateVM,
     savingStatus: SavingStatus,
-    fieldValues: Dictionary<string>,
-    errorLog: string,
+    fieldValues: KeyedCollection<string>,
+    errorLog: string[],
     lastAddedField?: PatientSearchTemplateFieldVM
 };
 
@@ -23,15 +23,16 @@ export class PatientTemplateEditor extends React.Component<PatientTemplateEditor
     constructor(props: PatientTemplateEditorProps) {
         super(props);
 
-        const fieldValues: Dictionary<string> = {};
-        props.initialTemplate.fields.forEach(f =>
-            fieldValues[f.nameId] = f.name);
+        const fieldValues = new KeyedCollection<string>();
+        props.initialTemplate.fields.forEach(f => {
+            fieldValues.Add(f.nameId.toString(), f.name);
+        });
 
         this.state = {
             editingTemplate: props.initialTemplate.copy(),
             savingStatus: SavingStatus.NotSaved,
             fieldValues,
-            errorLog: ''
+            errorLog: []
         };
     }
 
@@ -39,7 +40,12 @@ export class PatientTemplateEditor extends React.Component<PatientTemplateEditor
         return (
             <Container>
                 <h1>Редактирование списка полей пациента</h1>
-                <h1>{this.state.errorLog}</h1>
+                {this.state.errorLog.map((m, ind) => (
+                    <p
+                        key={ind}
+                        style={{ color: 'red' }}
+                    >{m}</p>
+                ))}
                 <ButtonToolbar>{this.createControls()}</ButtonToolbar>
                 <Row>{this.createEditingPanel()}</Row>
             </Container>
@@ -60,8 +66,44 @@ export class PatientTemplateEditor extends React.Component<PatientTemplateEditor
         this.setState({ editingTemplate: newTemplate });
     }
 
+    private onDelete = (nameId: number) => {
+        const newFields = this.state.editingTemplate.fields.map(
+            f => {
+                if (f.nameId === nameId) {
+                    f.isDeleted = true;
+                }
+                return f;
+            });
+
+        const newTemplate = this.state.editingTemplate.copy();
+        newTemplate.fields = newFields;
+
+        this.setState({ editingTemplate: newTemplate });
+    }
+
+    private onRestore = (nameId: number) => {
+        const newFields = this.state.editingTemplate.fields.map(
+            f => {
+                if (f.nameId === nameId) {
+                    f.isDeleted = false;
+                }
+                return f;
+            });
+
+        const newTemplate = this.state.editingTemplate.copy();
+        newTemplate.fields = newFields;
+
+        this.setState({ editingTemplate: newTemplate });
+    }
+
     private onAddNewField = () => {
-        const lastAddedField = new PatientSearchTemplateFieldVM('', 0, [], '');
+        let newId = 0;
+        this.state.editingTemplate.fields.forEach(f => {
+            if (f.nameId <= newId) {
+                newId = f.nameId - 1;
+            }
+        });
+        const lastAddedField = new PatientSearchTemplateFieldVM('', newId, [], '', false);
         const editingTemplate = this.state.editingTemplate.copy();
         editingTemplate.fields.push(lastAddedField);
         this.setState({ editingTemplate, lastAddedField });
@@ -81,22 +123,40 @@ export class PatientTemplateEditor extends React.Component<PatientTemplateEditor
 
                 const editFields = fields.map((f, index) => {
                     const initialName =
-                        fieldValues[f.nameId] ?
-                            fieldValues[f.nameId] :
+                        fieldValues.ContainsKey(f.nameId.toString()) ?
+                            fieldValues.Item(f.nameId.toString()) :
                             '[Новое поле]';
 
-                    return (<Col key={index}>
-                        <FieldEditor
-                            labelText={`${initialName}:`}
-                            value={f.name}
-                            onChange={newValue => this.onEdit(f.nameId, newValue)}
-                            disabled={false}
-                            autofocus={autofocusPredicate(f, index)}
-                        />
+                    const deleteRestoreBtn =
+                        f.isDeleted ?
+                            (<CustomButton
+                                onClick={() => this.onRestore(f.nameId)}
+                                svgPicture={PictureAdd}
+                                tooltipText={'Отменить удаление поля из списка полей пациента'}
+                            />) :
+                            (<CustomButton
+                                onClick={() => this.onDelete(f.nameId)}
+                                svgPicture={PictureDelete}
+                                tooltipText={'Удалить поле из списка полей пациента (можно отменить)'}
+                            />);
+
+                    return (<Col key={index} className={'col col-sm-12 col-md-6 col-lg-5 col-xl-4'}>
+                        <Row className={'row justify-content-start no-gutters'}>
+                            <Col>
+                                <FieldEditor
+                                    labelText={`${initialName}:`}
+                                    value={f.name}
+                                    onChange={newValue => this.onEdit(f.nameId, newValue)}
+                                    disabled={false}
+                                    autofocus={autofocusPredicate(f, index)}
+                                />
+                            </Col>
+                            <Col>{deleteRestoreBtn}</Col>
+                        </Row>
                     </Col>)
                 }
                 );
-                return (<Row>{editFields}</Row>);
+                return (<Row className={'row justify-content-start'}>{editFields}</Row>);
             case SavingStatus.Saving:
             case SavingStatus.Saved:
                 return (<></>);
@@ -124,6 +184,7 @@ export class PatientTemplateEditor extends React.Component<PatientTemplateEditor
                         onClick={() => this.saveToDB()}
                         svgPicture={PictureSave}
                         btnText={'Сохранить'}
+                        tooltipText={'Сохранить все изменения'}
                         color={BtnColors.Primary}
                     />
                 </>);
@@ -132,9 +193,13 @@ export class PatientTemplateEditor extends React.Component<PatientTemplateEditor
             case SavingStatus.Saved:
                 return (<>
                     <h3>Сохранено {PictureSave}</h3>
-                    <Button onClick={() => this.props.onExit(this.state.editingTemplate)}>
+                    <CustomButton
+                        onClick={() => this.props.onExit(this.state.editingTemplate)}
+                        svgPicture={PictureCansel}
+                        tooltipText={'Перейти к поиску'}
+                    >
                         Ок
-                    </Button>
+                    </CustomButton>
                 </>);
             default: throw new Error('unknown state');
         }
@@ -151,16 +216,16 @@ export class PatientTemplateEditor extends React.Component<PatientTemplateEditor
                     savingStatus: SavingStatus.Saved
                 });
             },
-            response => {
+            (response, msg) => {
                 const log = this.state.errorLog;
                 this.setState({
-                    errorLog: `${log}\nBad response: ${response.statusText}`
+                    errorLog: log.concat(`${log.length}) Not ok response: ${response.statusText}: ${msg}`)
                 });
             },
             error => {
                 const log = this.state.errorLog;
                 this.setState({
-                    errorLog: `${log}\nError: ${error}`
+                    errorLog: log.concat(`${log.length}) Error: ${error}`)
                 });
             });
     }

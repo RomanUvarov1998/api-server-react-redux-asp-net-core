@@ -32,8 +32,6 @@ export function configureStore(initialState: MainContainerState) {
                 return Reducers.onLoadMorePatients(state, 
                     action => store.dispatch(action));
 
-
-
             case Actions.ACTION_ENTER_PATIENT_EDITOR:
                 a = action as Actions.ActionEnterPatientEditor;
                 return Reducers.onEnterEditor(state, a.patient);
@@ -50,7 +48,7 @@ export function configureStore(initialState: MainContainerState) {
 
             case Actions.ACTION_NOTIFY_BAD_RESPONSE:
                 a = (action as Actions.ActionNotifyBadResponse);
-                return Reducers.onNotifyBadResponse(state, a.response);
+                return Reducers.onNotifyBadResponse(state, a.response, a.msg);
             case Actions.ACTION_NOTIFY_RESPONSE_PROCESSING_ERROR:
                 a = (action as Actions.ActionNotifyResponseProcessingError);
                 return Reducers.onNotifyResponseProcessingError(state, a.error);

@@ -4,7 +4,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace database.Models
 {
-    public class Patient : ModelBase
+    public class Patient : ModelBase, IDeleteRestorableEntity
     {
         public Patient()
         {
@@ -15,5 +15,9 @@ namespace database.Models
         }
 
         public ICollection<PatientField> Fields { get; set; }
+
+        #region IDeleteRestorableEntity
+        public bool IsDeleted { get; set; } = false;
+        #endregion
     }
 }

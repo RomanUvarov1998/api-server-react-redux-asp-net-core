@@ -73,6 +73,11 @@ namespace database
             modelBuilder.Entity<Patient>().HasData(patients);
             modelBuilder.Entity<PatientField>().HasData(patientFields);
             modelBuilder.Entity<FieldName>().HasData(fieldNames);
+
+            modelBuilder.Entity<Patient>()
+                .HasQueryFilter(p => !p.IsDeleted);
+            modelBuilder.Entity<FieldName>()
+                .HasQueryFilter(fn => !fn.IsDeleted);
         }
     }
 }

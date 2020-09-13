@@ -44,7 +44,7 @@ export type ActionExitPatientEditor = { type: string, patient?: PatientVM, statu
 export type ActionStartEditPatientTemplate = { type: string };
 export type ActionFinishEditPatientTemplate = { type: string, newTemplate?: PatientSearchTemplateVM };
 
-export type ActionNotifyBadResponse = { type: string, response: Response };
+export type ActionNotifyBadResponse = { type: string, response: Response, msg: string };
 export type ActionNotifyResponseProcessingError = { type: string, error: any };
 
 
@@ -112,10 +112,11 @@ export function finishEditPatientTemplate(newTemplate?: PatientSearchTemplateVM)
     };
 }
 
-export function notifyBadResponse(response: Response): ActionNotifyBadResponse {
+export function notifyBadResponse(response: Response, msg: string): ActionNotifyBadResponse {
     return {
         type: ACTION_NOTIFY_BAD_RESPONSE,
-        response
+        response,
+        msg
     };
 }
 export function notifyResponseProcessingError(error: any): ActionNotifyResponseProcessingError {

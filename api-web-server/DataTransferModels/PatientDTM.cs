@@ -1,11 +1,11 @@
-using System.Security.AccessControl;
-using database.Models;
 using System.Collections.Generic;
 using System.Linq;
+using database.Models;
+using api_web_server.Controllers.ActionFilters;
 
 namespace api_web_server.DataTransferModels
 {
-    public class PatientDTM
+    public class PatientDTM : ICanUpdateModel<Patient>, IDeleteRestorableEntity
     {
         public PatientDTM() { }
         public PatientDTM(Patient instance)
@@ -16,53 +16,53 @@ namespace api_web_server.DataTransferModels
 
             Id = instance.Id;
         }
-        public static PatientDTM CreateEmpty(List<FieldName> fieldNames)
-        {
-            PatientDTM patient = new PatientDTM()
-            {
-                Fields = fieldNames
-                    .Select(fn => PatientFieldDTM.CreateEmpty(fn))
-                    .ToList(),
-                Id = 0
-            };
-            return patient;
-        }
+   
+        public List<PatientFieldDTM> Fields { get; set; }
 
-        public bool UpdateModel(Patient model, List<FieldName> existingFieldNames)
+        public int Id { get; set; }
+
+        #region IDeleteRestorableEntity 
+        public bool IsDeleted { get; set; } = false;
+        # endregion
+
+        #region  ICanUpdateModel<Patient>
+        public bool UpdateModel(Patient model)
         {
             bool updated = false;
 
-            foreach (PatientFieldDTM templateField in this.Fields)
+            foreach (PatientFieldDTM dtmField in this.Fields)
             {
                 PatientField modelField = model.Fields
-                    .FirstOrDefault(f => f.Name.Id == templateField.NameId);
+                    .FirstOrDefault(f => f.Name.Id == dtmField.NameId)
+                    ?? throw new MyException(
+                        MyExceptionType.DoesNotExistInDatabase, 
+                        dtmField);
 
-                if (modelField == null)
+                if (dtmField.UpdateModel(modelField))
                 {
-                    FieldName nameForField = existingFieldNames.First(
-                        f => f.Id == templateField.NameId
-                    );
-                    modelField = new PatientField(nameForField);
-                    model.Fields.Add(modelField);
-                }
-
-                if (!modelField.Value.Equals(templateField.Value))
-                {
-                    modelField.Value = templateField.Value;
                     updated = true;
                 }
             }
 
+            if (this.Id != model.Id)
+            {
+                updated = true;
+                model.Id = this.Id;
+            }
+
+            if (this.IsDeleted != model.IsDeleted)
+            {
+                updated = true;
+                model.IsDeleted = this.IsDeleted;
+            }
+
             return updated;
         }
+        # endregion
 
-        public void UpdateDatabaseId(Patient model)
+        public override string ToString()
         {
-            this.Id = model.Id;
+            return $"{nameof(PatientDTM)} {{ Id: {this.Id}, Fields: {this.Fields}, IsDeleted: {this.IsDeleted} }}";
         }
-
-        public List<PatientFieldDTM> Fields { get; set; }
-
-        public int Id { get; set; }
     }
 }

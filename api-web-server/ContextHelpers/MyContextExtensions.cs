@@ -1,49 +1,45 @@
 using System;
 using System.Linq;
 using System.Linq.Expressions;
-using System.Collections.Generic;
 using Microsoft.EntityFrameworkCore;
 using api_web_server.DataTransferModels;
-using database;
+using api_web_server.Controllers.ActionFilters;
 using database.Models;
 
-namespace api_web_server.ContextExtensions
+namespace api_web_server.ContextHelpers
 {
     public static class MyContextExtensions
     {
-        public static List<Patient> MyExt_GetListByTemplate(
+        public static IQueryable<Patient> MyExt_PortionByTemplate(
             this DbSet<Patient> patientsTable,
             PatientSearchTemplateDTM template,
             int skip, int take)
         {
-            var patients = patientsTable
+            var query = patientsTable
                 .IncludeFields()
                 .AddWhereConditionsFromTemplate(template)
-                .GetPortion<Patient>(skip, take, p => p.CreatedDate)
-                .ToList();
+                .GetPortion(skip, take, p => p.CreatedDate);
 
-            return patients;
+            return query;
         }
 
-        public static List<string> MyExt_GetFieldValuesForTemplate(
+        public static IQueryable<string> MyExt_GetFieldValuesForTemplate(
             this DbSet<Patient> patientsTable,
             PatientSearchTemplateDTM template,
             int fieldNameId,
             int maxCount)
         {
-            var fieldNames = patientsTable
+            var query = patientsTable
                 .AddWhereConditionsFromTemplate(template)
                 .GetPortion(0, maxCount, p => p.CreatedDate)
-                .Select(p => p.Fields.First(f => f.NameId == fieldNameId).Value)
-                .ToList();
+                .Select(p => p.Fields.First(f => f.NameId == fieldNameId).Value);
 
-            return fieldNames;
+            return query;
         }
 
-
-
-        private static IQueryable<Patient> IncludeFields(this DbSet<Patient> query) =>
+        public static IQueryable<Patient> IncludeFields(this DbSet<Patient> query) =>
             query.Include(p => p.Fields).ThenInclude(f => f.Name);
+
 
         private static IQueryable<Patient> AddWhereConditionsFromTemplate(
             this IQueryable<Patient> query,
@@ -71,6 +67,19 @@ namespace api_web_server.ContextExtensions
             int skip, int take,
             Expression<Func<T, object>> getSortField)
         {
+            if (skip < 0)
+            {
+                throw new MyException(
+                    MyExceptionType.NegativeSkipArgument,
+                    skip);
+            }
+            if (take < 0)
+            {
+                throw new MyException(
+                    MyExceptionType.NegativeTakeArgument,
+                    take);
+            }
+            
             return query
                 .OrderBy(getSortField)
                 .Skip(skip)

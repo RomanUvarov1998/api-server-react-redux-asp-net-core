@@ -181,17 +181,17 @@ export function onFinishEditPatientTemplate(state: MainContainerState, newTempla
 }
 
 
-export function onNotifyBadResponse(state: MainContainerState, response: Response): MainContainerState {
+export function onNotifyBadResponse(state: MainContainerState, response: Response, msg: string): MainContainerState {
     const previousLog = state.errorsLog;
     return {
         ...state,
-        errorsLog: `${previousLog}\nBad response: ${response?.statusText}`
+        errorsLog: previousLog.concat(`${previousLog.length}) Bad response: ${response?.statusText}`)
     }
 }
 export function onNotifyResponseProcessingError(state: MainContainerState, error: any): MainContainerState {
     const previousLog = state.errorsLog;
     return {
         ...state,
-        errorsLog: `${previousLog}\nResponseProcessingError: ${error}`
+        errorsLog: previousLog.concat(`${previousLog.length}) ResponseProcessingError: ${error}`)
     }
 }

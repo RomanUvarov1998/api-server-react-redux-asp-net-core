@@ -1,9 +1,9 @@
 import React from 'react';
-import { ButtonToolbar, Container, Row, Col } from 'reactstrap';
+import { ButtonToolbar, Container, Row, Col } from 'react-bootstrap';
 import { PatientVM, SavingStatus, PatientEditingVM, PatientSearchTemplateVM } from '../../library/patient';
 import { Status } from '../../library/history';
 import { FieldEditor } from '../field-editor';
-import { CustomButton, PictureSave, PictureCansel as PictureBack, BtnColors } from '../custom-button';
+import { CustomButton, PictureSave, PictureCansel, BtnColors } from '../custom-button';
 import { fetchSyncPatient } from '../../library/fetchHelper';
 
 type PatientEditorProps = {
@@ -13,14 +13,15 @@ type PatientEditorProps = {
 };
 type PatientEditorState = {
     patient: PatientEditingVM,
-    notifyMessage?: string
+    notifyMessages: string[]
 };
 export class PatientEditor extends React.Component<PatientEditorProps, PatientEditorState, {}> {
     constructor(props: PatientEditorProps) {
         super(props);
 
         this.state = {
-            patient: props.patient.copy()
+            patient: props.patient.copy(),
+            notifyMessages: []
         };
     }
 
@@ -33,7 +34,7 @@ export class PatientEditor extends React.Component<PatientEditorProps, PatientEd
                     <ButtonToolbar>
                         <CustomButton
                             onClick={() => this.props.onExitEditor()}
-                            svgPicture={PictureBack}
+                            svgPicture={PictureCansel}
                             tooltipText={'Отменить'}
                         />
                         <CustomButton
@@ -63,7 +64,7 @@ export class PatientEditor extends React.Component<PatientEditorProps, PatientEd
                         onClick={() => this.props.onExitEditor(
                             this.state.patient.status,
                             this.state.patient.toPatientVM())}
-                        svgPicture={PictureBack}
+                        svgPicture={PictureCansel}
                         btnText={'Ок'}
                     />
                 </>);
@@ -73,7 +74,12 @@ export class PatientEditor extends React.Component<PatientEditorProps, PatientEd
         return (<Container>
             <Row>
                 <Col>
-                    <h1>{this.state.notifyMessage}</h1>
+                    {this.state.notifyMessages.map((m, ind) => (
+                        <p
+                            style={{ color: 'red' }}
+                            key={ind}
+                        >{m}</p>
+                    ))}
                 </Col>
             </Row>
             <Row className={'justify-content-xl-center'}>
@@ -112,29 +118,55 @@ export class PatientEditor extends React.Component<PatientEditorProps, PatientEd
     private handleSubmit = () => {
         const savingEVM = this.state.patient.copy();
         savingEVM.savingStatus = SavingStatus.Saving;
+        const savingEVMCopy = savingEVM.copy();
         this.setState({ patient: savingEVM });
         const status = this.state.patient.status;
 
+        let myThen;
+        switch (status) {
+            case Status.Added:
+            case Status.Modified:
+                myThen = (serializedData: string) => {
+                    const recievedVM = PatientVM.from(JSON.parse(serializedData));
+                    const savedEVM = PatientEditingVM.newFromPatientVM(
+                        recievedVM, status, SavingStatus.Saved);
+                    this.setState({ patient: savedEVM });
+                };
+                break;
+            case Status.Deleted:
+                myThen = (serializedData: string) => {
+                    const recievedId = JSON.parse(serializedData) as number;
+
+                    if (savingEVMCopy.id !== recievedId) {
+                        throw new Error("Deleted id != recieved id");
+                    }
+
+                    savingEVMCopy.savingStatus = SavingStatus.Saved;
+                    this.setState({ patient: savingEVMCopy });
+                };
+                break;
+            default: throw new Error("unknown status");
+        }
+
         fetchSyncPatient(
-            serializedData => {
-                const recievedVM = PatientVM.from(JSON.parse(serializedData));
-                const savedEVM = PatientEditingVM.newFromPatientVM(
-                    recievedVM, status, SavingStatus.Saved);
-                this.setState({ patient: savedEVM });
-            },
+            myThen,
             savingEVM.toPatientVM(),
             savingEVM.status,
             this.notOkResponseHandler,
             this.responseParceHandler);
     }
-    private notOkResponseHandler = (response: Response) => {
+    private notOkResponseHandler = (response: Response, msg: string) => {
+        const previousMsg = this.state.notifyMessages.slice();
         this.setState({
-            notifyMessage: `Bad response: ${response.statusText}`
+            notifyMessages: previousMsg
+                .concat(`${previousMsg.length}) Not ok response (${response.statusText}): ${msg}`)
         });
     }
     private responseParceHandler = (error: any) => {
+        const previousMsg = this.state.notifyMessages.slice();
         this.setState({
-            notifyMessage: `JSON parcing error: ${error.toString()}`
+            notifyMessages: previousMsg
+                .concat(`${previousMsg.length}) JSON parcing error: ${error.toString()}`)
         });
     }
 

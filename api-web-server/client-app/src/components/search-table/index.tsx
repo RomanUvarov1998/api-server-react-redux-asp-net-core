@@ -1,9 +1,15 @@
 import React from 'react';
-import { PatientVM, PatientSearchTemplateVM, PatientEditingVM } from '../../library/patient'
+import {
+    PatientVM, PatientSearchTemplateVM,
+    PatientEditingVM
+} from '../../library/patient'
 import { SearchBar } from '../search-bar';
-import { Button, Table, Container, Row, Col } from 'reactstrap';
+import { Table, Container, Row, Col } from 'react-bootstrap';
 import { Status } from '../../library/history';
-import { CustomButton, PictureEdit, PictureDelete, BtnColors } from '../custom-button';
+import {
+    CustomButton, PictureEdit, PictureDelete, BtnColors,
+    PictureAdd
+} from '../custom-button';
 
 export type SearchTableProps = {
     isWaitingPatientsList: boolean,
@@ -110,7 +116,12 @@ export function SearchTable(props: SearchTableProps): JSX.Element {
     if (!props.isWaitingPatientsList && props.patientsList.length) {
         loadMoreControl =
             props.canLoadMore ?
-                (<Button onClick={() => onLoadMore(props)}>Загрузить ещё</Button>) :
+                (<CustomButton
+                    onClick={() => onLoadMore(props)}
+                    svgPicture={PictureAdd}
+                    tooltipText={'Загрузить следующую группу пациентов'}
+                    btnText={'Загрузить ещё'}
+                />) :
                 (<strong>Загружены все найденные результаты</strong>);
     }
 

@@ -4,29 +4,33 @@ export type FieldName = string;
 export type FieldValue = string;
 
 export class PatientFieldDTM {
-    constructor(_name: FieldName, _value: FieldValue, _nameId: number) {
-        this.name = _name;
-        this.value = _value;
-        this.nameId = _nameId;
+    constructor(name: FieldName, value: FieldValue, nameId: number, isDeleted: boolean) {
+        this.name = name;
+        this.value = value;
+        this.nameId = nameId;
+        this.isDeleted = isDeleted;
     }
 
-    public copy = (): PatientFieldDTM => new PatientFieldDTM(this.name, this.value, this.nameId);
+    public copy = (): PatientFieldDTM => new PatientFieldDTM(this.name, this.value, 
+        this.nameId, this.isDeleted);
     public toString = () => `{ ${this.name}:${this.value} }`;
 
     public value: FieldValue;
     public name: FieldName;
     public nameId: number;
+    public isDeleted: boolean;
 
     public toPatientSearchTemplateFieldVM = () => {
         return new PatientSearchTemplateFieldVM(
-            this.name, this.nameId, [], '');
+            this.name, this.nameId, [], '', this.isDeleted);
     }
 
     public static from(obj: any): PatientFieldDTM {
         let name = obj.name as string;
         let value = obj.value as string;
         let nameId = obj.nameId as number;
-        return new PatientFieldDTM(name, value, nameId);
+        let isDeleted = obj.isDeleted as boolean;
+        return new PatientFieldDTM(name, value, nameId, isDeleted);
     }
 }
 
@@ -37,27 +41,31 @@ export enum SavingStatus {
 }
 
 export class PatientVM {
-    constructor(fields: PatientFieldDTM[], id: number) {
+    constructor(fields: PatientFieldDTM[], id: number, isDeleted: boolean) {
         this.fields = fields;
         this.id = id;
+        this.isDeleted = isDeleted;
     }
 
     public fields: PatientFieldDTM[];
     public id: number;
+    public isDeleted: boolean;
 
     public getUpdatedCopy = (fieldNameId: number, newFieldValue: FieldValue) => {
         const newFields = this.fields.map(field =>
             field.nameId === fieldNameId ?
-                new PatientFieldDTM(field.name, newFieldValue, field.nameId) :
+                new PatientFieldDTM(field.name, newFieldValue, field.nameId, 
+                    field.isDeleted) :
                 field);
 
-        return new PatientVM(newFields, this.id);
+        return new PatientVM(newFields, this.id, this.isDeleted);
     }
 
     public copy = (): PatientVM => {
         return new PatientVM(
             this.fields.map(f => f.copy()),
-            this.id
+            this.id,
+            this.isDeleted
         );
     }
     public equals = (item: PatientVM): boolean => item.id === this.id;
@@ -86,22 +94,26 @@ export class PatientVM {
         let fields: PatientFieldDTM[] = obj.fields.map(
             (f: any) => PatientFieldDTM.from(f));
         let id = obj.id as number;
-        return new PatientVM(fields, id);
+        let isDeleted = obj.isDeleted as boolean;
+        return new PatientVM(fields, id, isDeleted);
     }
 }
 
 export class PatientSearchTemplateFieldVM {
-    constructor(name: string, nameId: number, variants: string[], value: string) {
+    constructor(name: string, nameId: number, variants: string[], value: string,
+        isDeleted: boolean) {
         this.name = name;
         this.nameId = nameId;
         this.variants = variants;
         this.value = value;
+        this.isDeleted = isDeleted;
     }
 
     public name: FieldName;
     public nameId: number;
     public variants: FieldValue[];
     public value: FieldValue;
+    public isDeleted: boolean;
 }
 export class PatientSearchTemplateVM {
     constructor(fields: PatientFieldDTM[]) {
@@ -112,7 +124,7 @@ export class PatientSearchTemplateVM {
 
     public copy = () => {
         const pst = new PatientSearchTemplateVM(
-            this.fields.map(f => new PatientFieldDTM(f.name, '', f.nameId)));
+            this.fields.map(f => new PatientFieldDTM(f.name, '', f.nameId, f.isDeleted)));
 
         pst.fields.forEach(f => {
             const copyf = this.fields.find(tf => tf.nameId === f.nameId);
@@ -135,8 +147,9 @@ export class PatientSearchTemplateVM {
     }
     public copyToPatientVM = () => {
         return new PatientVM(
-            this.fields.map(f => new PatientFieldDTM(f.name, f.value, f.nameId)),
-            0
+            this.fields.map(f => new PatientFieldDTM(f.name, f.value, f.nameId, f.isDeleted)),
+            0,
+            false
         );
     }
 
@@ -187,7 +200,8 @@ export class PatientEditingVM {
         const thisCopy = this.copy();
         const pvm = new PatientVM(
             thisCopy.fields,
-            this.id
+            this.id,
+            this.status === Status.Deleted
         );
         return pvm;
     }
@@ -203,7 +217,7 @@ export class PatientEditingVM {
     public static newFromPatientSearchTemplateVM(pvm: PatientSearchTemplateVM): PatientEditingVM {
         return new PatientEditingVM(
             0,
-            pvm.fields.map(f => new PatientFieldDTM(f.name, f.value, f.nameId)),
+            pvm.fields.map(f => new PatientFieldDTM(f.name, f.value, f.nameId, f.isDeleted)),
             Status.Added,
             SavingStatus.NotSaved
         );
@@ -213,11 +227,13 @@ export class PatientEditingVM {
 export class PatientDTM {
     fields: PatientFieldDTM[] = [];
     id: number = 0;
+    isDeleted: boolean = false;
 
-    public static from({ fields, id }: PatientVM): PatientDTM {
+    public static from({ fields, id, isDeleted }: PatientVM): PatientDTM {
         const p = {
             fields,
-            id
+            id,
+            isDeleted
         };
 
         return p;

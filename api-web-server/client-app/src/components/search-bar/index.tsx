@@ -1,8 +1,11 @@
-import React, { useState } from 'react'
-import { FieldValue, PatientSearchTemplateVM, PatientSearchTemplateFieldVM } from '../../library/patient'
+import React from 'react'
+import { FieldValue, PatientSearchTemplateVM, 
+    PatientSearchTemplateFieldVM } from '../../library/patient'
 import { SearchField } from '../search-field'
-import { ButtonToolbar, DropdownMenu, DropdownItem, DropdownToggle, Dropdown, Container, Row, Col } from 'reactstrap';
-import { CustomButton, PictureClear, PictureAdd, PictureSettings, BtnColors } from '../custom-button';
+import { ButtonToolbar, Dropdown, Container, Row, 
+    Col } from 'react-bootstrap';
+import { CustomButton, PictureClear, PictureAdd, PictureSettings, 
+    BtnColors } from '../custom-button';
 
 export type SearchBarProps = {
     frozen: boolean,
@@ -27,8 +30,6 @@ export function SearchBar(props: SearchBarProps) {
         );
     });
 
-    const [isSettingsDropdownOpen, setSettingsDropdownOpen] = useState(false);
-
     return (
         <>
             <h1>Поиск</h1>
@@ -46,16 +47,13 @@ export function SearchBar(props: SearchBarProps) {
                     svgPicture={PictureAdd}
                     color={BtnColors.Success}
                 />
-                <Dropdown
-                    isOpen={isSettingsDropdownOpen}
-                    toggle={() => setSettingsDropdownOpen(!isSettingsDropdownOpen)}
-                >
-                    <DropdownToggle caret>{PictureSettings}</DropdownToggle>
-                    <DropdownMenu>
-                        <DropdownItem
+                <Dropdown>
+                    <Dropdown.Toggle>{PictureSettings}</Dropdown.Toggle>
+                    <Dropdown.Menu>
+                        <Dropdown.Item
                             onClick={props.onStartEditPatientTemplate}
-                        >Изменить список полей пациента</DropdownItem>
-                    </DropdownMenu>
+                        >Изменить список полей пациента</Dropdown.Item>
+                    </Dropdown.Menu>
                 </Dropdown>
             </ButtonToolbar>
             <Container style={{ margin: 10 }}>

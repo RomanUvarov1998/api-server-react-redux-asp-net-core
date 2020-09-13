@@ -6,12 +6,13 @@ using Microsoft.AspNetCore.Mvc;
 using database;
 using database.Models;
 using api_web_server.DataTransferModels;
-using api_web_server.ContextExtensions;
+using api_web_server.ContextHelpers;
+using api_web_server.Controllers.ActionFilters;
 
 namespace api_web_server.Controllers
 {
     [ApiController]
-    [Route("patients")]
+    [Route(Constants.ROUTE_CONTROLLER_PATIENTS)]
     public class PatientsController : ControllerBase
     {
         public PatientsController(MyContext dbContext)
@@ -19,80 +20,136 @@ namespace api_web_server.Controllers
             this._dbContext = dbContext;
         }
 
-        [HttpPost("add")]
-        public async Task<IActionResult> Add()
+        [HttpPost(Constants.ROUTE_ACTION_PATIENTS_ADD)]
+        public async Task<PatientDTM> Add()
         {
             var patientDTM = await ControllerHelpers
                 .ReadModelFromBodyAsync<PatientDTM>(this.Request.Body);
 
-            List<FieldName> existingFieldNames = _dbContext.FieldNames.ToList();
-            Patient patient = new Patient();
-            patientDTM.UpdateModel(patient, existingFieldNames);
+            List<FieldName> existingFieldNames = await _dbContext.FieldNames.ToListAsync();
+
+            var nonExisting = ControllerHelpers.FirstNonExistingOrDefault(
+                patientDTM.Fields, existingFieldNames,
+                (dtmF, mf) => dtmF.NameId == mf.Id);
+
+            if (nonExisting != null)
+            {
+                throw new MyException(
+                    MyExceptionType.DoesNotExistInDatabase,
+                    nonExisting);
+            }
+
+            Patient patient = new Patient(
+                existingFieldNames
+                    .Select(fn => new PatientField(fn))
+                    .ToArray());
+
+            patientDTM.UpdateModel(patient);
+
             _dbContext.Patients.Add(patient);
 
-            // save changes and update 'patient.Id' according to database 
-            _dbContext.SaveChanges(true);
-            patientDTM.UpdateDatabaseId(patient);
+            await _dbContext.SaveChangesAsync(true);
+            patientDTM = new PatientDTM(patient);
 
-            return Ok(patientDTM);
+            return patientDTM;
         }
 
-        [HttpPost("update")]
-        public async Task<IActionResult> Update()
+        [HttpPost(Constants.ROUTE_ACTION_PATIENTS_UPDATE)]
+        public async Task<PatientDTM> Update()
         {
             var patientDTM = await ControllerHelpers
                 .ReadModelFromBodyAsync<PatientDTM>(this.Request.Body);
 
-            List<FieldName> existingFieldNames = _dbContext.FieldNames.ToList();
-            Patient patient = _dbContext.Patients
-                .Include(p => p.Fields)
-                .ThenInclude(f => f.Name)
-                .FirstOrDefault(p => p.Id == patientDTM.Id);
+            List<FieldName> existingFieldNames = await _dbContext.FieldNames.ToListAsync();
 
-            if (patient == null) return NotFound();
+            var nonExisting = ControllerHelpers.FirstNonExistingOrDefault(
+                patientDTM.Fields, existingFieldNames,
+                (dtmF, mf) => dtmF.NameId == mf.Id);
 
-            patientDTM.UpdateModel(patient, existingFieldNames);
+            if (nonExisting != null)
+            {
+                throw new MyException(
+                    MyExceptionType.DoesNotExistInDatabase,
+                    nonExisting);
+            }
 
-            _dbContext.SaveChanges(true);
+            Patient patient = await _dbContext.Patients
+                .IncludeFields()
+                .FirstOrDefaultAsync(p => p.Id == patientDTM.Id);
 
-            return Ok(patientDTM);
+            if (patient == null)
+            {
+                throw new MyException(
+                    MyExceptionType.DoesNotExistInDatabase,
+                    patientDTM);
+            }
+
+            patientDTM.UpdateModel(patient);
+
+            await _dbContext.SaveChangesAsync(true);
+
+            return patientDTM;
         }
 
-        [HttpPost("delete")]
-        public async Task<IActionResult> Delete()
+        [HttpPost(Constants.ROUTE_ACTION_PATIENTS_DELETE)]
+        public async Task<int> Delete()
         {
             var patientDTM = await ControllerHelpers
                 .ReadModelFromBodyAsync<PatientDTM>(this.Request.Body);
 
-            Patient patient = _dbContext.Patients
-                .FirstOrDefault(p => p.Id == patientDTM.Id);
+            Patient patient = await _dbContext.Patients.FindAsync(patientDTM.Id);
 
-            if (patient == null) return NotFound();
+            if (patient == null)
+            {
+                throw new MyException(
+                    MyExceptionType.DoesNotExistInDatabase,
+                    patientDTM);
+            }
 
-            _dbContext.Patients.Remove(patient);
+            patient.IsDeleted = true;
 
-            _dbContext.SaveChanges();
+            await _dbContext.SaveChangesAsync(true);
 
-            return Ok(patient.Id);
+            return patient.Id;
         }
 
-        [HttpPost("list")]
-        public async Task<IActionResult> GetPortion(int skip, int take)
+        [HttpPost(Constants.ROUTE_ACTION_PATIENTS_RESTORE)]
+        public async Task<int> Restore()
         {
-            if (skip < 0) return BadRequest("skip must be >= 0");
-            if (take < 0) return BadRequest("take must be >= 0");
+            var patientDTM = await ControllerHelpers
+                .ReadModelFromBodyAsync<PatientDTM>(this.Request.Body);
 
+            Patient patient = await _dbContext.Patients.FindAsync(patientDTM.Id);
+
+            if (patient == null)
+            {
+                throw new MyException(
+                    MyExceptionType.DoesNotExistInDatabase,
+                    patientDTM);
+            }
+
+            patient.IsDeleted = false;
+
+            await _dbContext.SaveChangesAsync(true);
+
+            return patient.Id;
+        }
+
+        [HttpPost(Constants.ROUTE_ACTION_PATIENTS_GET_LIST)]
+        public async Task<List<PatientDTM>> GetPortion(int skip, int take)
+        {
             var template = await ControllerHelpers
                 .ReadModelFromBodyAsync<PatientSearchTemplateDTM>(this.Request.Body);
 
-            var patients = _dbContext.Patients
-                .MyExt_GetListByTemplate(template, skip, take);
+            var patients = await _dbContext.Patients
+                .MyExt_PortionByTemplate(template, skip, take)
+                .ToListAsync();
 
             var patientsDTM = patients
                 .Select(p => new PatientDTM(p))
                 .ToList();
 
-            return Ok(patientsDTM);
+            return patientsDTM;
         }
 
         private readonly MyContext _dbContext;

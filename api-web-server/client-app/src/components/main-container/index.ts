@@ -16,7 +16,7 @@ export type MainContainerState = {
 
     editingPatient?: PatientEditingVM
 
-    errorsLog: string
+    errorsLog: string[]
 }
 const mapStateToProps = (state: MainContainerState): MainContainerState => {
     return {

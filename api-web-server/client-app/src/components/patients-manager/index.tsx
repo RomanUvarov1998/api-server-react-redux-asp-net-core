@@ -26,7 +26,7 @@ export type PatientManagerProps = {
     onStartEditPatientTemplate: () => void,
     onFinishEditPatientTemplate: (newTemplate?: PatientSearchTemplateVM) => void,
 
-    errorsLog: string
+    errorsLog: string[]
 }
 
 export class PatientManager extends React.Component<PatientManagerProps, {}, {}> {
@@ -66,7 +66,12 @@ export class PatientManager extends React.Component<PatientManagerProps, {}, {}>
 
         return (
             <>
-            <h1>{this.props.errorsLog}</h1>
+            {this.props.errorsLog.map((m, ind) => (
+                <p
+                key={ind}
+                style={{color: 'red'}}
+                >{m}</p>
+            ))}
             {content}
             </>
         );
