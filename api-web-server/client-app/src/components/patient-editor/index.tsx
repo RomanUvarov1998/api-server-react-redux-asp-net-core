@@ -9,7 +9,7 @@ import { fetchSyncPatient } from '../../library/fetchHelper';
 type PatientEditorProps = {
     patient: PatientEditingVM,
     template: PatientSearchTemplateVM,
-    onExitEditor: (status?: Status, patient?: PatientVM) => void
+    onExitEditor: (patientAndAction?: { patient: PatientVM, status: Status }) => void
 };
 type PatientEditorState = {
     patient: PatientEditingVM,
@@ -61,9 +61,9 @@ export class PatientEditor extends React.Component<PatientEditorProps, PatientEd
                         {PictureSave}
                     </h3>
                     <CustomButton
-                        onClick={() => this.props.onExitEditor(
-                            this.state.patient.status,
-                            this.state.patient.toPatientVM())}
+                        onClick={() => this.props.onExitEditor({
+                            patient: this.state.patient.toPatientVM(),
+                            status: this.state.patient.status})}
                         svgPicture={PictureCansel}
                         btnText={'Ок'}
                     />

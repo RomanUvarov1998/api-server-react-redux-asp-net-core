@@ -28,17 +28,6 @@ namespace api_web_server.Controllers
 
             List<FieldName> existingFieldNames = await _dbContext.FieldNames.ToListAsync();
 
-            var nonExisting = ControllerHelpers.FirstNonExistingOrDefault(
-                patientDTM.Fields, existingFieldNames,
-                (dtmF, mf) => dtmF.NameId == mf.Id);
-
-            if (nonExisting != null)
-            {
-                throw new MyException(
-                    MyExceptionType.DoesNotExistInDatabase,
-                    nonExisting);
-            }
-
             Patient patient = new Patient(
                 existingFieldNames
                     .Select(fn => new PatientField(fn))
@@ -61,18 +50,7 @@ namespace api_web_server.Controllers
                 .ReadModelFromBodyAsync<PatientDTM>(this.Request.Body);
 
             List<FieldName> existingFieldNames = await _dbContext.FieldNames.ToListAsync();
-
-            var nonExisting = ControllerHelpers.FirstNonExistingOrDefault(
-                patientDTM.Fields, existingFieldNames,
-                (dtmF, mf) => dtmF.NameId == mf.Id);
-
-            if (nonExisting != null)
-            {
-                throw new MyException(
-                    MyExceptionType.DoesNotExistInDatabase,
-                    nonExisting);
-            }
-
+            
             Patient patient = await _dbContext.Patients
                 .IncludeFields()
                 .FirstOrDefaultAsync(p => p.Id == patientDTM.Id);

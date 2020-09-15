@@ -126,12 +126,15 @@ export function onEnterEditor(state: MainContainerState, patient: PatientEditing
         editingPatient
     })
 }
-export function onExitEditor(state: MainContainerState, patient?: PatientVM,
-    status?: Status): MainContainerState {
-    if (!patient || !status) return {
+export function onExitEditor(state: MainContainerState,
+    patientAndAction?: { patient: PatientVM, status: Status }
+): MainContainerState {
+    if (!patientAndAction) return {
         ...state,
         editingPatient: undefined
     };
+
+    const { patient, status } = patientAndAction;
 
     let searchingList;
     switch (status) {
@@ -147,12 +150,6 @@ export function onExitEditor(state: MainContainerState, patient?: PatientVM,
                 !p.equals(patient!));
             break;
         default: throw new Error('patient state is untouched');
-    }
-    if (patient) {
-        searchingList = state.searchingList.map(p =>
-            p.equals(patient) ? patient : p);
-    } else {
-        searchingList = state.searchingList;
     }
 
     return {

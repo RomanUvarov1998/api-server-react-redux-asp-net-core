@@ -15,21 +15,21 @@ export function configureStore(initialState: MainContainerState) {
                 return Reducers.onRecievePatientFields(state, a.patientTemplate);
             case Actions.ACTION_SET_SEARCH_TEMPLATE:
                 a = (action as Actions.ActionSetSearchTemplate);
-                return Reducers.onSetSearchTemplate(state, a.newValue, 
-                    a.fieldNameId, 
+                return Reducers.onSetSearchTemplate(state, a.newValue,
+                    a.fieldNameId,
                     action => store.dispatch(action));
             case Actions.ACTION_GIVE_VARIANTS:
                 a = (action as Actions.ActionGiveVariants);
                 return Reducers.onGiveVariants(state, a.fieldNameId, a.variants);
             case Actions.ACTION_CLEAR_SEARCH_TEMPLATE:
                 a = (action as Actions.ActionSetSearchTemplate);
-                return Reducers.onClearSearchTemplate(state, 
+                return Reducers.onClearSearchTemplate(state,
                     action => store.dispatch(action));
             case Actions.ACTION_RECIEVE_PATIENTS:
                 a = action as Actions.ActionRecievePatients;
                 return Reducers.onRecievePatients(state, a.patients, a.append);
             case Actions.ACTION_LOAD_MORE_PATIENTS:
-                return Reducers.onLoadMorePatients(state, 
+                return Reducers.onLoadMorePatients(state,
                     action => store.dispatch(action));
 
             case Actions.ACTION_ENTER_PATIENT_EDITOR:
@@ -37,7 +37,7 @@ export function configureStore(initialState: MainContainerState) {
                 return Reducers.onEnterEditor(state, a.patient);
             case Actions.ACTION_EXIT_PATIENT_EDITOR:
                 a = (action as Actions.ActionExitPatientEditor);
-                return Reducers.onExitEditor(state, a.patient);
+                return Reducers.onExitEditor(state, a.patientAndAction);
 
             case Actions.ACTION_START_EDIT_PATIENT_TEMPLATE:
                 a = (action as Actions.ActionStartEditPatientTemplate);

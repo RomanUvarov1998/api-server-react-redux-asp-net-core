@@ -42,7 +42,7 @@ export type TableContainerDispatchProps = {
     onLoadMorePatients: (template: PatientSearchTemplateVM, loadedCount: number, pageLength: number) => Actions.ActionLoadMorePatients,
 
     onEnterPatientEditor: (patient: PatientEditingVM) => Actions.ActionEnterPatientEditor,
-    onExitPatientEditor: (status?: Status, patient?: PatientVM) => Actions.ActionExitPatientEditor,
+    onExitPatientEditor: (patientAndAction?: { patient: PatientVM, status: Status }) => Actions.ActionExitPatientEditor,
 
     onStartEditPatientTemplate: () => Actions.ActionStartEditPatientTemplate,
     onFinishEditPatientTemplate: (newTemplate?: PatientSearchTemplateVM) => Actions.ActionFinishEditPatientTemplate,

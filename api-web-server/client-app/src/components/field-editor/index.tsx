@@ -11,7 +11,7 @@ type RawCellProps = {
 export function FieldEditor(props: RawCellProps): JSX.Element {
     return (
         <label
-            style={{ display: 'block' }}
+            style={{ display: 'block', color: props.disabled ? 'gray' : 'black' }}
         >
             {props.labelText}
             <input

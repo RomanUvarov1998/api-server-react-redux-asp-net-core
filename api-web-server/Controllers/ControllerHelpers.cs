@@ -30,17 +30,17 @@ namespace api_web_server.Controllers
             return model;
         }
 
-        public static TEntity1 FirstNonExistingOrDefault<TEntity1, TEntity2>(
-            List<TEntity1> list1,
-            List<TEntity2> list2,
-            Func<TEntity1, TEntity2, bool> areEqual)
-        {
-            TEntity1 nonExistingField = list1
-                            .FirstOrDefault(el1 => !list2
-                                .Any(el2 => areEqual(el1, el2)));
+        // public static TEntity1 FirstNonExistingOrDefault<TEntity1, TEntity2>(
+        //     List<TEntity1> list1,
+        //     List<TEntity2> list2,
+        //     Func<TEntity1, TEntity2, bool> areEqual)
+        // {
+        //     TEntity1 nonExistingField = list1
+        //                     .FirstOrDefault(el1 => !list2
+        //                         .Any(el2 => areEqual(el1, el2)));
 
-            return nonExistingField;
-        }
+        //     return nonExistingField;
+        // }
     }
 
 }

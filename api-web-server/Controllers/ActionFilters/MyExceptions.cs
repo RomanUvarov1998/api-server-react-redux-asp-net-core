@@ -26,20 +26,14 @@ namespace api_web_server.Controllers.ActionFilters
         }
         private static string GetMessageForExType(MyExceptionType type, object entity)
         {
-            switch (type)
+            return type switch
             {
-                case MyExceptionType.DoesNotExistInDatabase:
-                    return $"Entity {entity} doesn't exist in the database";
-                case MyExceptionType.DeserializedToNull:
-                    return $"Recieved {entity} couldn't be deserialized correctly";
-                case MyExceptionType.NegativeTakeArgument:
-                    return $"Take must be >= 0, but it is {entity}";
-                case MyExceptionType.NegativeSkipArgument:
-                    return $"Skip must be >= 0, but it is {entity}";
-                default: 
-                    throw new NotImplementedException("Not all MyExceptionType variants are implemented");
-            }
-
+                MyExceptionType.DoesNotExistInDatabase => $"Entity {entity} doesn't exist in the database",
+                MyExceptionType.DeserializedToNull => $"Recieved {entity} couldn't be deserialized correctly",
+                MyExceptionType.NegativeTakeArgument => $"Take must be >= 0, but it is {entity}",
+                MyExceptionType.NegativeSkipArgument => $"Skip must be >= 0, but it is {entity}",
+                _ => throw new NotImplementedException("Not all MyExceptionType variants are implemented"),
+            };
         }
         // A constructor is needed for serialization when an
         // exception propagates from a remoting server to the client.

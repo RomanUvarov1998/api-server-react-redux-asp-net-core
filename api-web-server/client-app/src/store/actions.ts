@@ -39,7 +39,7 @@ export type ActionRecievePatients = { type: string, patients: PatientVM[], appen
 export type ActionLoadMorePatients = { type: string };
 
 export type ActionEnterPatientEditor = { type: string, patient: PatientEditingVM };
-export type ActionExitPatientEditor = { type: string, patient?: PatientVM, status?: Status };
+export type ActionExitPatientEditor = { type: string, patientAndAction?: { patient: PatientVM, status: Status } };
 
 export type ActionStartEditPatientTemplate = { type: string };
 export type ActionFinishEditPatientTemplate = { type: string, newTemplate?: PatientSearchTemplateVM };
@@ -92,11 +92,10 @@ export function enterPatientEditor(patient: PatientEditingVM): ActionEnterPatien
         patient
     };
 }
-export function exitPatientEditor(status?: Status, patient?: PatientVM): ActionExitPatientEditor {
+export function exitPatientEditor(patientAndAction?: { patient: PatientVM, status: Status }): ActionExitPatientEditor {
     return {
         type: ACTION_EXIT_PATIENT_EDITOR,
-        patient,
-        status
+        patientAndAction
     };
 }
 

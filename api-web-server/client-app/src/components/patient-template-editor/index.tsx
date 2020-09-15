@@ -141,18 +141,20 @@ export class PatientTemplateEditor extends React.Component<PatientTemplateEditor
                             />);
 
                     return (<Col key={index} className={'col col-sm-12 col-md-6 col-lg-5 col-xl-4'}>
-                        <Row className={'row justify-content-start no-gutters'}>
-                            <Col>
-                                <FieldEditor
-                                    labelText={`${initialName}:`}
-                                    value={f.name}
-                                    onChange={newValue => this.onEdit(f.nameId, newValue)}
-                                    disabled={false}
-                                    autofocus={autofocusPredicate(f, index)}
-                                />
-                            </Col>
-                            <Col>{deleteRestoreBtn}</Col>
-                        </Row>
+                        <Container style={{ margin: 10 }}>
+                            <Row className={'row justify-content-start no-gutters'}>
+                                <Col>
+                                    <FieldEditor
+                                        labelText={`${initialName}:`}
+                                        value={f.name}
+                                        onChange={newValue => this.onEdit(f.nameId, newValue)}
+                                        disabled={f.isDeleted}
+                                        autofocus={autofocusPredicate(f, index)}
+                                    />
+                                </Col>
+                                <Col>{deleteRestoreBtn}</Col>
+                            </Row>
+                        </Container>
                     </Col>)
                 }
                 );

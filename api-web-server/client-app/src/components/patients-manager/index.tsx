@@ -21,7 +21,7 @@ export type PatientManagerProps = {
 
     editingPatient?: PatientEditingVM,
     onEnterPatientEditor: (patient: PatientEditingVM) => void,
-    onExitPatientEditor: (status?: Status, patient?: PatientVM) => void,
+    onExitPatientEditor: (patientAndAction?: { patient: PatientVM, status: Status }) => void,
 
     onStartEditPatientTemplate: () => void,
     onFinishEditPatientTemplate: (newTemplate?: PatientSearchTemplateVM) => void,
